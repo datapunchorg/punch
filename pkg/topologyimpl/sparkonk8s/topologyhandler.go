@@ -243,10 +243,10 @@ if __name__ == "__main__":
 		return
 	}
 
-	str2 := `sparkcli --user %s --password %s --insecure --url https://%s/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --image ghcr.io/datapunchorg/spark:spark-3.2-1642867779 --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.2.2-SNAPSHOT.jar`
+	str2 := `./sparkcli --user %s --password %s --insecure --url https://%s/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --image ghcr.io/datapunchorg/spark:spark-3.2-1642867779 --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.2.2-SNAPSHOT.jar`
 	log.Printf("\n------------------------------\nExample using sparkcli to run Java Spark application (IMPORTANT: this contains password, please not print out this if there is security concern):\n------------------------------\n" + str2, userName, userPassword, url)
 
-	str3 := `sparkcli --user %s --password %s --insecure --url https://%s/sparkapi/v1 submit --image ghcr.io/datapunchorg/spark:pyspark-3.2-1642867779 --spark-version 3.2 --driver-memory 512m --executor-memory 512m %s`
+	str3 := `./sparkcli --user %s --password %s --insecure --url https://%s/sparkapi/v1 submit --image ghcr.io/datapunchorg/spark:pyspark-3.2-1642867779 --spark-version 3.2 --driver-memory 512m --executor-memory 512m %s`
 	log.Printf("\n------------------------------\nAnother example using sparkcli to run Python Spark application from local file (IMPORTANT: this contains password, please not print out this if there is security concern):\n------------------------------\n" + str3, userName, userPassword, url, file.Name())
 }
 
