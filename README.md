@@ -3,7 +3,7 @@
 This project is not open sourced yet. We are still working on the progess to open source the project. Please not share the code publicly.
 
 
-## How to create a package (on MacBook)
+## How to build (on MacBook)
 
 The following command will create a zip file for Punch.
 
