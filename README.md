@@ -5,9 +5,13 @@ This project is not open sourced yet. We are still working on the progess to ope
 
 ## How to create a package (on MacBook)
 
+The following command will create a zip file for Punch.
+
 ```
 make
 ```
+
+Then check ![User Guide](UserGuide.md) to see how to run punch command.
 
 ## TODO
 
