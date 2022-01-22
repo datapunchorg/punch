@@ -27,6 +27,11 @@ aws configure
 ./punch install SparkOnK8s --set apiUserPassword=password1 --print-usage-example
 ```
 
+The upper punch command will create an EKS cluster and Spark REST Service, then people could submit Spark application via that REST service. Please note:
+
+1. AWS sometime is slow in creating EKS (e.g. 10 or more minutes), please be patient waiting for the punch command to finish.
+2. The punch command will print out example commands to submit Spark application in the end. Please pay attention to those messages in console output.
+
 ### How to uninstall SparkOnK8s on AWS
 
 1. Run punch command:
