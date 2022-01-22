@@ -11,7 +11,7 @@ The following command will create a zip file for Punch.
 make
 ```
 
-Then check ![User Guide](UserGuide.md) to see how to run punch command.
+Then check [User Guide](UserGuide.md) to see how to run punch command.
 
 ## TODO
 
