@@ -29,7 +29,7 @@ const (
 	DefaultInstanceType = "t3.large"
 	DefaultNodeGroupSize = 3
 	DefaultOperatorImageRepository = "datapunch/spark"
-	DefaultSparkOperatorImageTag = "spark-operator-1225"
+	DefaultSparkOperatorImageTag = "spark-operator-0123"
 	DefaultSparkOperatorNamespace = "spark-operator-01"
 	DefaultSparkOperatorHelmInstallName = "spark-operator-01"
 	DefaultSparkApplicationNamespace = "spark-01"
