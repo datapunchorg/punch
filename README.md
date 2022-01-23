@@ -4,7 +4,8 @@ This project is not open sourced yet. We are still working on the progess to ope
 
 ## Introduction
 
-This project is to provide one-click experience for people to create Clound and Kubernetes environment to run their Data Analytics workload.
+This project is to provide one-click experience for people to create Cloud and Kubernetes environment to run their Data Analytics workload
+like Apache Spark.
 
 For example, "punch install SparkOnK8s" will create an AWS EKS cluster and a Spark REST Service. Then you could use curl or command line tool
 to submit Spark application.
