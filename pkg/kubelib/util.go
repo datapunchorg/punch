@@ -18,6 +18,7 @@ package kubelib
 
 import (
 	"context"
+	"fmt"
 	"github.com/datapunchorg/punch/pkg/common"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -32,8 +33,23 @@ type KubeConfig struct {
 	ConfigFile string
 	ApiServer string
 	CAFile string
-	CA     []byte // TODO remove CAFile and add a function to create CAFile
+	CA     []byte
 	KubeToken string
+}
+
+func (t *KubeConfig) Cleanup() error {
+	if t.CAFile == "" {
+		return nil
+	}
+	err := os.Remove(t.CAFile)
+	if err != nil {
+		return fmt.Errorf("failed to delete CA file %s: %s", t.CAFile, err.Error())
+	}
+
+	t.CA = nil
+	t.KubeToken = ""
+
+	return nil
 }
 
 func AppendHelmKubeArguments(arguments []string, kubeConfig KubeConfig) []string {

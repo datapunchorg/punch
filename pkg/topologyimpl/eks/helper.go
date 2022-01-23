@@ -39,6 +39,7 @@ func CreateInstanceIAMRole(topology EksTopology) string {
 	return roleName
 }
 
+// TODO remove log.Fatalf
 func DeployNginxIngressController(commandEnvironment framework.CommandEnvironment, topology EksTopology) map[string]interface{} {
 	nginxNamespace := topology.Spec.NginxIngress.Namespace
 	helmInstallName := topology.Spec.NginxIngress.HelmInstallName
@@ -57,9 +58,14 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 
 	kubelib.InstallHelm(commandEnvironment.Get(CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvNginxHelmChart), kubeConfig, arguments, helmInstallName, nginxNamespace)
 
+	err = kubeConfig.Cleanup()
+	if err != nil {
+		log.Fatalf("Failed to delete CA file: %s", err.Error())
+	}
+
 	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(CmdEnvKubeConfig), eksClusterName)
 	if err != nil {
-		log.Fatalf("Failed to create Kubernetes client: %v", err)
+		log.Fatalf("Failed to create Kubernetes client: %s", err.Error())
 	}
 	err = kubelib.WaitPodsInPhase(clientset, nginxNamespace, serviceName, v1.PodRunning)
 	if err != nil {

@@ -22,8 +22,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/common"
-	"github.com/datapunchorg/punch/pkg/kubelib"
 	"github.com/datapunchorg/punch/pkg/framework"
+	"github.com/datapunchorg/punch/pkg/kubelib"
 	"k8s.io/api/core/v1"
 	v13 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -43,7 +43,7 @@ func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, topolo
 
 	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(CmdEnvKubeConfig), clusterName)
 	if err != nil {
-		log.Fatalf("Failed to create Kubernetes client: %v", err)
+		log.Fatalf("Failed to create Kubernetes client: %s", err.Error())
 	}
 
 	sparkApplicationNamespace := "spark-01"
@@ -154,6 +154,7 @@ func CreateApiGatewayService(clientset *kubernetes.Clientset, namespace string, 
 	}
 }
 
+// TODO remove log.Fatalf
 func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, topology SparkTopology) {
 	// helm install my-release spark-operator/spark-operator --namespace spark-operator --create-namespace --set sparkJobNamespace=default
 
@@ -180,6 +181,11 @@ func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, t
 	}
 
 	kubelib.InstallHelm(commandEnvironment.Get(CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvSparkOperatorHelmChart), kubeConfig, arguments, installName, operatorNamespace)
+
+	err = kubeConfig.Cleanup()
+	if err != nil {
+		log.Fatalf("Failed to delete CA file: %s", err.Error())
+	}
 }
 
 func CreateSparkServiceAccount(clientset *kubernetes.Clientset, sparkOperatorNamespace string, sparkApplicationNamespace string, sparkServiceAccountName string) {
