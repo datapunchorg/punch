@@ -32,6 +32,13 @@ The upper punch command will create an EKS cluster and Spark REST Service, then 
 1. AWS sometime is slow in creating EKS (e.g. 10 or more minutes), please be patient waiting for the punch command to finish.
 2. The punch command will print out example commands to submit Spark application in the end. Please pay attention to those messages in console output.
 
+You could also generate a topology template file, manually modify that file, and then install from it:
+
+```
+./punch generate SparkOnK8s -o /tmp/SparkOnK8s.yaml
+./punch install -f /tmp/SparkOnK8s.yaml --set apiUserPassword=password1 --print-usage-example
+```
+
 ### How to uninstall SparkOnK8s on AWS
 
 1. Run punch command:
