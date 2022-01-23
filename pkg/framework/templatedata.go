@@ -131,11 +131,15 @@ func addDataValueWithNestedKey(data map[string]interface{}, key []string, value 
 	}
 }
 
-type TemplateDataWithVpc struct {
+type TemplateDataWithRegion struct {
 	TemplateDataImpl
 }
 
-func (t *TemplateDataWithVpc) DefaultVpcId() string {
+func (t *TemplateDataWithRegion) Region() string {
+	return t.GetStringValueOrDefault("region", DefaultRegion)
+}
+
+func (t *TemplateDataWithRegion) DefaultVpcId() string {
 	region := t.Region()
 	session := awslib.CreateSession(region)
 	ec2Client := ec2.New(session)
@@ -149,6 +153,16 @@ func (t *TemplateDataWithVpc) DefaultVpcId() string {
 	return vpcId
 }
 
-func (t *TemplateDataWithVpc) Region() string {
-	return t.GetStringValueOrDefault("region", DefaultRegion)
+func (t *TemplateDataWithRegion) DefaultS3BucketName() string {
+	namePrefix := t.NamePrefix()
+	region := t.Region()
+
+	session := awslib.CreateDefaultSession()
+	account, err := awslib.GetCurrentAccount(session)
+	if err != nil {
+		log.Printf("[WARN] Failed to get current AWS account: %s", err.Error())
+		return "error-no-value"
+	}
+
+	return fmt.Sprintf("%s-%s-%s", namePrefix, account, region)
 }

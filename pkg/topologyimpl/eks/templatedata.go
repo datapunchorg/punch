@@ -17,37 +17,20 @@ limitations under the License.
 package eks
 
 import (
-	"fmt"
-	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/framework"
-	"log"
 )
 
 type EksTemplateData struct {
-	framework.TemplateDataWithVpc
+	framework.TemplateDataWithRegion
 }
 
 func CreateEksTemplateData(data framework.TemplateData) EksTemplateData {
 	copy := framework.CopyTemplateData(data)
 	result := EksTemplateData{
-		TemplateDataWithVpc: framework.TemplateDataWithVpc{
+		TemplateDataWithRegion: framework.TemplateDataWithRegion{
 			TemplateDataImpl: copy,
 		},
 	}
 	return result
-}
-
-func (t *EksTemplateData) DefaultS3BucketName() string {
-	namePrefix := t.NamePrefix()
-	region := t.TemplateDataWithVpc.Region()
-
-	session := awslib.CreateDefaultSession()
-	account, err := awslib.GetCurrentAccount(session)
-	if err != nil {
-		log.Printf("[WARN] Failed to get current AWS account: %s", err.Error())
-		return "error-no-value"
-	}
-
-	return fmt.Sprintf("%s-%s-%s", namePrefix, account, region)
 }
 
