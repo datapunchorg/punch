@@ -24,6 +24,8 @@ import (
 	"strings"
 )
 
+var Output string
+
 var FileName string
 
 var CommandEnv []string

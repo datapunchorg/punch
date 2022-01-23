@@ -51,11 +51,27 @@ var generateCmd = &cobra.Command{
 			exitWithError(err.Error())
 		}
 
-		fmt.Printf("%s\n", MarshalTopology(topology))
+		generatedContent := MarshalTopology(topology)
+
+		outputFile := Output
+		if outputFile == "" {
+			fmt.Printf("%s\n", generatedContent)
+		} else {
+			f, err := os.Create(outputFile)
+			if err != nil {
+				exitWithError(err.Error())
+			}
+			defer f.Close()
+			_, err = f.WriteString(generatedContent)
+			if err != nil {
+				exitWithError(err.Error())
+			}
+		}
 	},
 }
 
 func init() {
+	AddOutputCommandFlag(generateCmd)
 }
 
 func exitWithError(str string) {

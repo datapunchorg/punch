@@ -34,6 +34,11 @@ func init() {
 	rootCmd.AddCommand(provisionCmd, deleteCmd, generateCmd)
 }
 
+func AddOutputCommandFlag(command *cobra.Command) {
+	command.Flags().StringVarP(&Output, "output", "o", "",
+		"output file which contains the generated content")
+}
+
 func AddFileNameCommandFlag(command *cobra.Command) {
 	command.Flags().StringVarP(&FileName, "filename", "f", "",
 		"file which contains the configuration to deploy")
