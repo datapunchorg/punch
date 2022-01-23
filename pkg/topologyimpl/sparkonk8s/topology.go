@@ -26,7 +26,7 @@ import (
 const (
 	ToBeReplacedS3BucketName           = "todo_use_your_own_bucket_name"
 	DefaultApiUserName = "user1"
-	DefaultInstanceType = "t3.medium"
+	DefaultInstanceType = "t3.large"
 	DefaultNodeGroupSize = 3
 	DefaultOperatorImageRepository = "datapunch/spark"
 	DefaultSparkOperatorImageTag = "spark-operator-1225"
