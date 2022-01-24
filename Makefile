@@ -57,6 +57,8 @@ release:
 	cp third-party/bin/sparkcli dist/
 	cp -R third-party/helm-charts/ingress-nginx dist/ingress-nginx/
 	cp -R third-party/helm-charts/spark-operator-service dist/spark-operator-service/
+	cp hack/pyspark-example.py dist/
+	cp hack/pyspark-iceberg-example.py dist/
 	zip -r dist.zip dist
 
 # Clean up
