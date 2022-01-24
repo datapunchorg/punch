@@ -66,3 +66,43 @@ Following are some examples to run sparkcli:
 
 ./sparkcli --user user1 --password your_password --insecure --url https://xxx.us-west-1.elb.amazonaws.com/sparkapi/v1 log your_submission_id
 ```
+
+## Advanced Usage
+
+### How to run Spark with Apache Hive
+
+You need to set up your own Hive metastore server, and use it for your Spark application. 
+[Here](https://techjogging.com/standalone-hive-metastore-presto-docker.html) is an example 
+to set up Hive for Presto. It will be similar for Spark.
+
+If you do not want to set up Hive metastore server, we recommend using [Apache Iceberg](https://iceberg.apache.org) 
+to store your metadata and use it in your Spark application.
+
+### How to run Spark with Apache Iceberg
+
+There are many ways to set up Apache Iceberg. Following are steps to use a JDBC database together with Iceberg.
+
+1. Create a database. You could use AWS Web UI to create an RDS database, or just punch command, like following:
+```
+./punch install Database --set masterUserPassword=password1
+```
+The upper punch command will create an RDS database, and print out the endpoint URL. Please write down that URL,
+which will be used later.
+
+2. Run Spark application with following Spark config:
+```
+--conf spark.jars=s3a://foo/iceberg-spark3-runtime-0.12.1.jar,s3a://foo/awssdk-url-connection-client-2.17.105.jar,s3a://foo/awssdk-bundle-2.17.105.jar,s3a://foo/mariadb-java-client-2.7.4.jar \
+--conf spark.sql.warehouse.dir=s3a://foo/warehouse \
+--conf spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions \
+--conf spark.sql.catalog.my_catalog=org.apache.iceberg.spark.SparkCatalog \
+--conf spark.sql.catalog.my_catalog.type=hadoop \
+--conf spark.sql.catalog.my_catalog.warehouse=s3a://foo/iceberg-warehouse \
+--conf spark.sql.catalog.my_catalog.io-impl=org.apache.iceberg.aws.s3.S3FileIO \
+--conf spark.sql.catalog.my_catalog.catalog-impl=org.apache.iceberg.jdbc.JdbcCatalog \
+--conf spark.sql.catalog.my_catalog.uri=jdbc:mysql://xxx.us-west-1.rds.amazonaws.com:3306/mydb \
+--conf spark.sql.catalog.my_catalog.jdbc.verifyServerCertificate=false \
+--conf spark.sql.catalog.my_catalog.jdbc.useSSL=true \
+--conf spark.sql.catalog.my_catalog.jdbc.user=user1 \
+--conf spark.sql.catalog.my_catalog.jdbc.password=xxx \
+```
+
