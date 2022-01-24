@@ -86,17 +86,18 @@ There are many ways to set up Apache Iceberg. Following are steps to use a JDBC 
 ```
 ./punch install Database --set masterUserPassword=password1
 ```
-The upper punch command will create an RDS database, and print out the endpoint URL. Please write down that URL,
-which will be used later.
+The upper punch command will create a serverless RDS database, and print out the endpoint URL. Please write down that URL,
+which will be used later. The serverless RDS database will be paused by AWS automatically if not used for certain duration.
+You might need to modify the capacity for the RDS database in AWS web UI if it is suck in paused state.
 
 2. Run Spark application with Spark config like following example (please replace xxx with your own values if you
 copy/paste to run your own application):
 ```
 ./sparkcli --user user1 --password password1 --insecure \
---url https://xxx.elb.amazonaws.com/sparkapi/v1 \
-submit --image ghcr.io/datapunchorg/spark:pyspark-3.2-1642867779 --spark-version 3.2 \
+--url https://xxx.us-west-1.elb.amazonaws.com/sparkapi/v1 \
+submit --image datapunch/spark:pyspark-3.1.2-1 --spark-version 3.1 \
 --driver-memory 512m --executor-memory 512m \
---conf spark.jars=s3a://xxx/iceberg-spark3-runtime-0.12.1.jar,s3a://xxx/awssdk-url-connection-client-2.17.105.jar,s3a://xxx/awssdk-bundle-2.17.105.jar,s3a://xxx/mariadb-java-client-2.7.4.jar \
+--conf spark.jars=s3a://datapunch-public-01/jars/iceberg-spark3-runtime-0.12.1.jar,s3a://datapunch-public-01/jars/awssdk-url-connection-client-2.17.105.jar,s3a://datapunch-public-01/jars/awssdk-bundle-2.17.105.jar,s3a://datapunch-public-01/jars/mariadb-java-client-2.7.4.jar \
 --conf spark.sql.warehouse.dir=s3a://xxx/warehouse \
 --conf spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions \
 --conf spark.sql.catalog.my_catalog=org.apache.iceberg.spark.SparkCatalog \
@@ -109,6 +110,6 @@ submit --image ghcr.io/datapunchorg/spark:pyspark-3.2-1642867779 --spark-version
 --conf spark.sql.catalog.my_catalog.jdbc.useSSL=true \
 --conf spark.sql.catalog.my_catalog.jdbc.user=user1 \
 --conf spark.sql.catalog.my_catalog.jdbc.password=xxx \
-pyspark-example.py
+pyspark-iceberg-example.py
 ```
 
