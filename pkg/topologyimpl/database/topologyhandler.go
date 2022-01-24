@@ -67,8 +67,10 @@ func (t *TopologyHandler) Resolve(topology framework.Topology, data framework.Te
 		return nil, fmt.Errorf("failed to parse topology template (%s): %s", err.Error(), yamlContent)
 	}
 
+	databaseData := CreateDatabaseTemplateData(data)
+
 	buffer := bytes.Buffer{}
-	err = tmpl.Execute(&buffer, &data)
+	err = tmpl.Execute(&buffer, &databaseData)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute topology template: %s", err.Error())
 	}

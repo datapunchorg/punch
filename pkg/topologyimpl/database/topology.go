@@ -19,6 +19,7 @@ package database
 import (
 	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
+	"github.com/datapunchorg/punch/pkg/resource"
 	"gopkg.in/yaml.v3"
 )
 
@@ -44,15 +45,18 @@ type DatabaseTopology struct {
 type DatabaseTopologySpec struct {
 	NamePrefix string `json:"namePrefix" yaml:"namePrefix"`
 	Region string `json:"region" yaml:"region"`
+	VpcId string `json:"vpcId" yaml:"vpcId"`
 	AvailabilityZones []string `json:"availabilityZones" yaml:"availabilityZones"`
-	DatabaseId        string   `json:"databaseName" yaml:"databaseName"`
+	DatabaseId        string   `json:"databaseId" yaml:"databaseId"`
 	MasterUserName    string   `json:"masterUserName" yaml:"masterUserName"`
 	// password must not shorter than 8 characters
 	MasterUserPassword string `json:"masterUserPassword" yaml:"masterUserPassword"`
+	SecurityGroups   []resource.SecurityGroup        `json:"securityGroups" yaml:"securityGroups"`
 }
 
 func CreateDefaultDatabaseTopology(namePrefix string) DatabaseTopology {
 	topologyName := fmt.Sprintf("%s-db", namePrefix)
+	securityGroupName := fmt.Sprintf("%s-sg-01", namePrefix)
 	topology := DatabaseTopology{
 		ApiVersion: DefaultVersion,
 		Kind:       KindDatabaseTopology,
@@ -64,10 +68,24 @@ func CreateDefaultDatabaseTopology(namePrefix string) DatabaseTopology {
 		Spec: DatabaseTopologySpec{
 			NamePrefix:         namePrefix,
 			Region:             DefaultRegion,
+			VpcId:              "{{ or .Values.vpcId .DefaultVpcId }}",
 			AvailabilityZones:  []string {"us-west-1a"},
 			DatabaseId:         fmt.Sprintf("%s-db", namePrefix),
 			MasterUserName:     DefaultUserName,
 			MasterUserPassword: "{{ .Values.masterUserPassword }}",
+			SecurityGroups: []resource.SecurityGroup{
+				{
+					Name: securityGroupName,
+					InboundRules: []resource.SecurityGroupInboundRule{
+						{
+							IPProtocol: "-1",
+							FromPort: -1,
+							ToPort: -1,
+							IPRanges: []string{"0.0.0.0/0"},
+						},
+					},
+				},
+			},
 		},
 	}
 	return topology

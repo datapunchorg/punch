@@ -20,9 +20,11 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/common"
+	"github.com/datapunchorg/punch/pkg/resource"
 	"log"
 	"strings"
 	"time"
@@ -31,6 +33,17 @@ import (
 func CreateDatabase(databaseSpec DatabaseTopologySpec) (*rds.DBCluster, error) {
 	databaseId := databaseSpec.DatabaseId
 	session := awslib.CreateSession(databaseSpec.Region)
+
+	ec2Client := ec2.New(session)
+	securityGroupIds := make([]*string, 0, 10)
+	for _, entry := range databaseSpec.SecurityGroups {
+		securityGroupId, err := resource.CreateSecurityGroup(ec2Client, entry, databaseSpec.VpcId)
+		if err != nil {
+			return nil, err
+		}
+		securityGroupIds = append(securityGroupIds, &securityGroupId)
+	}
+
 	svc := rds.New(session)
 	input := &rds.CreateDBClusterInput{
 		AvailabilityZones: aws.StringSlice(databaseSpec.AvailabilityZones),
@@ -46,6 +59,7 @@ func CreateDatabase(databaseSpec DatabaseTopologySpec) (*rds.DBCluster, error) {
 		Port:                        aws.Int64(3306),
 		StorageEncrypted:            aws.Bool(true),
 		EnableHttpEndpoint:          aws.Bool(true),
+		VpcSecurityGroupIds:         securityGroupIds,
 	}
 	result, err := svc.CreateDBCluster(input)
 	if err != nil {
