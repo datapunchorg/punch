@@ -112,7 +112,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		deployment.AddStep("createS3Bucket", "Create S3 bucket", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 			sparkTopology := t.(*SparkTopology)
 			err := awslib.CreateS3Bucket(sparkTopology.Spec.Region, sparkTopology.Spec.S3BucketName)
-			return framework.NewDeploymentStepOutput(), err
+			return framework.DeploymentStepOutput{"bucketName": sparkTopology.Spec.S3BucketName}, err
 		})
 
 		deployment.AddStep("createInstanceIAMRole", "Create EKS instance IAM role", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
