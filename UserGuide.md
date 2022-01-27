@@ -95,7 +95,7 @@ copy/paste to run your own application):
 ```
 ./sparkcli --user user1 --password password1 --insecure \
 --url https://xxx.us-west-1.elb.amazonaws.com/sparkapi/v1 \
-submit --image datapunch/spark:pyspark-3.1.2-1 --spark-version 3.1 \
+submit --image ghcr.io/datapunchorg/spark:pyspark-3.1-1643212945 --spark-version 3.1 \
 --driver-memory 512m --executor-memory 512m \
 --conf spark.jars=s3a://datapunch-public-01/jars/iceberg-spark3-runtime-0.12.1.jar,s3a://datapunch-public-01/jars/awssdk-url-connection-client-2.17.105.jar,s3a://datapunch-public-01/jars/awssdk-bundle-2.17.105.jar,s3a://datapunch-public-01/jars/mariadb-java-client-2.7.4.jar \
 --conf spark.sql.warehouse.dir=s3a://xxx/warehouse \
