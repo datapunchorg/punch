@@ -47,6 +47,10 @@ You could also generate a topology template file, manually modify that file, and
 ./punch uninstall SparkOnK8s --set apiUserPassword=password1
 ```
 
+"punch uninstall" will delete the EKS cluster and related load balancer. It will not delete the IMA role/policy,
+since the IAM role/policy may be still used by other AWS resources. You could manually delete them from AWS web UI. 
+In the future, we may add option in "punch uninstall" command to delete those IAM role/policy in a safe way.
+
 ## How to run Spark application after installing SparkOnK8s
 
 "punch install" in previous section will print out example commands to run Spark application. 
