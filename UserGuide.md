@@ -64,7 +64,7 @@ It is packaged into the punch zip file, and you could find sparkcli program ther
 Following are some examples to run sparkcli:
 
 ```
-./sparkcli --user user1 --password your_password --insecure --url https://xxx.us-west-1.elb.amazonaws.com/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --image ghcr.io/datapunchorg/spark:pyspark-3.2-1642867779 --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.1.1.jar
+./sparkcli --user user1 --password your_password --insecure --url https://xxx.us-west-1.elb.amazonaws.com/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --image ghcr.io/datapunchorg/spark:pyspark-3.2.1-1643336295 --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.1.1.jar
 
 ./sparkcli --user user1 --password your_password --insecure --url https://xxx.us-west-1.elb.amazonaws.com/sparkapi/v1 status your_submission_id
 
