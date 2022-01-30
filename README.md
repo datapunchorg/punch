@@ -22,10 +22,8 @@ Then check [User Guide](UserGuide.md) to see how to run punch command.
 
 ## TODO
 
-1. Create Spark 3.1 image for Iceberg (Spark 3.2 not compatible with Iceberg)
-2. Attach tag (e.g. punch-topology=xxx) to AWS resources created by punch
-3. Mask password value in helm output (e.g. --set apiGateway.userPassword=xxx)
-4. Allow patch topology like --patch foo.field1=value1
-5. Allow set values by file like --values values.yaml
-6. Support "sparkcli delete xxx"
-7. Return HTTP 404 when sparkcli getting a non-existing application
+1. Attach tag (e.g. punch-topology=xxx) to AWS resources created by punch
+2. Mask password value in helm output (e.g. --set apiGateway.userPassword=xxx)
+3. Allow patch topology like --patch foo.field1=value1
+4. Allow set values by file like --values values.yaml
+5. Return HTTP 404 when sparkcli getting a non-existing application
