@@ -28,3 +28,4 @@ Then check [User Guide](UserGuide.md) to see how to run punch command.
 4. Allow patch topology like --patch foo.field1=value1
 5. Allow set values by file like --values values.yaml
 6. Return HTTP 404 when sparkcli getting a non-existing application
+7. Get application error message from Spark operator

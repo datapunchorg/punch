@@ -28,8 +28,8 @@ const (
 	DefaultApiUserName = "user1"
 	DefaultInstanceType = "t3.large"
 	DefaultNodeGroupSize = 3
-	DefaultOperatorImageRepository = "datapunch/spark"
-	DefaultSparkOperatorImageTag = "spark-operator-0123"
+	DefaultOperatorImageRepository = "ghcr.io/datapunchorg/spark-on-k8s-operator"
+	DefaultSparkOperatorImageTag = "master-datapunch"
 	DefaultSparkOperatorNamespace = "spark-operator-01"
 	DefaultSparkOperatorHelmInstallName = "spark-operator-01"
 	DefaultSparkApplicationNamespace = "spark-01"
