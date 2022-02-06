@@ -175,9 +175,9 @@ func CreateEksCluster(region string, vpcId string, eksCluster EKSCluster) error 
 		clusterStatus := *describeClusterOutput.Cluster.Status
 		ready := strings.EqualFold(clusterStatus, targetClusterStatus)
 		if !ready {
-			log.Printf("Cluster %s not ready (in status: %s), waiting...", clusterName, clusterStatus)
+			log.Printf("EKS cluster %s not ready (in status: %s), waiting... (EKS may take 10+ minutes to be ready, thanks for your patience)", clusterName, clusterStatus)
 		} else {
-			log.Printf("Cluster %s is ready (in status: %s)", clusterName, clusterStatus)
+			log.Printf("EKS cluster %s is ready (in status: %s)", clusterName, clusterStatus)
 		}
 		return ready, nil
 	}, 30*time.Minute, 30*time.Second)
