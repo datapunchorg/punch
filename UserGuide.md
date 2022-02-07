@@ -76,7 +76,8 @@ In the future, we may add option in "punch uninstall" command to delete those IA
 ## How to run Spark application after installing SparkOnK8s
 
 "punch install" in previous section will print out example commands to run Spark application. 
-Please check the output from "punch install" command.
+Please check the output from "punch install" command. Also see following section for how to use `sparkcli` command
+line tool.
 
 ## What is sparkcli command, and how to use it
 

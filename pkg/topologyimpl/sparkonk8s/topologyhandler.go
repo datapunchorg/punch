@@ -115,7 +115,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		})
 
 		deployment.AddStep("minikubeStart", "Start Minikube Cluster", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
-			output, err := resource.MinikubeExec("start")
+			output, err := resource.MinikubeExec("start") // TODO add memory, e.g. minikube start --memory 4096
 			return framework.DeploymentStepOutput{"output": output}, err
 		})
 
