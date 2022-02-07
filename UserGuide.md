@@ -101,7 +101,7 @@ export LB_NAME=xxx.us-west-1.elb.amazonaws.com
 Following are some examples to run sparkcli (please replace "password1" with you own password):
 
 ```
-./sparkcli --user user1 --password password1 --insecure --url https://$LB_NAME/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --image ghcr.io/datapunchorg/spark:pyspark-3.2.1-1643336295 --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.1.1.jar
+./sparkcli --user user1 --password password1 --insecure --url https://$LB_NAME/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --image ghcr.io/datapunchorg/spark:spark-3.2.1-1643336295 --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar
 
 ./sparkcli --user user1 --password password1 --insecure --url https://$LB_NAME/sparkapi/v1 status your_submission_id
 
