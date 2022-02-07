@@ -27,6 +27,8 @@
 ./punch uninstall SparkOnK8s --set apiUserPassword=password1 --env withMinikube=true
 ```
 
+## Run punch on AWS
+
 ### Set up AWS environment
 
 1. Create AWS account, then download AWS Command Line Interface (https://aws.amazon.com/cli/).
@@ -36,6 +38,7 @@
 ```
 aws configure
 ```
+
 ### How to install SparkOnK8s on AWS
 
 1. Unzip the zip file from Punch, and enter that folder in your terminal.
