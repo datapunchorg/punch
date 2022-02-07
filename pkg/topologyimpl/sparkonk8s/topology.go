@@ -44,7 +44,8 @@ const (
 
 	CmdEnvHelmExecutable = "helmExecutable"
 	CmdEnvIgnoreCreateEKS = "ignoreCreateEKS"
-	CmdEnvNginxHelmChart = "nginxHelmChart"
+	CmdEnvWithMinikube    = "withMinikube"
+	CmdEnvNginxHelmChart  = "nginxHelmChart"
 	CmdEnvSparkOperatorHelmChart = "sparkOperatorHelmChart"
 	CmdEnvKubeConfig = "kubeConfig"
 

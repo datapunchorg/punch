@@ -107,8 +107,23 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 	}
 
 	kubelib.CheckHelmOrFatal(commandEnvironment.Get(CmdEnvHelmExecutable))
+    if commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
+		commandEnvironment.Set(CmdEnvKubeConfig, kubelib.GetKubeConfigPath())
+		deployment.AddStep("minikubeProfile", "Set Minikube Profile", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
+			output, err := resource.MinikubeExec("profile", sparkTopology.Spec.EKS.ClusterName)
+			return framework.DeploymentStepOutput{"output": output}, err
+		})
 
-	if !commandEnvironment.GetBoolOrElse(CmdEnvIgnoreCreateEKS, false) {
+		deployment.AddStep("minikubeStart", "Start Minikube Cluster", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
+			output, err := resource.MinikubeExec("start")
+			return framework.DeploymentStepOutput{"output": output}, err
+		})
+
+		deployment.AddStep("minikubeStatus", "Check Minikube Status", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
+			output, err := resource.MinikubeExec("status")
+			return framework.DeploymentStepOutput{"output": output}, err
+		})
+	} else if !commandEnvironment.GetBoolOrElse(CmdEnvIgnoreCreateEKS, false) {
 		deployment.AddStep("createS3Bucket", "Create S3 bucket", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 			sparkTopology := t.(*SparkTopology)
 			err := awslib.CreateS3Bucket(sparkTopology.Spec.Region, sparkTopology.Spec.S3BucketName)
@@ -168,30 +183,48 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
 	sparkTopology := topology.(*SparkTopology)
 
+	commandEnvironment := framework.CreateCommandEnvironment(sparkTopology.Metadata.CommandEnvironment)
 	deployment := framework.NewDeployment()
 
-	deployment.AddStep("deleteNodeGroups", "Delete Node Groups", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
-		sparkTopology := t.(*SparkTopology)
-		for _, nodeGroup := range sparkTopology.Spec.NodeGroups {
-			err := awslib.DeleteNodeGroup(sparkTopology.Spec.Region, sparkTopology.Spec.EKS.ClusterName, nodeGroup.Name)
-			if err != nil {
-				return framework.NewDeploymentStepOutput(), err
+	if commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
+		deployment.AddStep("minikubeProfile", "Set Minikube Profile", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
+			output, err := resource.MinikubeExec("profile", sparkTopology.Spec.EKS.ClusterName)
+			return framework.DeploymentStepOutput{"output": output}, err
+		})
+
+		deployment.AddStep("minikubeStop", "Stop Minikube Cluster", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
+			output, err := resource.MinikubeExec("stop")
+			return framework.DeploymentStepOutput{"output": output}, err
+		})
+
+		deployment.AddStep("minikubeDelete", "Delete Minikube Cluster", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
+			output, err := resource.MinikubeExec("delete")
+			return framework.DeploymentStepOutput{"output": output}, err
+		})
+	} else {
+		deployment.AddStep("deleteNodeGroups", "Delete Node Groups", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
+			sparkTopology := t.(*SparkTopology)
+			for _, nodeGroup := range sparkTopology.Spec.NodeGroups {
+				err := awslib.DeleteNodeGroup(sparkTopology.Spec.Region, sparkTopology.Spec.EKS.ClusterName, nodeGroup.Name)
+				if err != nil {
+					return framework.NewDeploymentStepOutput(), err
+				}
 			}
-		}
-		return framework.NewDeploymentStepOutput(), nil
-	})
+			return framework.NewDeploymentStepOutput(), nil
+		})
 
-	deployment.AddStep("deleteLoadBalancer", "Delete Load Balancer", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
-		sparkTopology := t.(*SparkTopology)
-		err := awslib.DeleteLoadBalancerOnEKS(sparkTopology.Spec.Region, sparkTopology.Spec.VpcId, sparkTopology.Spec.EKS.ClusterName, "ingress-nginx")
-		return framework.NewDeploymentStepOutput(), err
-	})
+		deployment.AddStep("deleteLoadBalancer", "Delete Load Balancer", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
+			sparkTopology := t.(*SparkTopology)
+			err := awslib.DeleteLoadBalancerOnEKS(sparkTopology.Spec.Region, sparkTopology.Spec.VpcId, sparkTopology.Spec.EKS.ClusterName, "ingress-nginx")
+			return framework.NewDeploymentStepOutput(), err
+		})
 
-	deployment.AddStep("deleteEKSCluster", "Delete EKS Cluster", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
-		sparkTopology := t.(*SparkTopology)
-		err := awslib.DeleteEKSCluster(sparkTopology.Spec.Region, sparkTopology.Spec.EKS.ClusterName)
-		return framework.NewDeploymentStepOutput(), err
-	})
+		deployment.AddStep("deleteEKSCluster", "Delete EKS Cluster", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
+			sparkTopology := t.(*SparkTopology)
+			err := awslib.DeleteEKSCluster(sparkTopology.Spec.Region, sparkTopology.Spec.EKS.ClusterName)
+			return framework.NewDeploymentStepOutput(), err
+		})
+	}
 
 	err := deployment.RunSteps(sparkTopology)
 	return deployment.GetOutput(), err
@@ -262,6 +295,7 @@ func createSparkTopologyTemplate() SparkTopology {
 
 	topology.Metadata.CommandEnvironment[CmdEnvHelmExecutable] = "{{ or .Env.helmExecutable `helm` }}"
 	topology.Metadata.CommandEnvironment[CmdEnvIgnoreCreateEKS] = "{{ or .Env.ignoreCreateEKS `false` }}"
+	topology.Metadata.CommandEnvironment[CmdEnvWithMinikube] = "{{ or .Env.withMinikube `false` }}"
 	topology.Metadata.CommandEnvironment[CmdEnvNginxHelmChart] = "{{ or .Env.nginxHelmChart `ingress-nginx/charts/ingress-nginx` }}"
 	topology.Metadata.CommandEnvironment[CmdEnvSparkOperatorHelmChart] = "{{ or .Env.sparkOperatorHelmChart `spark-operator-service/charts/spark-operator-chart` }}"
 	topology.Metadata.CommandEnvironment[CmdEnvKubeConfig] = "{{ or .Env.kubeConfig `` }}"
