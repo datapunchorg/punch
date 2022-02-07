@@ -1,6 +1,32 @@
 
 ## Pre-requisite to Run punch command
 
+### Install Helm
+
+1. See https://helm.sh/docs/intro/install/
+
+## Run punch on Minikube
+
+### How to Install Minikube
+
+1. See Step 1 Installation on https://minikube.sigs.k8s.io/docs/start 
+
+### How to Install SparkOnK8s on Minikube
+
+1 Run punch command:
+
+```
+./punch install SparkOnK8s --set apiUserPassword=password1 --env withMinikube=true
+```
+
+### How to uninstall SparkOnK8s on Minikube
+
+1. Run punch command:
+
+```
+./punch uninstall SparkOnK8s --set apiUserPassword=password1 --env withMinikube=true
+```
+
 ### Set up AWS environment
 
 1. Create AWS account, then download AWS Command Line Interface (https://aws.amazon.com/cli/).
@@ -10,13 +36,6 @@
 ```
 aws configure
 ```
-
-### Install Helm
-
-1. See https://helm.sh/docs/intro/install/
-
-## Run punch command
-
 ### How to install SparkOnK8s on AWS
 
 1. Unzip the zip file from Punch, and enter that folder in your terminal.
@@ -61,14 +80,28 @@ Please check the output from "punch install" command.
 sparkcli is a command line tool to submit Spark application and check status/log. 
 It is packaged into the punch zip file, and you could find sparkcli program there.
 
+If SparkOnK8s is installed on minikube, you will need to establish a tunnel in a separate shell window:
+
+```
+minikube tunnel
+```
+Then you can set the load balancer domain name as below:
+```
+export LB_NAME=localhost
+```
+If it is installed on AWS, you should find ELB domain name from command output and set as below:
+````
+export LB_NAME=xxx.us-west-1.elb.amazonaws.com
+```
+
 Following are some examples to run sparkcli:
 
 ```
-./sparkcli --user user1 --password your_password --insecure --url https://xxx.us-west-1.elb.amazonaws.com/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --image ghcr.io/datapunchorg/spark:pyspark-3.2.1-1643336295 --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.1.1.jar
+./sparkcli --user user1 --password your_password --insecure --url https://$LB_NAME/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --image ghcr.io/datapunchorg/spark:pyspark-3.2.1-1643336295 --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.1.1.jar
 
-./sparkcli --user user1 --password your_password --insecure --url https://xxx.us-west-1.elb.amazonaws.com/sparkapi/v1 status your_submission_id
+./sparkcli --user user1 --password your_password --insecure --url https://$LB_NAME/sparkapi/v1 status your_submission_id
 
-./sparkcli --user user1 --password your_password --insecure --url https://xxx.us-west-1.elb.amazonaws.com/sparkapi/v1 log your_submission_id
+./sparkcli --user user1 --password your_password --insecure --url https://$LB_NAME/sparkapi/v1 log your_submission_id
 ```
 
 ## Advanced Usage
