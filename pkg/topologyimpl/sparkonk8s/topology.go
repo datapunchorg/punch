@@ -43,7 +43,6 @@ const (
 	FieldMaskValue = "***"
 
 	CmdEnvHelmExecutable = "helmExecutable"
-	CmdEnvIgnoreCreateEKS = "ignoreCreateEKS"
 	CmdEnvWithMinikube    = "withMinikube"
 	CmdEnvNginxHelmChart  = "nginxHelmChart"
 	CmdEnvSparkOperatorHelmChart = "sparkOperatorHelmChart"
