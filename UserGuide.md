@@ -7,9 +7,11 @@
 
 ## Run punch on Minikube
 
-### How to Install Minikube
+### Extra Pre-requisite: Install Docker and Minikube
 
-1. See Step 1 Installation on https://minikube.sigs.k8s.io/docs/start 
+1. Install Docker Desktop: https://docs.docker.com/desktop/mac/install/
+2. Increase memory to 5G in Docker Desktop: [instructions](docs/IncreaseDockerMemory.md)
+3. Install Minikube: only do step 1 "Installation" in https://minikube.sigs.k8s.io/docs/start
 
 ### How to Install SparkOnK8s on Minikube
 
@@ -29,7 +31,7 @@
 
 ## Run punch on AWS
 
-### Set up AWS environment
+### Extra Pre-requisite: Set up AWS environment
 
 1. Create AWS account, then download AWS Command Line Interface (https://aws.amazon.com/cli/).
 
@@ -89,7 +91,12 @@ If SparkOnK8s is installed on minikube, you will need to establish a tunnel in a
 ```
 minikube tunnel
 ```
+
+`minikube tunnel` may ask your computer account password since it needs privilege to expose network ports. Please 
+wait until `minikube tunnel` starts successfully.
+
 Then you can set the load balancer domain name as below:
+
 ```
 export LB_NAME=localhost
 ```
@@ -151,7 +158,7 @@ submit --image ghcr.io/datapunchorg/spark:pyspark-3.1-1643212945 --spark-version
 --conf spark.sql.catalog.my_catalog.jdbc.verifyServerCertificate=false \
 --conf spark.sql.catalog.my_catalog.jdbc.useSSL=true \
 --conf spark.sql.catalog.my_catalog.jdbc.user=user1 \
---conf spark.sql.catalog.my_catalog.jdbc.password=xxx \
+--conf spark.sql.catalog.my_catalog.jdbc.password=password1 \
 pyspark-iceberg-example.py
 ```
 

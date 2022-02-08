@@ -31,6 +31,11 @@ import (
 	"text/template"
 )
 
+const (
+	sparkcliJavaExampleCommandFormat = `./sparkcli --user %s --password %s --insecure --url https://%s/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --image ghcr.io/datapunchorg/spark:spark-3.2.1-1643336295 --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar`
+	sparkcliPythonExampleCommandFormat = `./sparkcli --user %s --password %s --insecure --url https://%s/sparkapi/v1 submit --image ghcr.io/datapunchorg/spark:pyspark-3.2.1-1643336295 --spark-version 3.2 --driver-memory 512m --executor-memory 512m %s`
+)
+
 func init() {
 	framework.DefaultTopologyHandlerManager.AddHandler(KindSparkTopology, &TopologyHandler{})
 }
@@ -110,20 +115,20 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
     if commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
 		commandEnvironment.Set(CmdEnvKubeConfig, kubelib.GetKubeConfigPath())
 		deployment.AddStep("minikubeProfile", "Set Minikube Profile", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
-			output, err := resource.MinikubeExec("profile", sparkTopology.Spec.EKS.ClusterName)
-			return framework.DeploymentStepOutput{"output": output}, err
+			_, err := resource.MinikubeExec("profile", sparkTopology.Spec.EKS.ClusterName)
+			return framework.NewDeploymentStepOutput(), err
 		})
 
 		deployment.AddStep("minikubeStart", "Start Minikube Cluster", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
-			output, err := resource.MinikubeExec("start") // TODO add memory, e.g. minikube start --memory 4096
-			return framework.DeploymentStepOutput{"output": output}, err
+			_, err := resource.MinikubeExec("start", "--memory", "4096") // TODO make memory size configurable
+			return framework.NewDeploymentStepOutput(), err
 		})
 
 		deployment.AddStep("minikubeStatus", "Check Minikube Status", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
-			output, err := resource.MinikubeExec("status")
-			return framework.DeploymentStepOutput{"output": output}, err
+			_, err := resource.MinikubeExec("status")
+			return framework.NewDeploymentStepOutput(), err
 		})
-	} else if !commandEnvironment.GetBoolOrElse(CmdEnvIgnoreCreateEKS, false) {
+	} else {
 		deployment.AddStep("createS3Bucket", "Create S3 bucket", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 			sparkTopology := t.(*SparkTopology)
 			err := awslib.CreateS3Bucket(sparkTopology.Spec.Region, sparkTopology.Spec.S3BucketName)
@@ -188,18 +193,18 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 
 	if commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
 		deployment.AddStep("minikubeProfile", "Set Minikube Profile", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
-			output, err := resource.MinikubeExec("profile", sparkTopology.Spec.EKS.ClusterName)
-			return framework.DeploymentStepOutput{"output": output}, err
+			_, err := resource.MinikubeExec("profile", sparkTopology.Spec.EKS.ClusterName)
+			return framework.NewDeploymentStepOutput(), err
 		})
 
 		deployment.AddStep("minikubeStop", "Stop Minikube Cluster", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
-			output, err := resource.MinikubeExec("stop")
-			return framework.DeploymentStepOutput{"output": output}, err
+			_, err := resource.MinikubeExec("stop")
+			return framework.NewDeploymentStepOutput(), err
 		})
 
 		deployment.AddStep("minikubeDelete", "Delete Minikube Cluster", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
-			output, err := resource.MinikubeExec("delete")
-			return framework.DeploymentStepOutput{"output": output}, err
+			_, err := resource.MinikubeExec("delete")
+			return framework.NewDeploymentStepOutput(), err
 		})
 	} else {
 		deployment.AddStep("deleteNodeGroups", "Delete Node Groups", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
@@ -233,14 +238,34 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 func (t *TopologyHandler) PrintUsageExample(topology framework.Topology, deploymentOutput framework.DeploymentOutput) {
 	sparkTopology := topology.(*SparkTopology)
 
-	var loadBalancerUrls []string
-	loadBalancerUrls = deploymentOutput.Output()["deployNginxIngressController"]["loadBalancerUrls"].([]string)
-	if len(loadBalancerUrls) > 0 {
-		printExampleCommandToRunSpark(loadBalancerUrls[0], *sparkTopology)
+	if _, ok := deploymentOutput.Output()["minikubeStart"]; ok {
+		printExampleCommandToRunSparkOnMinikube(*sparkTopology)
+	} else {
+		var loadBalancerUrls []string
+		loadBalancerUrls = deploymentOutput.Output()["deployNginxIngressController"]["loadBalancerUrls"].([]string)
+		if len(loadBalancerUrls) > 0 {
+			printExampleCommandToRunSparkOnAws(loadBalancerUrls[0], *sparkTopology)
+		} else {
+			log.Printf("Did not find load balancer url, cannot print usage example command")
+		}
 	}
 }
 
-func printExampleCommandToRunSpark(url string, topology SparkTopology) {
+func printExampleCommandToRunSparkOnMinikube(topology SparkTopology) {
+	userName := topology.Spec.ApiGateway.UserName
+	userPassword := topology.Spec.ApiGateway.UserPassword
+	url := "localhost"
+
+	str := `
+------------------------------
+Example using sparkcli to run Java Spark application (IMPORTANT: this contains password, please not print out this if there is security concern):
+------------------------------
+Step 1: Run "minikube tunnel" in another terminal to set up tunnel to minikube. Wait until "minikube tunnel" started.
+Step 2: Run: ` + sparkcliJavaExampleCommandFormat
+	log.Printf(str, userName, userPassword, url)
+}
+
+func printExampleCommandToRunSparkOnAws(url string, topology SparkTopology) {
 	userName := topology.Spec.ApiGateway.UserName
 	userPassword := topology.Spec.ApiGateway.UserPassword
 
@@ -276,11 +301,19 @@ if __name__ == "__main__":
 		return
 	}
 
-	str2 := `./sparkcli --user %s --password %s --insecure --url https://%s/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --image ghcr.io/datapunchorg/spark:spark-3.2.1-1643336295 --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar`
-	log.Printf("\n------------------------------\nExample using sparkcli to run Java Spark application (IMPORTANT: this contains password, please not print out this if there is security concern):\n------------------------------\n" + str2, userName, userPassword, url)
+	str := `
+------------------------------
+Example using sparkcli to run Java Spark application (IMPORTANT: this contains password, please not print out this if there is security concern):
+------------------------------
+` + sparkcliJavaExampleCommandFormat
+	log.Printf(str, userName, userPassword, url)
 
-	str3 := `./sparkcli --user %s --password %s --insecure --url https://%s/sparkapi/v1 submit --image ghcr.io/datapunchorg/spark:pyspark-3.2.1-1643336295 --spark-version 3.2 --driver-memory 512m --executor-memory 512m %s`
-	log.Printf("\n------------------------------\nAnother example using sparkcli to run Python Spark application from local file (IMPORTANT: this contains password, please not print out this if there is security concern):\n------------------------------\n" + str3, userName, userPassword, url, file.Name())
+	anotherStr := `
+------------------------------
+Another example using sparkcli to run Python Spark application from local file (IMPORTANT: this contains password, please not print out this if there is security concern):
+------------------------------
+` + sparkcliPythonExampleCommandFormat
+	log.Printf(anotherStr, userName, userPassword, url, file.Name())
 }
 
 func createSparkTopologyTemplate() SparkTopology {
@@ -294,7 +327,6 @@ func createSparkTopologyTemplate() SparkTopology {
 	topology.Spec.ApiGateway.UserPassword = "{{ .Values.apiUserPassword }}"
 
 	topology.Metadata.CommandEnvironment[CmdEnvHelmExecutable] = "{{ or .Env.helmExecutable `helm` }}"
-	topology.Metadata.CommandEnvironment[CmdEnvIgnoreCreateEKS] = "{{ or .Env.ignoreCreateEKS `false` }}"
 	topology.Metadata.CommandEnvironment[CmdEnvWithMinikube] = "{{ or .Env.withMinikube `false` }}"
 	topology.Metadata.CommandEnvironment[CmdEnvNginxHelmChart] = "{{ or .Env.nginxHelmChart `ingress-nginx/charts/ingress-nginx` }}"
 	topology.Metadata.CommandEnvironment[CmdEnvSparkOperatorHelmChart] = "{{ or .Env.sparkOperatorHelmChart `spark-operator-service/charts/spark-operator-chart` }}"
