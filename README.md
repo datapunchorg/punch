@@ -12,13 +12,13 @@ to submit Spark application.
 
 ## How to build (on MacBook)
 
-The following command will create a zip file for Punch.
+The following command will create `dist` folder and `dist.zip` file for Punch.
 
 ```
-make
+make release
 ```
 
-Then check [User Guide](UserGuide.md) to see how to run punch command.
+Go to `dist` folder, then check [User Guide](UserGuide.md) to see how to run punch command.
 
 ## TODO
 

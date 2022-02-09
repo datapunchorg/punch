@@ -84,9 +84,16 @@ line tool.
 ## What is sparkcli command, and how to use it
 
 sparkcli is a command line tool to submit Spark application and check status/log. 
-It is packaged into the punch zip file, and you could find sparkcli program there.
+It is packaged into the punch `dist.zip` file if you build punch by `make release`. You could also use 
+[Homebrew](https://brew.sh) to install it on Mac:
 
-If SparkOnK8s is installed on minikube, you will need to establish a tunnel in a separate shell window:
+```
+brew tap datapunchorg/sparkcli
+brew install sparkcli
+```
+
+If SparkOnK8s is installed on minikube, you will need to establish a tunnel in a separate shell window before running
+`sparkcli`:
 
 ```
 minikube tunnel
@@ -101,12 +108,12 @@ Then you can set the load balancer domain name as below:
 export LB_NAME=localhost
 ```
 
-If SparkOnK8s is installed on AWS, you should find ELB domain name from command output and set as below:
+If SparkOnK8s is installed on AWS, you should find ELB domain name from `punch install` command output, then set as below:
 ```
 export LB_NAME=xxx.us-west-1.elb.amazonaws.com
 ```
 
-Following are some examples to run sparkcli (please replace "password1" with you own password):
+After upper steps, now you could follow below examples to run sparkcli:
 
 ```
 ./sparkcli --user user1 --password password1 --insecure --url https://$LB_NAME/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --image ghcr.io/datapunchorg/spark:spark-3.2.1-1643336295 --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar
