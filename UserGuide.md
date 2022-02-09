@@ -18,7 +18,7 @@
 1 Run punch command:
 
 ```
-./punch install SparkOnK8s --set apiUserPassword=password1 --env withMinikube=true
+./punch install SparkOnK8s --env withMinikube=true --set apiUserPassword=password1 --print-usage-example
 ```
 
 ### How to uninstall SparkOnK8s on Minikube
@@ -26,7 +26,7 @@
 1. Run punch command:
 
 ```
-./punch uninstall SparkOnK8s --set apiUserPassword=password1 --env withMinikube=true
+./punch uninstall SparkOnK8s --env withMinikube=true --set apiUserPassword=password1
 ```
 
 ## Run punch on AWS
