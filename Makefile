@@ -36,7 +36,7 @@ GO111MODULE := on
 export GO111MODULE
 
 all:
-	$(MAKE) -C $(dir $(BASE_DIR)) clean test build release
+	$(MAKE) -C $(dir $(BASE_DIR)) clean test build
 
 # Build binaries
 .PHONY: build
@@ -54,11 +54,14 @@ test:
 .PHONY: release
 release:
 	@echo "generating release ..."
-	cp third-party/bin/sparkcli dist/
+	mkdir -p dist
 	cp -R third-party/helm-charts/ingress-nginx dist/ingress-nginx/
 	cp -R third-party/helm-charts/spark-operator-service dist/spark-operator-service/
 	cp hack/pyspark-example.py dist/
 	cp hack/pyspark-iceberg-example.py dist/
+	curl -L -o dist/sparkcli.tar.gz https://github.com/datapunchorg/spark-on-k8s-operator/releases/download/v0.1.0/sparkcli.tar.gz
+	tar xzvf dist/sparkcli.tar.gz -C dist
+	rm dist/sparkcli.tar.gz
 	zip -r dist.zip dist
 
 # Clean up
