@@ -14,7 +14,7 @@ To fix this issue, you could increase memory for `Docker Desktop`. See following
 
 ![Docker Desktop Menu](DockerDescktopMenu.png)
 
-2. Click `Resources`, and adjust memory to 5GB:
+2. Click `Resources`, and adjust memory to 5GB, then click "Apply & Restart":
 
 ![Resources -> Memory 5GB](DockerDesktopPreferencesResourcesMemory5GB.png)
 

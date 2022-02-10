@@ -15,7 +15,7 @@
 
 ### How to Install SparkOnK8s on Minikube
 
-1 Run punch command:
+1. Run punch command:
 
 ```
 ./punch install SparkOnK8s --env withMinikube=true --set apiUserPassword=password1 --print-usage-example
