@@ -46,7 +46,7 @@ Please check the console output. Also see following section for how to run Spark
 
 ### Run Spark Application
 
-Establish a tunnel in a separate shell window:
+Establish a tunnel in another separate shell window:
 
 ```
 minikube tunnel
@@ -55,18 +55,11 @@ minikube tunnel
 `minikube tunnel` may ask your computer account password since it needs privilege to expose network ports. Please 
 wait until `minikube tunnel` starts successfully.
 
-Then set the load balancer domain name as below:
+Then Run `sparkcli`:
 
 ```
-export LB_NAME=localhost
+./sparkcli --user user1 --password password1 --insecure --url https://localhost/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --image ghcr.io/datapunchorg/spark:spark-3.2.1-1643336295 --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar
 ```
-
-Run sparkcli:
-
-```
-./sparkcli --user user1 --password password1 --insecure --url https://$LB_NAME/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --image ghcr.io/datapunchorg/spark:spark-3.2.1-1643336295 --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar
-```
-
 
 ### Uninstall SparkOnK8s on Minikube
 

@@ -1,6 +1,6 @@
 ## Note
 
-You may hit insufficient memory issue when starting minikube with more memory, like following:
+You may hit insufficient memory issue with Minikube, like following:
 
 ```
 ❌  Exiting due to MK_USAGE: Docker Desktop has only 1985MB memory but you specified 4096MB

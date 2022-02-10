@@ -20,6 +20,12 @@ make release
 
 Go to `dist` folder, then check [User Guide](UserGuide.md) to see how to run punch command.
 
+## Quick Start
+
+You could use `punch` to deploy Spark on [Minikube](https://minikube.sigs.k8s.io/docs/start/), and run Spark application from there.
+
+For details, go to `dist` folder in your shell terminal, then follow [Quick Start Guide](QuickStart_Minikube.md).
+
 ## TODO
 
 1. Attach tag (e.g. punch-topology=xxx) to AWS resources created by punch
