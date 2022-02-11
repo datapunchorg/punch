@@ -21,9 +21,17 @@ Go to `dist` folder, then check [User Guide](UserGuide.md) to see how to run pun
 
 You could build this project (`make release`) and use `punch` to deploy Spark on [Minikube](https://minikube.sigs.k8s.io/docs/start/), and run Spark application for a quick try.
 
-You could also use Homebrew to install `punch` and have a try.
-
 See [Quick Start Guide](QuickStart_Minikube.md) for details.
+
+## Install using Homebrew
+
+```
+brew tap datapunchorg/punch
+brew install punch
+
+brew tap datapunchorg/sparkcli
+brew install sparkcli
+```
 
 ## TODO
 
