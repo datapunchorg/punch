@@ -1,3 +1,4 @@
+Note: this document only for running `punch` on Mac.
 
 ## Pre-requisite (One Time Setting)
 
@@ -30,6 +31,16 @@ Only do step 1 "Installation" in https://minikube.sigs.k8s.io/docs/start
 ```
 brew install minikube
 ```
+
+### Install Go Program Language
+
+https://go.dev/doc/install
+
+### Get punch Distribution
+
+Run `make release` in the root of this project, it will generate `dist` folder which contains `punch` and `sparkcli` binaries.
+
+Open a terminal, go to `dist` folder.
 
 ## Run Spark Application
 
