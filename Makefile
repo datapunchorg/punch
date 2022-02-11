@@ -52,7 +52,7 @@ test:
 
 # Generate release
 .PHONY: release
-release:
+release: build
 	@echo "generating release ..."
 	mkdir -p dist
 	cp -R third-party/helm-charts/ingress-nginx dist/ingress-nginx/
