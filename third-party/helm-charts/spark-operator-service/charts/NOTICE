@@ -1,6 +1,6 @@
 I. Included Software
 
-This folder contains files copied from: https://github.com/GoogleCloudPlatform/spark-on-k8s-operator
+This folder contains files copied (and maybe modified) from: https://github.com/GoogleCloudPlatform/spark-on-k8s-operator.
 
 II. License Summary
 - Apache License 2.0

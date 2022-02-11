@@ -1,6 +1,3 @@
-## Note
-
-This project is not open sourced yet. We are still working on the progess to open source the project. Please not share the code publicly.
 
 ## Introduction
 
@@ -22,9 +19,11 @@ Go to `dist` folder, then check [User Guide](UserGuide.md) to see how to run pun
 
 ## Quick Start
 
-You could use `punch` to deploy Spark on [Minikube](https://minikube.sigs.k8s.io/docs/start/), and run Spark application from there.
+You could build this project (`make release`) and use `punch` to deploy Spark on [Minikube](https://minikube.sigs.k8s.io/docs/start/), and run Spark application for a quick try.
 
-For details, go to `dist` folder in your shell terminal, then follow [Quick Start Guide](QuickStart_Minikube.md).
+You could also use Homebrew to install `punch` and have a try.
+
+See [Quick Start Guide](QuickStart_Minikube.md) for details.
 
 ## TODO
 
@@ -34,4 +33,4 @@ For details, go to `dist` folder in your shell terminal, then follow [Quick Star
 4. Allow patch topology like --patch foo.field1=value1
 5. Allow set values by file like --values values.yaml
 6. Return HTTP 404 when sparkcli getting a non-existing application
-7. Get application error message from Spark operator
+7. Get application error message from Spark Operator
