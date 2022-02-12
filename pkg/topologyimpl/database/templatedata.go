@@ -33,6 +33,3 @@ func CreateDatabaseTemplateData(data framework.TemplateData) DatabaseTemplateDat
 	}
 	return result
 }
-
-
-

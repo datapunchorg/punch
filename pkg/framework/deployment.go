@@ -30,13 +30,13 @@ type Deployment interface {
 
 type DeploymentImpl struct {
 	context DeploymentContext
-	steps []DeploymentStep
+	steps   []DeploymentStep
 }
 
 func NewDeployment() DeploymentImpl {
 	return DeploymentImpl{
 		context: NewDefaultDeploymentContext(),
-		steps: []DeploymentStep{},
+		steps:   []DeploymentStep{},
 	}
 }
 
@@ -46,9 +46,9 @@ func (d *DeploymentImpl) GetContext() DeploymentContext {
 
 func (d *DeploymentImpl) AddStep(name string, description string, run DeploymentStepFunc) {
 	step := deploymentStepWrapper{
-		name: name,
+		name:        name,
 		description: description,
-		run: run,
+		run:         run,
 	}
 	d.steps = append(d.steps, step)
 }
@@ -68,7 +68,7 @@ func (d *DeploymentImpl) RunSteps(topology Topology) error {
 
 func (d *DeploymentImpl) GetOutput() DeploymentOutput {
 	result := DeploymentOutputImpl{
-		steps: []string{},
+		steps:  []string{},
 		output: map[string]DeploymentStepOutput{},
 	}
 	names := d.getStepNames()

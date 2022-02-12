@@ -25,4 +25,3 @@ func TestGetHandler(t *testing.T) {
 	manager := TopologyHandlerManager{}
 	assert.Equal(t, nil, manager.GetHandler("invalid123"))
 }
-

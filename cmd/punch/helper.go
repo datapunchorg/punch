@@ -31,4 +31,3 @@ func MarshalTopology(topology framework.Topology) string {
 	}
 	return string(topologyBytes)
 }
-

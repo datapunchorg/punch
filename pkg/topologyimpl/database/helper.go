@@ -46,20 +46,20 @@ func CreateDatabase(databaseSpec DatabaseTopologySpec) (*rds.DBCluster, error) {
 
 	svc := rds.New(session)
 	input := &rds.CreateDBClusterInput{
-		AvailabilityZones: aws.StringSlice(databaseSpec.AvailabilityZones),
-		BackupRetentionPeriod:       aws.Int64(1),
-		DBClusterIdentifier:         aws.String(strings.ToLower(databaseId)),
+		AvailabilityZones:     aws.StringSlice(databaseSpec.AvailabilityZones),
+		BackupRetentionPeriod: aws.Int64(1),
+		DBClusterIdentifier:   aws.String(strings.ToLower(databaseId)),
 		// DBClusterParameterGroupName: aws.String("parametergroup-01"),
-		DatabaseName:                aws.String(normalizeDatabaseName(databaseId)),
-		Engine:                      aws.String("aurora"),
-		EngineVersion:               aws.String("5.6.10a"),
-		EngineMode:                  aws.String("serverless"),
-		MasterUsername:              aws.String(databaseSpec.MasterUserName),
-		MasterUserPassword:          aws.String(databaseSpec.MasterUserPassword),
-		Port:                        aws.Int64(3306),
-		StorageEncrypted:            aws.Bool(true),
-		EnableHttpEndpoint:          aws.Bool(true),
-		VpcSecurityGroupIds:         securityGroupIds,
+		DatabaseName:        aws.String(normalizeDatabaseName(databaseId)),
+		Engine:              aws.String("aurora"),
+		EngineVersion:       aws.String("5.6.10a"),
+		EngineMode:          aws.String("serverless"),
+		MasterUsername:      aws.String(databaseSpec.MasterUserName),
+		MasterUserPassword:  aws.String(databaseSpec.MasterUserPassword),
+		Port:                aws.Int64(3306),
+		StorageEncrypted:    aws.Bool(true),
+		EnableHttpEndpoint:  aws.Bool(true),
+		VpcSecurityGroupIds: securityGroupIds,
 	}
 	result, err := svc.CreateDBCluster(input)
 	if err != nil {
@@ -136,8 +136,8 @@ func CreateDatabase(databaseSpec DatabaseTopologySpec) (*rds.DBCluster, error) {
 			return false, nil
 		}
 	},
-	20 * time.Minute,
-	10 * time.Second)
+		20*time.Minute,
+		10*time.Second)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get database %s: %s", databaseId, err.Error())
@@ -181,34 +181,34 @@ func DeleteDatabase(region string, databaseId string) error {
 	log.Printf("Sent request to delete database %s in region %s", databaseId, region)
 
 	err = common.RetryUntilTrue(func() (bool, error) {
-			describeDBClustersOutput, err := svc.DescribeDBClusters(&rds.DescribeDBClustersInput{
-				DBClusterIdentifier: aws.String(databaseId),
-			})
-			if err != nil {
-				if aerr, ok := err.(awserr.Error); ok {
-					if aerr.Code() == rds.ErrCodeDBClusterNotFoundFault {
-						log.Printf("Database %s does not exist in region %s, finish deleting", databaseId, region)
-						return true, nil
-					} else {
-						return false, fmt.Errorf("failed to get DB cluster %s: %s", databaseId, err.Error())
-					}
+		describeDBClustersOutput, err := svc.DescribeDBClusters(&rds.DescribeDBClustersInput{
+			DBClusterIdentifier: aws.String(databaseId),
+		})
+		if err != nil {
+			if aerr, ok := err.(awserr.Error); ok {
+				if aerr.Code() == rds.ErrCodeDBClusterNotFoundFault {
+					log.Printf("Database %s does not exist in region %s, finish deleting", databaseId, region)
+					return true, nil
+				} else {
+					return false, fmt.Errorf("failed to get DB cluster %s: %s", databaseId, err.Error())
 				}
 			}
-			if len(describeDBClustersOutput.DBClusters) == 0 {
-				log.Printf("Database %s does not exist in region %s, finish deleting", databaseId, region)
-				return true, nil
-			}
-			if len(describeDBClustersOutput.DBClusters) > 1 {
-				return false, fmt.Errorf("failed to get database %s: got %d databases when listing by database id", databaseId, len(describeDBClustersOutput.DBClusters))
-			}
-			if describeDBClustersOutput.DBClusters[0] == nil {
-				return false, fmt.Errorf("failed to get database %s: got nil pointer when listing by database id", databaseId)
-			}
-			log.Printf("Database %s still exists in region %s, waiting", databaseId, region)
-			return false, nil
-		},
-		20 * time.Minute,
-		10 * time.Second)
+		}
+		if len(describeDBClustersOutput.DBClusters) == 0 {
+			log.Printf("Database %s does not exist in region %s, finish deleting", databaseId, region)
+			return true, nil
+		}
+		if len(describeDBClustersOutput.DBClusters) > 1 {
+			return false, fmt.Errorf("failed to get database %s: got %d databases when listing by database id", databaseId, len(describeDBClustersOutput.DBClusters))
+		}
+		if describeDBClustersOutput.DBClusters[0] == nil {
+			return false, fmt.Errorf("failed to get database %s: got nil pointer when listing by database id", databaseId)
+		}
+		log.Printf("Database %s still exists in region %s, waiting", databaseId, region)
+		return false, nil
+	},
+		20*time.Minute,
+		10*time.Second)
 
 	if err != nil {
 		return fmt.Errorf("failed to check database %s: %s", databaseId, err.Error())

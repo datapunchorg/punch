@@ -38,12 +38,11 @@ func CreateSession(region string) *session.Session {
 func CreateDefaultSession() *session.Session {
 	session := session.Must(
 		session.NewSession(
-			&aws.Config{
-			}))
+			&aws.Config{}))
 	return session
 }
 
-func GetCurrentAccount(session client.ConfigProvider) (string, error){
+func GetCurrentAccount(session client.ConfigProvider) (string, error) {
 	stsClient := sts.New(session)
 
 	getCallerIdentityOutput, err := stsClient.GetCallerIdentity(&sts.GetCallerIdentityInput{})

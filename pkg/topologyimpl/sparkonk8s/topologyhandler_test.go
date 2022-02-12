@@ -53,7 +53,7 @@ func TestResolveTopology(t *testing.T) {
 	handler := &TopologyHandler{}
 	topology, err := handler.Generate()
 	env := map[string]string{
-		"nginxHelmChart": "../../../third-party/helm-charts/ingress-nginx/charts/ingress-nginx",
+		"nginxHelmChart":         "../../../third-party/helm-charts/ingress-nginx/charts/ingress-nginx",
 		"sparkOperatorHelmChart": "../../../third-party/helm-charts/spark-operator-service/charts/spark-operator-chart",
 	}
 	values := map[string]string{

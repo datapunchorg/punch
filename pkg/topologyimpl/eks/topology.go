@@ -25,41 +25,41 @@ import (
 
 const (
 	ToBeReplacedS3BucketName           = "todo_use_your_own_bucket_name"
-	DefaultInstanceType = "t3.large"
-	DefaultNodeGroupSize = 4
+	DefaultInstanceType                = "t3.large"
+	DefaultNodeGroupSize               = 4
 	DefaultNginxIngressHelmInstallName = "ingress-nginx"
-	DefaultNginxIngressNamespace = "ingress-nginx"
-	DefaultNginxEnableHttp = true
-	DefaultNginxEnableHttps = true
+	DefaultNginxIngressNamespace       = "ingress-nginx"
+	DefaultNginxEnableHttp             = true
+	DefaultNginxEnableHttps            = true
 
 	KindEksTopology = "Eks"
 
 	CmdEnvHelmExecutable = "helmExecutable"
 	CmdEnvNginxHelmChart = "nginxHelmChart"
-	CmdEnvKubeConfig = "kubeConfig"
+	CmdEnvKubeConfig     = "kubeConfig"
 
-	DefaultVersion = "datapunch.org/v1alpha1"
-	DefaultRegion = "us-west-1"
-	DefaultNamePrefix = "my"
+	DefaultVersion        = "datapunch.org/v1alpha1"
+	DefaultRegion         = "us-west-1"
+	DefaultNamePrefix     = "my"
 	DefaultHelmExecutable = "helm"
 )
 
 type EksTopology struct {
-	ApiVersion string `json:"apiVersion" yaml:"apiVersion"`
-	Kind     string            `json:"kind" yaml:"kind"`
-	Metadata framework.TopologyMetadata  `json:"metadata"`
-	Spec     EksTopologySpec `json:"spec"`
+	ApiVersion string                     `json:"apiVersion" yaml:"apiVersion"`
+	Kind       string                     `json:"kind" yaml:"kind"`
+	Metadata   framework.TopologyMetadata `json:"metadata"`
+	Spec       EksTopologySpec            `json:"spec"`
 }
 
 type EksTopologySpec struct {
-	NamePrefix string `json:"namePrefix" yaml:"namePrefix"`
-	Region string `json:"region"`
-	VpcId string `json:"vpcId" yaml:"vpcId"`
-	S3BucketName string                   `json:"s3BucketName" yaml:"s3BucketName"`
-	S3Policy resource.IAMPolicy `json:"s3Policy" yaml:"s3Policy"`
-	EKS           resource.EKSCluster  `json:"eks" yaml:"eks"`
-	NodeGroups    []resource.NodeGroup `json:"nodeGroups" yaml:"nodeGroups"`
-	NginxIngress  NginxIngress             `json:"nginxIngress" yaml:"nginxIngress"`
+	NamePrefix   string               `json:"namePrefix" yaml:"namePrefix"`
+	Region       string               `json:"region"`
+	VpcId        string               `json:"vpcId" yaml:"vpcId"`
+	S3BucketName string               `json:"s3BucketName" yaml:"s3BucketName"`
+	S3Policy     resource.IAMPolicy   `json:"s3Policy" yaml:"s3Policy"`
+	EKS          resource.EKSCluster  `json:"eks" yaml:"eks"`
+	NodeGroups   []resource.NodeGroup `json:"nodeGroups" yaml:"nodeGroups"`
+	NginxIngress NginxIngress         `json:"nginxIngress" yaml:"nginxIngress"`
 }
 
 type SparkApiGateway struct {
@@ -68,18 +68,18 @@ type SparkApiGateway struct {
 }
 
 type SparkOperator struct {
-	HelmInstallName string `json:"helmInstallName" yaml:"helmInstallName"`
-	Namespace string `json:"namespace" yaml:"namespace"`
-	ImageRepository string `json:"imageRepository" yaml:"imageRepository"`
-	ImageTag string `json:"imageTag" yaml:"imageTag"`
+	HelmInstallName           string `json:"helmInstallName" yaml:"helmInstallName"`
+	Namespace                 string `json:"namespace" yaml:"namespace"`
+	ImageRepository           string `json:"imageRepository" yaml:"imageRepository"`
+	ImageTag                  string `json:"imageTag" yaml:"imageTag"`
 	SparkApplicationNamespace string `json:"sparkApplicationNamespace" yaml:"sparkApplicationNamespace"`
 }
 
 type NginxIngress struct {
 	HelmInstallName string `json:"helmInstallName" yaml:"helmInstallName"`
-	Namespace string `json:"namespace" yaml:"namespace"`
-	EnableHttp bool `json:"enableHttp" yaml:"enableHttp"`
-	EnableHttps bool `json:"enableHttps" yaml:"enableHttps"`
+	Namespace       string `json:"namespace" yaml:"namespace"`
+	EnableHttp      bool   `json:"enableHttp" yaml:"enableHttp"`
+	EnableHttps     bool   `json:"enableHttps" yaml:"enableHttps"`
 }
 
 func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopology {
@@ -100,25 +100,24 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 			Notes: map[string]string{},
 		},
 		Spec: EksTopologySpec{
-			NamePrefix: namePrefix,
-			Region:     DefaultRegion,
-			VpcId: "",
+			NamePrefix:   namePrefix,
+			Region:       DefaultRegion,
+			VpcId:        "",
 			S3BucketName: s3BucketName,
-			S3Policy: resource.IAMPolicy{
-			},
+			S3Policy:     resource.IAMPolicy{},
 			EKS: resource.EKSCluster{
-				ClusterName:          k8sClusterName,
+				ClusterName: k8sClusterName,
 				ControlPlaneRole: resource.IAMRole{
-					Name:                 controlPlaneRoleName,
+					Name:                     controlPlaneRoleName,
 					AssumeRolePolicyDocument: framework.DefaultEKSAssumeRolePolicyDocument,
-					ExtraPolicyArns: []string {
+					ExtraPolicyArns: []string{
 						"arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
 					},
 				},
 				InstanceRole: resource.IAMRole{
 					Name:                     instanceRoleName,
 					AssumeRolePolicyDocument: framework.DefaultEC2AssumeRolePolicyDocument,
-					ExtraPolicyArns: []string {
+					ExtraPolicyArns: []string{
 						"arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy",
 						"arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
 						"arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy",
@@ -131,9 +130,9 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 						InboundRules: []resource.SecurityGroupInboundRule{
 							{
 								IPProtocol: "-1",
-								FromPort: -1,
-								ToPort: -1,
-								IPRanges: []string{"0.0.0.0/0"},
+								FromPort:   -1,
+								ToPort:     -1,
+								IPRanges:   []string{"0.0.0.0/0"},
 							},
 						},
 					},

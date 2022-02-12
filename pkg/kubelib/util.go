@@ -31,10 +31,10 @@ import (
 
 type KubeConfig struct {
 	ConfigFile string
-	ApiServer string
-	CAFile string
-	CA     []byte
-	KubeToken string
+	ApiServer  string
+	CAFile     string
+	CA         []byte
+	KubeToken  string
 }
 
 func (t *KubeConfig) Cleanup() error {
@@ -97,15 +97,15 @@ func CheckPodsInPhase(clientset *kubernetes.Clientset, namespace string, podName
 
 func WaitPodsInPhase(clientset *kubernetes.Clientset, namespace string, podNamePrefix string, podPhase v1.PodPhase) error {
 	return common.RetryUntilTrue(func() (bool, error) {
-			log.Printf("Checking whether pod %s* in namespace %s is in phase %s", podNamePrefix, namespace, podPhase)
-			result, err := CheckPodsInPhase(clientset, namespace, podNamePrefix, podPhase)
-			if err != nil {
-				return result, err
-			}
+		log.Printf("Checking whether pod %s* in namespace %s is in phase %s", podNamePrefix, namespace, podPhase)
+		result, err := CheckPodsInPhase(clientset, namespace, podNamePrefix, podPhase)
+		if err != nil {
 			return result, err
-		},
-		10 * time.Minute,
-		10 * time.Second)
+		}
+		return result, err
+	},
+		10*time.Minute,
+		10*time.Second)
 }
 
 func GetServiceLoadBalancerUrls(clientset *kubernetes.Clientset, namespace string, serviceName string) ([]string, error) {

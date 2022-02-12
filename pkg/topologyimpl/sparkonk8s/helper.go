@@ -105,4 +105,3 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 	output["loadBalancerUrls"] = urls
 	return output
 }
-

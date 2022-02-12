@@ -167,7 +167,7 @@ func DeleteSecurityGroupByIdIgnoreError(ec2Client *ec2.EC2, securityGroupId stri
 		}
 	},
 		maxRetryDuration,
-		10 * time.Second)
+		10*time.Second)
 
 	if err != nil {
 		log.Printf("[WARN] Failed to delete security group %s after retrying: %s", securityGroupId, err.Error())
@@ -212,7 +212,7 @@ func DeleteNodeGroup(region string, clusterName string, nodeGroupName string) er
 			log.Printf("Node group %s does not exist", nodeGroupName)
 		}
 		return !stillExists, nil
-	}, 10 * time.Minute, 30*time.Second)
+	}, 10*time.Minute, 30*time.Second)
 
 	if waitDeletedErr != nil {
 		return fmt.Errorf("failed to wait node group %s to be deleted: %s", nodeGroupName, err.Error())

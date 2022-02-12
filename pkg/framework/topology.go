@@ -30,7 +30,7 @@ type Topology interface {
 }
 
 type TopologyMetadata struct {
-	Name string `json:"name"`
+	Name               string            `json:"name"`
 	CommandEnvironment map[string]string `json:"commandEnvironment" yaml:"commandEnvironment"`
-	Notes map[string]string `json:"notes" yaml:"notes"`
+	Notes              map[string]string `json:"notes" yaml:"notes"`
 }

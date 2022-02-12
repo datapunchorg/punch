@@ -23,9 +23,9 @@ type DeploymentStep interface {
 }
 
 type deploymentStepWrapper struct {
-	name string
+	name        string
 	description string
-	run DeploymentStepFunc
+	run         DeploymentStepFunc
 }
 
 func (d deploymentStepWrapper) Name() string {
@@ -47,7 +47,3 @@ type DeploymentStepOutput map[string]interface{}
 func NewDeploymentStepOutput() DeploymentStepOutput {
 	return DeploymentStepOutput{}
 }
-
-
-
-

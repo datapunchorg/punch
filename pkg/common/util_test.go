@@ -25,6 +25,6 @@ func TestRetryUntilTrue(t *testing.T) {
 	RetryUntilTrue(func() (bool, error) {
 		return true, nil
 	},
-	0 * time.Millisecond,
-	0 * time.Millisecond)
+		0*time.Millisecond,
+		0*time.Millisecond)
 }

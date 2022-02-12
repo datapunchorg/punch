@@ -24,54 +24,54 @@ import (
 )
 
 const (
-	ToBeReplacedS3BucketName           = "todo_use_your_own_bucket_name"
-	DefaultApiUserName = "user1"
-	DefaultInstanceType = "t3.large"
-	DefaultNodeGroupSize = 3
-	DefaultOperatorImageRepository = "ghcr.io/datapunchorg/spark-on-k8s-operator"
-	DefaultSparkOperatorImageTag = "master-datapunch"
-	DefaultSparkOperatorNamespace = "spark-operator-01"
+	ToBeReplacedS3BucketName            = "todo_use_your_own_bucket_name"
+	DefaultApiUserName                  = "user1"
+	DefaultInstanceType                 = "t3.large"
+	DefaultNodeGroupSize                = 3
+	DefaultOperatorImageRepository      = "ghcr.io/datapunchorg/spark-on-k8s-operator"
+	DefaultSparkOperatorImageTag        = "master-datapunch"
+	DefaultSparkOperatorNamespace       = "spark-operator-01"
 	DefaultSparkOperatorHelmInstallName = "spark-operator-01"
-	DefaultSparkApplicationNamespace = "spark-01"
-	DefaultNginxIngressHelmInstallName = "ingress-nginx"
-	DefaultNginxIngressNamespace = "ingress-nginx"
-	DefaultNginxEnableHttp = true
-	DefaultNginxEnableHttps = true
+	DefaultSparkApplicationNamespace    = "spark-01"
+	DefaultNginxIngressHelmInstallName  = "ingress-nginx"
+	DefaultNginxIngressNamespace        = "ingress-nginx"
+	DefaultNginxEnableHttp              = true
+	DefaultNginxEnableHttps             = true
 
 	KindSparkTopology = "SparkOnK8s"
 
 	FieldMaskValue = "***"
 
-	CmdEnvHelmExecutable = "helmExecutable"
-	CmdEnvWithMinikube    = "withMinikube"
-	CmdEnvNginxHelmChart  = "nginxHelmChart"
+	CmdEnvHelmExecutable         = "helmExecutable"
+	CmdEnvWithMinikube           = "withMinikube"
+	CmdEnvNginxHelmChart         = "nginxHelmChart"
 	CmdEnvSparkOperatorHelmChart = "sparkOperatorHelmChart"
-	CmdEnvKubeConfig = "kubeConfig"
+	CmdEnvKubeConfig             = "kubeConfig"
 
-	DefaultVersion = "datapunch.org/v1alpha1"
-	DefaultRegion = "us-west-1"
-	DefaultNamePrefix = "my"
+	DefaultVersion        = "datapunch.org/v1alpha1"
+	DefaultRegion         = "us-west-1"
+	DefaultNamePrefix     = "my"
 	DefaultHelmExecutable = "helm"
 )
 
 type SparkTopology struct {
-	ApiVersion string `json:"apiVersion" yaml:"apiVersion"`
-	Kind     string            `json:"kind" yaml:"kind"`
-	Metadata framework.TopologyMetadata  `json:"metadata"`
-	Spec     SparkTopologySpec `json:"spec"`
+	ApiVersion string                     `json:"apiVersion" yaml:"apiVersion"`
+	Kind       string                     `json:"kind" yaml:"kind"`
+	Metadata   framework.TopologyMetadata `json:"metadata"`
+	Spec       SparkTopologySpec          `json:"spec"`
 }
 
 type SparkTopologySpec struct {
-	NamePrefix string `json:"namePrefix" yaml:"namePrefix"`
-	Region string `json:"region"`
-	VpcId string `json:"vpcId" yaml:"vpcId"`
-	S3BucketName string                   `json:"s3BucketName" yaml:"s3BucketName"`
-	S3Policy resource.IAMPolicy `json:"s3Policy" yaml:"s3Policy"`
+	NamePrefix    string               `json:"namePrefix" yaml:"namePrefix"`
+	Region        string               `json:"region"`
+	VpcId         string               `json:"vpcId" yaml:"vpcId"`
+	S3BucketName  string               `json:"s3BucketName" yaml:"s3BucketName"`
+	S3Policy      resource.IAMPolicy   `json:"s3Policy" yaml:"s3Policy"`
 	EKS           resource.EKSCluster  `json:"eks" yaml:"eks"`
 	NodeGroups    []resource.NodeGroup `json:"nodeGroups" yaml:"nodeGroups"`
 	SparkOperator SparkOperator        `json:"sparkOperator" yaml:"sparkOperator"`
-	NginxIngress  NginxIngress             `json:"nginxIngress" yaml:"nginxIngress"`
-	ApiGateway    SparkApiGateway          `json:"apiGateway" yaml:"apiGateway"`
+	NginxIngress  NginxIngress         `json:"nginxIngress" yaml:"nginxIngress"`
+	ApiGateway    SparkApiGateway      `json:"apiGateway" yaml:"apiGateway"`
 }
 
 type SparkApiGateway struct {
@@ -80,18 +80,18 @@ type SparkApiGateway struct {
 }
 
 type SparkOperator struct {
-	HelmInstallName string `json:"helmInstallName" yaml:"helmInstallName"`
-	Namespace string `json:"namespace" yaml:"namespace"`
-	ImageRepository string `json:"imageRepository" yaml:"imageRepository"`
-	ImageTag string `json:"imageTag" yaml:"imageTag"`
+	HelmInstallName           string `json:"helmInstallName" yaml:"helmInstallName"`
+	Namespace                 string `json:"namespace" yaml:"namespace"`
+	ImageRepository           string `json:"imageRepository" yaml:"imageRepository"`
+	ImageTag                  string `json:"imageTag" yaml:"imageTag"`
 	SparkApplicationNamespace string `json:"sparkApplicationNamespace" yaml:"sparkApplicationNamespace"`
 }
 
 type NginxIngress struct {
 	HelmInstallName string `json:"helmInstallName" yaml:"helmInstallName"`
-	Namespace string `json:"namespace" yaml:"namespace"`
-	EnableHttp bool `json:"enableHttp" yaml:"enableHttp"`
-	EnableHttps bool `json:"enableHttps" yaml:"enableHttps"`
+	Namespace       string `json:"namespace" yaml:"namespace"`
+	EnableHttp      bool   `json:"enableHttp" yaml:"enableHttp"`
+	EnableHttps     bool   `json:"enableHttps" yaml:"enableHttps"`
 }
 
 func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTopology {
@@ -112,25 +112,24 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 			Notes: map[string]string{},
 		},
 		Spec: SparkTopologySpec{
-			NamePrefix: namePrefix,
-			Region:     DefaultRegion,
-			VpcId: "",
+			NamePrefix:   namePrefix,
+			Region:       DefaultRegion,
+			VpcId:        "",
 			S3BucketName: s3BucketName,
-			S3Policy: resource.IAMPolicy{
-			},
+			S3Policy:     resource.IAMPolicy{},
 			EKS: resource.EKSCluster{
-				ClusterName:          k8sClusterName,
+				ClusterName: k8sClusterName,
 				ControlPlaneRole: resource.IAMRole{
-					Name:                 controlPlaneRoleName,
+					Name:                     controlPlaneRoleName,
 					AssumeRolePolicyDocument: framework.DefaultEKSAssumeRolePolicyDocument,
-					ExtraPolicyArns: []string {
+					ExtraPolicyArns: []string{
 						"arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
 					},
 				},
 				InstanceRole: resource.IAMRole{
 					Name:                     instanceRoleName,
 					AssumeRolePolicyDocument: framework.DefaultEC2AssumeRolePolicyDocument,
-					ExtraPolicyArns: []string {
+					ExtraPolicyArns: []string{
 						"arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy",
 						"arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
 						"arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy",
@@ -143,9 +142,9 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 						InboundRules: []resource.SecurityGroupInboundRule{
 							{
 								IPProtocol: "-1",
-								FromPort: -1,
-								ToPort: -1,
-								IPRanges: []string{"0.0.0.0/0"},
+								FromPort:   -1,
+								ToPort:     -1,
+								IPRanges:   []string{"0.0.0.0/0"},
 							},
 						},
 					},

@@ -36,7 +36,7 @@ type TopologyHandlerManager struct {
 	handlers map[string]TopologyHandler
 }
 
-func (t TopologyHandlerManager) AddHandler(kind string, handler TopologyHandler)  {
+func (t TopologyHandlerManager) AddHandler(kind string, handler TopologyHandler) {
 	t.handlers[kind] = handler
 }
 

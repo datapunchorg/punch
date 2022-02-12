@@ -91,11 +91,10 @@ func GetLoadBalancerInstanceStatesByDNSName(elbClient *elb.ELB, dnsName string) 
 	}
 	describeInstanceHealthOutput, err := elbClient.DescribeInstanceHealth(&elb.DescribeInstanceHealthInput{
 		LoadBalancerName: loadBalancer.LoadBalancerName,
-		Instances: loadBalancer.Instances,
+		Instances:        loadBalancer.Instances,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get instance health for load balancer %s (%s)", dnsName, err.Error())
 	}
 	return describeInstanceHealthOutput.InstanceStates, nil
 }
-

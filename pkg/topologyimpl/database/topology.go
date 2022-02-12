@@ -30,28 +30,28 @@ const (
 
 	FieldMaskValue = "***"
 
-	DefaultVersion = "datapunch.org/v1alpha1"
-	DefaultRegion = "us-west-1"
+	DefaultVersion    = "datapunch.org/v1alpha1"
+	DefaultRegion     = "us-west-1"
 	DefaultNamePrefix = "my"
 )
 
 type DatabaseTopology struct {
-	ApiVersion string `json:"apiVersion" yaml:"apiVersion"`
-	Kind     string            `json:"kind" yaml:"kind"`
-	Metadata framework.TopologyMetadata  `json:"metadata"`
-	Spec     DatabaseTopologySpec `json:"spec"`
+	ApiVersion string                     `json:"apiVersion" yaml:"apiVersion"`
+	Kind       string                     `json:"kind" yaml:"kind"`
+	Metadata   framework.TopologyMetadata `json:"metadata"`
+	Spec       DatabaseTopologySpec       `json:"spec"`
 }
 
 type DatabaseTopologySpec struct {
-	NamePrefix string `json:"namePrefix" yaml:"namePrefix"`
-	Region string `json:"region" yaml:"region"`
-	VpcId string `json:"vpcId" yaml:"vpcId"`
+	NamePrefix        string   `json:"namePrefix" yaml:"namePrefix"`
+	Region            string   `json:"region" yaml:"region"`
+	VpcId             string   `json:"vpcId" yaml:"vpcId"`
 	AvailabilityZones []string `json:"availabilityZones" yaml:"availabilityZones"`
 	DatabaseId        string   `json:"databaseId" yaml:"databaseId"`
 	MasterUserName    string   `json:"masterUserName" yaml:"masterUserName"`
 	// password must not shorter than 8 characters
-	MasterUserPassword string `json:"masterUserPassword" yaml:"masterUserPassword"`
-	SecurityGroups   []resource.SecurityGroup        `json:"securityGroups" yaml:"securityGroups"`
+	MasterUserPassword string                   `json:"masterUserPassword" yaml:"masterUserPassword"`
+	SecurityGroups     []resource.SecurityGroup `json:"securityGroups" yaml:"securityGroups"`
 }
 
 func CreateDefaultDatabaseTopology(namePrefix string) DatabaseTopology {
@@ -61,15 +61,15 @@ func CreateDefaultDatabaseTopology(namePrefix string) DatabaseTopology {
 		ApiVersion: DefaultVersion,
 		Kind:       KindDatabaseTopology,
 		Metadata: framework.TopologyMetadata{
-			Name: topologyName,
+			Name:               topologyName,
 			CommandEnvironment: map[string]string{},
-			Notes: map[string]string{},
+			Notes:              map[string]string{},
 		},
 		Spec: DatabaseTopologySpec{
 			NamePrefix:         namePrefix,
 			Region:             DefaultRegion,
 			VpcId:              "{{ or .Values.vpcId .DefaultVpcId }}",
-			AvailabilityZones:  []string {"us-west-1a"},
+			AvailabilityZones:  []string{"us-west-1a"},
 			DatabaseId:         fmt.Sprintf("%s-db", namePrefix),
 			MasterUserName:     DefaultUserName,
 			MasterUserPassword: "{{ .Values.masterUserPassword }}",
@@ -79,9 +79,9 @@ func CreateDefaultDatabaseTopology(namePrefix string) DatabaseTopology {
 					InboundRules: []resource.SecurityGroupInboundRule{
 						{
 							IPProtocol: "-1",
-							FromPort: -1,
-							ToPort: -1,
-							IPRanges: []string{"0.0.0.0/0"},
+							FromPort:   -1,
+							ToPort:     -1,
+							IPRanges:   []string{"0.0.0.0/0"},
 						},
 					},
 				},

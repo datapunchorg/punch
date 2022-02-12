@@ -22,9 +22,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/resource"
-	"github.com/datapunchorg/punch/pkg/awslib"
 	"log"
 	"strings"
 )
@@ -81,10 +81,10 @@ func CreateInstances(topologyName string, spec Ec2TopologySpec) ([]*ec2.Instance
 	}
 	svc := ec2.New(session)
 	runResult, err := svc.RunInstances(&ec2.RunInstancesInput{
-		ImageId:      aws.String(spec.ImageId),
-		InstanceType: aws.String(spec.InstanceType),
-		MinCount:     aws.Int64(spec.MinCount),
-		MaxCount:     aws.Int64(spec.MaxCount),
+		ImageId:            aws.String(spec.ImageId),
+		InstanceType:       aws.String(spec.InstanceType),
+		MinCount:           aws.Int64(spec.MinCount),
+		MaxCount:           aws.Int64(spec.MaxCount),
 		IamInstanceProfile: &instanceProfileSpec,
 	})
 	if err != nil {
@@ -126,7 +126,7 @@ func GetInstanceIdsByTagKeyValue(region string, tagKey string, tagValue string) 
 		describeInstancesOutput, err := svc.DescribeInstances(&ec2.DescribeInstancesInput{
 			Filters: []*ec2.Filter{
 				{
-					Name: aws.String(tagKey),
+					Name:   aws.String(tagKey),
 					Values: []*string{aws.String(tagValue)},
 				},
 			},

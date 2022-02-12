@@ -28,11 +28,11 @@ import (
 )
 
 type NodeGroup struct {
-	Name string `json:"name" yaml:"name"`
+	Name          string   `json:"name" yaml:"name"`
 	InstanceTypes []string `json:"instanceTypes" yaml:"instanceTypes"`
-	DesiredSize int64
-	MaxSize int64
-	MinSize int64
+	DesiredSize   int64
+	MaxSize       int64
+	MinSize       int64
 }
 
 func CreateNodeGroup(region string, clusterName string, nodeGroup NodeGroup, nodeRoleArn string) error {
@@ -90,7 +90,7 @@ func CreateNodeGroup(region string, clusterName string, nodeGroup NodeGroup, nod
 			log.Printf("Node group %s is ready (in status: %s)", nodeGroup.Name, status)
 		}
 		return ready, nil
-	}, 30 * time.Minute, 30*time.Second)
+	}, 30*time.Minute, 30*time.Second)
 
 	if waitReadyErr != nil {
 		return fmt.Errorf("failed to wait ready for node group %s: %s", nodeGroup.Name, err.Error())
@@ -98,5 +98,3 @@ func CreateNodeGroup(region string, clusterName string, nodeGroup NodeGroup, nod
 
 	return nil
 }
-
-

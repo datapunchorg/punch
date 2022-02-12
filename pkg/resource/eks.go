@@ -38,10 +38,9 @@ type EKSCluster struct {
 	// in the Amazon EKS User Guide.
 	ControlPlaneRole IAMRole `json:"controlPlaneRole" yaml:"controlPlaneRole"`
 	// See https://docs.aws.amazon.com/eks/latest/userguide/sec-group-reqs.html
-	SecurityGroups   []SecurityGroup        `json:"securityGroups" yaml:"securityGroups"`
-	InstanceRole     IAMRole                `json:"instanceRole" yaml:"instanceRole"`
+	SecurityGroups []SecurityGroup `json:"securityGroups" yaml:"securityGroups"`
+	InstanceRole   IAMRole         `json:"instanceRole" yaml:"instanceRole"`
 }
-
 
 func CreateEksCluster(region string, vpcId string, eksCluster EKSCluster) error {
 	clusterName := eksCluster.ClusterName
@@ -144,7 +143,7 @@ func CreateEksCluster(region string, vpcId string, eksCluster EKSCluster) error 
 		Name: aws.String(clusterName),
 		ResourcesVpcConfig: &eks.VpcConfigRequest{
 			SecurityGroupIds: securityGroupIds,
-			SubnetIds: subnetIds,
+			SubnetIds:        subnetIds,
 			// TODO make following configurable
 			EndpointPrivateAccess: aws.Bool(true),
 			EndpointPublicAccess:  aws.Bool(true),

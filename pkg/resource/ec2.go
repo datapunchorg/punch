@@ -25,15 +25,15 @@ import (
 )
 
 type SecurityGroup struct {
-	Name string `json:"name" yaml:"name"`
+	Name         string                     `json:"name" yaml:"name"`
 	InboundRules []SecurityGroupInboundRule `json:"inboundRules" yaml:"inboundRules"`
 }
 
 type SecurityGroupInboundRule struct {
-	IPProtocol string `json:"ipProtocol" yaml:"ipProtocol"`
-	FromPort int64 `json:"fromPort" yaml:"fromPort"`
-	ToPort int64 `json:"toPort" yaml:"toPort"`
-	IPRanges []string `json:"ipRanges" yaml:"ipRanges"`
+	IPProtocol string   `json:"ipProtocol" yaml:"ipProtocol"`
+	FromPort   int64    `json:"fromPort" yaml:"fromPort"`
+	ToPort     int64    `json:"toPort" yaml:"toPort"`
+	IPRanges   []string `json:"ipRanges" yaml:"ipRanges"`
 }
 
 func CreateSecurityGroup(ec2Client *ec2.EC2, securityGroup SecurityGroup, vpcId string) (string, error) {
@@ -107,4 +107,3 @@ func CreateSecurityGroup(ec2Client *ec2.EC2, securityGroup SecurityGroup, vpcId 
 	}
 	return *securityGroupId, nil
 }
-

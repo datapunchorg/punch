@@ -22,7 +22,7 @@ type DeploymentOutput interface {
 }
 
 type DeploymentOutputImpl struct {
-	steps []string
+	steps  []string
 	output map[string]DeploymentStepOutput
 }
 

@@ -33,6 +33,3 @@ func CreateSparkTemplateData(data framework.TemplateData) SparkTemplateData {
 	}
 	return result
 }
-
-
-

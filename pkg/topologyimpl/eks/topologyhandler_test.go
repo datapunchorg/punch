@@ -61,4 +61,3 @@ func TestResolveTopology(t *testing.T) {
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "Eks", resolvedTopology.GetKind())
 }
-

@@ -106,8 +106,8 @@ func CreateApiGatewayService(clientset *kubernetes.Clientset, namespace string, 
 		context.TODO(),
 		&v1.Service{
 			ObjectMeta: v12.ObjectMeta{
-				Namespace: namespace,
-				Name:      serviceName,
+				Namespace:   namespace,
+				Name:        serviceName,
 				Annotations: map[string]string{
 					// "service.beta.kubernetes.io/aws-load-balancer-healthcheck-protocol": "http",
 					// "service.beta.kubernetes.io/aws-load-balancer-healthcheck-path": "/health",
@@ -208,23 +208,23 @@ func CreateSparkServiceAccount(clientset *kubernetes.Clientset, sparkOperatorNam
 	roleName := fmt.Sprintf("%s-role", sparkServiceAccountName)
 	_, err = clientset.RbacV1().Roles(sparkApplicationNamespace).Create(
 		context.TODO(),
-		&rbacv1.Role {
+		&rbacv1.Role{
 			ObjectMeta: metav1.ObjectMeta{Name: roleName},
 			Rules: []rbacv1.PolicyRule{
 				{
 					APIGroups: []string{""},
 					Resources: []string{"pods"},
-					Verbs: []string{"*"},
+					Verbs:     []string{"*"},
 				},
 				{
 					APIGroups: []string{""},
 					Resources: []string{"services"},
-					Verbs: []string{"*"},
+					Verbs:     []string{"*"},
 				},
 				{
 					APIGroups: []string{""},
 					Resources: []string{"configmaps"},
-					Verbs: []string{"*"},
+					Verbs:     []string{"*"},
 				},
 			},
 		},
@@ -242,18 +242,18 @@ func CreateSparkServiceAccount(clientset *kubernetes.Clientset, sparkOperatorNam
 	roleBindingName := fmt.Sprintf("%s-role-binding", sparkServiceAccountName)
 	_, err = clientset.RbacV1().RoleBindings(sparkApplicationNamespace).Create(
 		context.TODO(),
-		&rbacv1.RoleBinding {
+		&rbacv1.RoleBinding{
 			ObjectMeta: metav1.ObjectMeta{Name: roleBindingName},
 			Subjects: []rbacv1.Subject{
 				{
-					Kind: "ServiceAccount",
-					Name: sparkServiceAccountName,
+					Kind:      "ServiceAccount",
+					Name:      sparkServiceAccountName,
 					Namespace: sparkApplicationNamespace,
 				},
 			},
 			RoleRef: rbacv1.RoleRef{
-				Kind: "Role",
-				Name: roleName,
+				Kind:     "Role",
+				Name:     roleName,
 				APIGroup: "rbac.authorization.k8s.io",
 			},
 		},
@@ -310,9 +310,9 @@ func CreateApiGatewayIngress(clientset *kubernetes.Clientset, namespace string, 
 				//--namespace ingress-basic \
 				//--key aks-ingress-tls.key \
 				//--cert aks-ingress-tls.crt
-				TLS: []v13.IngressTLS {
+				TLS: []v13.IngressTLS{
 					{
-						Hosts: []string{"*.amazonaws.com"},
+						Hosts:      []string{"*.amazonaws.com"},
 						SecretName: "tls-secret-name",
 					},
 				},

@@ -3,8 +3,8 @@ package resource
 import (
 	"bytes"
 	"io"
-	"os/exec"
 	"os"
+	"os/exec"
 )
 
 func MinikubeExec(arg ...string) (string, error) {

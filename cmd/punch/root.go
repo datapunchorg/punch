@@ -27,7 +27,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "punch",
 	Short: "punch is the command-line tool to deploy data analytics platform",
-	Long: "punch is the command-line tool to deploy data analytics platform",
+	Long:  "punch is the command-line tool to deploy data analytics platform",
 }
 
 func init() {

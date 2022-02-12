@@ -25,9 +25,9 @@ import (
 )
 
 const (
-	TemplateNoValue = "<no value>"
+	TemplateNoValue   = "<no value>"
 	DefaultNamePrefix = "my"
-	DefaultRegion = "us-west-1"
+	DefaultRegion     = "us-west-1"
 )
 
 type TemplateData interface {
@@ -37,7 +37,7 @@ type TemplateData interface {
 
 func CreateTemplateData(env map[string]string, values map[string]string) TemplateDataImpl {
 	result := TemplateDataImpl{
-		env: map[string]string{},
+		env:    map[string]string{},
 		values: map[string]interface{}{},
 	}
 	for key, value := range env {
@@ -51,7 +51,7 @@ func CreateTemplateData(env map[string]string, values map[string]string) Templat
 
 func CopyTemplateData(from TemplateData) TemplateDataImpl {
 	result := TemplateDataImpl{
-		env: map[string]string{},
+		env:    map[string]string{},
 		values: map[string]interface{}{},
 	}
 	for key, value := range from.Env() {
@@ -64,7 +64,7 @@ func CopyTemplateData(from TemplateData) TemplateDataImpl {
 }
 
 type TemplateDataImpl struct {
-	env map[string]string
+	env    map[string]string
 	values map[string]interface{}
 }
 
@@ -145,7 +145,7 @@ func (t *TemplateDataWithRegion) DefaultVpcId() string {
 	ec2Client := ec2.New(session)
 
 	vpcId, err := awslib.GetFirstVpcId(ec2Client)
-	if err != nil{
+	if err != nil {
 		log.Printf("[WARN] Failed to get first VPC: %s", err.Error())
 		return "error-no-value"
 	}

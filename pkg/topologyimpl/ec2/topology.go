@@ -26,25 +26,25 @@ import (
 const (
 	KindEc2Topology = "Ec2"
 
-	DefaultVersion = "datapunch.org/v1alpha1"
-	DefaultRegion = "us-west-1"
+	DefaultVersion    = "datapunch.org/v1alpha1"
+	DefaultRegion     = "us-west-1"
 	DefaultNamePrefix = "my"
 )
 
 type Ec2Topology struct {
-	ApiVersion string `json:"apiVersion" yaml:"apiVersion"`
-	Kind     string            `json:"kind" yaml:"kind"`
-	Metadata framework.TopologyMetadata  `json:"metadata"`
-	Spec     Ec2TopologySpec `json:"spec"`
+	ApiVersion string                     `json:"apiVersion" yaml:"apiVersion"`
+	Kind       string                     `json:"kind" yaml:"kind"`
+	Metadata   framework.TopologyMetadata `json:"metadata"`
+	Spec       Ec2TopologySpec            `json:"spec"`
 }
 
 type Ec2TopologySpec struct {
-	NamePrefix string `json:"namePrefix" yaml:"namePrefix"`
-	Region string `json:"region" yaml:"region"`
-	ImageId        string   `json:"imageId" yaml:"imageId"`
-	InstanceType    string   `json:"instanceType" yaml:"instanceType"`
-	MinCount int64 `json:"minCount" yaml:"minCount"`
-	MaxCount int64 `json:"maxCount" yaml:"maxCount"`
+	NamePrefix   string           `json:"namePrefix" yaml:"namePrefix"`
+	Region       string           `json:"region" yaml:"region"`
+	ImageId      string           `json:"imageId" yaml:"imageId"`
+	InstanceType string           `json:"instanceType" yaml:"instanceType"`
+	MinCount     int64            `json:"minCount" yaml:"minCount"`
+	MaxCount     int64            `json:"maxCount" yaml:"maxCount"`
 	InstanceRole resource.IAMRole `json:"instanceRole" yaml:"instanceRole"`
 }
 
@@ -55,21 +55,21 @@ func CreateDefaultEc2Topology(namePrefix string) Ec2Topology {
 		ApiVersion: DefaultVersion,
 		Kind:       KindEc2Topology,
 		Metadata: framework.TopologyMetadata{
-			Name: topologyName,
+			Name:               topologyName,
 			CommandEnvironment: map[string]string{},
-			Notes: map[string]string{},
+			Notes:              map[string]string{},
 		},
 		Spec: Ec2TopologySpec{
-			NamePrefix:         namePrefix,
-			Region:             DefaultRegion,
-			ImageId:          "ami-03af6a70ccd8cb578",
-			InstanceType:     "t2.micro",
-			MinCount: 1,
-			MaxCount: 1,
+			NamePrefix:   namePrefix,
+			Region:       DefaultRegion,
+			ImageId:      "ami-03af6a70ccd8cb578",
+			InstanceType: "t2.micro",
+			MinCount:     1,
+			MaxCount:     1,
 			InstanceRole: resource.IAMRole{
 				Name:                     instanceRoleName,
 				AssumeRolePolicyDocument: framework.DefaultEC2AssumeRolePolicyDocument,
-				ExtraPolicyArns: []string {
+				ExtraPolicyArns: []string{
 					"arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
 				},
 			},

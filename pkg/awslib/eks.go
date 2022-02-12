@@ -22,9 +22,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/eks"
-	"github.com/google/uuid"
 	"github.com/datapunchorg/punch/pkg/common"
 	"github.com/datapunchorg/punch/pkg/kubelib"
+	"github.com/google/uuid"
 	"io/fs"
 	"io/ioutil"
 	"k8s.io/client-go/kubernetes"
@@ -148,7 +148,7 @@ func CreateEksKubeConfig(region string, clusterName string) (kubelib.KubeConfig,
 	kubeConfig := kubelib.KubeConfig{
 		ApiServer: *cluster.Endpoint,
 		CAFile:    caFile.Name(),
-		CA: ca,
+		CA:        ca,
 		KubeToken: token.Token,
 	}
 
@@ -223,7 +223,7 @@ func DeleteEKSCluster(region string, clusterName string) error {
 	eksClient := eks.New(session)
 
 	_, err := eksClient.DeleteCluster(&eks.DeleteClusterInput{
-		Name:   aws.String(clusterName),
+		Name: aws.String(clusterName),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to delete EKS cluster %s: %s", clusterName, err.Error())
@@ -247,7 +247,7 @@ func DeleteEKSCluster(region string, clusterName string) error {
 			log.Printf("Cluster %s does not exist", clusterName)
 		}
 		return !stillExists, nil
-	}, 10 * time.Minute, 30 * time.Second)
+	}, 10*time.Minute, 30*time.Second)
 
 	if waitDeletedErr != nil {
 		return fmt.Errorf("failed to wait cluster %s to be deleted: %s", clusterName, waitDeletedErr.Error())

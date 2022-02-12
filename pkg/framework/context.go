@@ -39,5 +39,3 @@ func (d DefaultDeploymentContext) GetStepOutput(name string) map[string]interfac
 	output := d.outputs[name]
 	return output
 }
-
-

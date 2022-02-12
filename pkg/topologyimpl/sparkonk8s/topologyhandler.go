@@ -32,7 +32,7 @@ import (
 )
 
 const (
-	sparkcliJavaExampleCommandFormat = `./sparkcli --user %s --password %s --insecure --url https://%s/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --image ghcr.io/datapunchorg/spark:spark-3.2.1-1643336295 --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar`
+	sparkcliJavaExampleCommandFormat   = `./sparkcli --user %s --password %s --insecure --url https://%s/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --image ghcr.io/datapunchorg/spark:spark-3.2.1-1643336295 --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar`
 	sparkcliPythonExampleCommandFormat = `./sparkcli --user %s --password %s --insecure --url https://%s/sparkapi/v1 submit --image ghcr.io/datapunchorg/spark:pyspark-3.2.1-1643336295 --spark-version 3.2 --driver-memory 512m --executor-memory 512m %s`
 )
 
@@ -112,7 +112,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 	}
 
 	kubelib.CheckHelmOrFatal(commandEnvironment.Get(CmdEnvHelmExecutable))
-    if commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
+	if commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
 		commandEnvironment.Set(CmdEnvKubeConfig, kubelib.GetKubeConfigPath())
 		deployment.AddStep("minikubeProfile", "Set Minikube Profile", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 			_, err := resource.MinikubeExec("profile", sparkTopology.Spec.EKS.ClusterName)

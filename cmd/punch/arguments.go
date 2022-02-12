@@ -43,7 +43,7 @@ func createKeyValueMap(keyValuePairs []string) map[string]string {
 			result[entry] = ""
 		} else {
 			key := entry[0:index]
-			value := entry[index + 1:]
+			value := entry[index+1:]
 			result[key] = value
 		}
 	}

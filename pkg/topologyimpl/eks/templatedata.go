@@ -33,4 +33,3 @@ func CreateEksTemplateData(data framework.TemplateData) EksTemplateData {
 	}
 	return result
 }
-
