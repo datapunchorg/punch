@@ -32,17 +32,19 @@ Only do step 1 "Installation" in https://minikube.sigs.k8s.io/docs/start
 brew install minikube
 ```
 
-### Install Go Program Language
-
-https://go.dev/doc/install
-
 ### Get punch Distribution
 
 Run `make release` in the root of this project, it will generate `dist` folder which contains `punch` and `sparkcli` binaries.
 
-Open a terminal, go to `dist` folder.
+Or download a pre-built zip file and unzip it:
+```
+curl -L -o dist.zip https://github.com/datapunchorg/punch-distribution/releases/download/v0.1.0/dist.zip
+unzip dist.zip
+```
 
-## Run Spark Application
+In the terminal, go the `dist` folder.
+
+## Deploy Spark on K8s and Run Spark Application
 
 ### Install SparkOnK8s on Minikube
 
