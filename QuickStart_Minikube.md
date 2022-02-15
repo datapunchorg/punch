@@ -65,8 +65,20 @@ Establish a tunnel in another separate shell window:
 minikube tunnel
 ```
 
-`minikube tunnel` may ask your computer account password since it needs privilege to expose network ports. Please 
-wait until `minikube tunnel` starts successfully.
+`minikube tunnel` may ask your computer account password since it needs privilege to expose network ports.
+It is the password you used to log into your Mac, not the password you specified in `punch` command. Please 
+input the password and wait until `minikube tunnel` starts successfully, like following:
+
+```
+% minikube tunnel
+❗  The service/ingress ingress-nginx-controller requires privileged ports to be exposed: [80 443]
+🔑  sudo permission will be asked for it.
+🏃  Starting tunnel for service ingress-nginx-controller.
+❗  The service/ingress spark-operator-01 requires privileged ports to be exposed: [80 443]
+🔑  sudo permission will be asked for it.
+🏃  Starting tunnel for service spark-operator-01.
+Password:
+```
 
 Then Run `sparkcli`:
 
