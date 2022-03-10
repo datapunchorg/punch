@@ -17,6 +17,7 @@ limitations under the License.
 package sparkonk8s
 
 import (
+	"context"
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/datapunchorg/punch/pkg/awslib"
@@ -25,6 +26,7 @@ import (
 	"github.com/datapunchorg/punch/pkg/kubelib"
 	"github.com/datapunchorg/punch/pkg/resource"
 	v1 "k8s.io/api/core/v1"
+	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"log"
 	"strings"
 	"time"
@@ -74,7 +76,7 @@ func CreateClusterAutoscalerIAMRole(topology SparkTopology, oidcId string) error
 	return nil
 }
 
-func CreateClusterAutoscalerIAMServiceAccount(topology SparkTopology) error {
+func CreateClusterAutoscalerIAMServiceAccount(commandEnvironment framework.CommandEnvironment, topology SparkTopology) error {
 	region := topology.Spec.Region
 	session := awslib.CreateSession(region)
 	accountId, err := awslib.GetCurrentAccount(session)
@@ -82,14 +84,37 @@ func CreateClusterAutoscalerIAMServiceAccount(topology SparkTopology) error {
 		return fmt.Errorf("failed to get current account: %s", err.Error())
 	}
 	roleArn := fmt.Sprintf("arn:aws:iam::%s:role/%s", accountId, topology.Spec.AutoScale.ClusterAutoscalerIAMRole.Name)
+	systemNamespace := "kube-system"
+	serviceAccountName := "cluster-autoscaler"
 	awslib.RunEksCtlCmd("eksctl",
 		[]string{"create", "iamserviceaccount",
-			"--name", "cluster-autoscaler",
+			"--name", serviceAccountName,
 			"--region", topology.Spec.Region,
 			"--cluster", topology.Spec.EKS.ClusterName,
-			"--namespace", "kube-system",
+			"--namespace", systemNamespace,
 			"--attach-policy-arn", roleArn,
 			"--approve"})
+	err = WaitEKSServiceAccount(commandEnvironment, topology, systemNamespace, serviceAccountName)
+	return err
+}
+
+func WaitEKSServiceAccount(commandEnvironment framework.CommandEnvironment, topology SparkTopology, namespace string, serviceAccount string) error {
+	region := topology.Spec.Region
+	clusterName := topology.Spec.EKS.ClusterName
+
+	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(CmdEnvKubeConfig), clusterName)
+	if err != nil {
+		return fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
+	}
+
+	_, err = clientset.CoreV1().ServiceAccounts(namespace).Get(
+		context.TODO(),
+		serviceAccount,
+		v12.GetOptions{},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to get service account %s in namespace %s in EKS cluster %s", serviceAccount, namespace, clusterName)
+	}
 	return nil
 }
 

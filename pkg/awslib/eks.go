@@ -114,7 +114,7 @@ func CreateEksKubeConfig(region string, clusterName string) (kubelib.KubeConfig,
 		return kubelib.KubeConfig{}, err
 	}
 
-	log.Printf("Getting client for EKS Cluster: %v", describeClusterOutput)
+	log.Printf("Getting client for EKS Cluster: %s", clusterName)
 
 	cluster := describeClusterOutput.Cluster
 

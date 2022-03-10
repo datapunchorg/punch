@@ -209,7 +209,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 
 			deployment.AddStep("createClusterAutoscalerIAMServiceAccount", "Create Cluster Autoscaler IAM service account", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 				sparkTopology := t.(*SparkTopology)
-				err := CreateClusterAutoscalerIAMServiceAccount(*sparkTopology)
+				err := CreateClusterAutoscalerIAMServiceAccount(commandEnvironment, *sparkTopology)
 				return framework.NewDeploymentStepOutput(), err
 			})
 		}
