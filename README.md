@@ -42,3 +42,5 @@ brew install sparkcli
 5. Allow set values by file like --values values.yaml
 6. Return HTTP 404 when sparkcli getting a non-existing application
 7. Get application error message from Spark Operator
+8. Set up convenient tool to benchmark Spark TPC-DS
+9. Create public demo (tech news, mailing list)

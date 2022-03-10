@@ -42,6 +42,11 @@ type EKSCluster struct {
 	InstanceRole   IAMRole         `json:"instanceRole" yaml:"instanceRole"`
 }
 
+type EKSClusterSummary struct {
+	ClusterName string `json:"clusterName" yaml:"clusterName"`
+	OidcIssuer string `json:"oidcIssuer" yaml:"oidcIssuer"`
+}
+
 func CreateEksCluster(region string, vpcId string, eksCluster EKSCluster) error {
 	clusterName := eksCluster.ClusterName
 
@@ -185,5 +190,32 @@ func CreateEksCluster(region string, vpcId string, eksCluster EKSCluster) error 
 		return fmt.Errorf("failed to wait ready for cluster %s: %s", clusterName, waitClusterReadyErr.Error())
 	}
 
+	if err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func DescribeEksCluster(region string, clusterName string) (EKSClusterSummary, error) {
+	session := awslib.CreateSession(region)
+
+	log.Printf("Creating EKS cluster in AWS region: %v", region)
+
+	eksClient := eks.New(session)
+
+	describeClusterOutput, err := eksClient.DescribeCluster(&eks.DescribeClusterInput{
+		Name: aws.String(clusterName),
+	})
+
+	if err != nil {
+		return EKSClusterSummary{}, fmt.Errorf("failed to describe EKS cluster %s, %s", clusterName, err.Error())
+	}
+
+	clusterSummary := EKSClusterSummary{
+		ClusterName: clusterName,
+		OidcIssuer: *describeClusterOutput.Cluster.Identity.Oidc.Issuer,
+	}
+
+	return clusterSummary, nil
 }

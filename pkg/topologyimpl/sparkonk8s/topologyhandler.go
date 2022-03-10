@@ -144,7 +144,14 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		deployment.AddStep("createEKSCluster", "Create EKS cluster", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 			sparkTopology := t.(*SparkTopology)
 			err := resource.CreateEksCluster(sparkTopology.Spec.Region, sparkTopology.Spec.VpcId, sparkTopology.Spec.EKS)
-			return framework.NewDeploymentStepOutput(), err
+			if err != nil {
+				return framework.NewDeploymentStepOutput(), err
+			}
+			clusterSummary, err := resource.DescribeEksCluster(sparkTopology.Spec.Region, sparkTopology.Spec.EKS.ClusterName)
+			if err != nil {
+				return framework.NewDeploymentStepOutput(), err
+			}
+			return framework.DeploymentStepOutput{"oidcIssuer": clusterSummary.OidcIssuer}, nil
 		})
 
 		deployment.AddStep("createNodeGroups", "Create node groups", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
