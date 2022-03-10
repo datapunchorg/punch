@@ -177,6 +177,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 				if err != nil {
 					return framework.NewDeploymentStepOutput(), err
 				}
+				awslib.CreateOrUpdateClusterAutoscalerTagsOnNodeGroup(sparkTopology.Spec.Region, sparkTopology.Spec.EKS.ClusterName, nodeGroup.Name)
 			}
 			return framework.NewDeploymentStepOutput(), nil
 		})
