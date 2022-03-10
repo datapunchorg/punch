@@ -188,9 +188,9 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 				sparkTopology := t.(*SparkTopology)
 				awslib.RunEksCtlCmd("eksctl",
 					[]string{"utils", "associate-iam-oidc-provider",
-					"--cluster", sparkTopology.Spec.EKS.ClusterName,
-					"--region", sparkTopology.Spec.Region,
-					"--approve"})
+						"--region", sparkTopology.Spec.Region,
+						"--cluster", sparkTopology.Spec.EKS.ClusterName,
+						"--approve"})
 				return framework.NewDeploymentStepOutput(), nil
 			})
 
@@ -204,6 +204,12 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 				}
 				oidcId := oidcIssuer[index + len(idStr):]
 				err := CreateClusterAutoscalerIAMRole(*sparkTopology, oidcId)
+				return framework.NewDeploymentStepOutput(), err
+			})
+
+			deployment.AddStep("createClusterAutoscalerIAMServiceAccount", "Create Cluster Autoscaler IAM service account", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
+				sparkTopology := t.(*SparkTopology)
+				err := CreateClusterAutoscalerIAMServiceAccount(*sparkTopology)
 				return framework.NewDeploymentStepOutput(), err
 			})
 		}

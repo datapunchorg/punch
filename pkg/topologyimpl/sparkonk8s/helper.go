@@ -74,6 +74,25 @@ func CreateClusterAutoscalerIAMRole(topology SparkTopology, oidcId string) error
 	return nil
 }
 
+func CreateClusterAutoscalerIAMServiceAccount(topology SparkTopology) error {
+	region := topology.Spec.Region
+	session := awslib.CreateSession(region)
+	accountId, err := awslib.GetCurrentAccount(session)
+	if err != nil {
+		return fmt.Errorf("failed to get current account: %s", err.Error())
+	}
+	roleArn := fmt.Sprintf("arn:aws:iam::%s:role/%s", accountId, topology.Spec.AutoScale.ClusterAutoscalerIAMRole.Name)
+	awslib.RunEksCtlCmd("eksctl",
+		[]string{"create", "iamserviceaccount",
+			"--name", "cluster-autoscaler",
+			"--region", topology.Spec.Region,
+			"--cluster", topology.Spec.EKS.ClusterName,
+			"--namespace", "kube-system",
+			"--attach-policy-arn", roleArn,
+			"--approve"})
+	return nil
+}
+
 // TODO remove log.Fatalf
 func DeployNginxIngressController(commandEnvironment framework.CommandEnvironment, topology SparkTopology) map[string]interface{} {
 	nginxNamespace := topology.Spec.NginxIngress.Namespace
