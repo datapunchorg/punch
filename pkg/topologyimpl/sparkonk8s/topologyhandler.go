@@ -97,7 +97,7 @@ func (t *TopologyHandler) Resolve(topology framework.Topology, data framework.Te
 		return nil, err
 	}
 
-	if resolvedSparkTopology.Spec.EnableClusterAutoscaler {
+	if resolvedSparkTopology.Spec.AutoScale.EnableClusterAutoscaler {
 		err = awslib.CheckEksCtlCmd("eksctl")
 		if err != nil {
 			return nil, err
@@ -182,7 +182,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 			return framework.NewDeploymentStepOutput(), nil
 		})
 
-		if sparkTopology.Spec.EnableClusterAutoscaler {
+		if sparkTopology.Spec.AutoScale.EnableClusterAutoscaler {
 			deployment.AddStep("enableClusterAutoscaler", "Enable Cluster Autoscaler", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 				sparkTopology := t.(*SparkTopology)
 				awslib.RunEksCtlCmd("eksctl",
@@ -191,6 +191,12 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 					"--region", sparkTopology.Spec.Region,
 					"--approve"})
 				return framework.NewDeploymentStepOutput(), nil
+			})
+
+			deployment.AddStep("createClusterAutoscalerIAMRole", "Create Cluster Autoscaler IAM role", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
+				sparkTopology := t.(*SparkTopology)
+				err := CreateClusterAutoscalerIAMRole(*sparkTopology)
+				return framework.NewDeploymentStepOutput(), err
 			})
 		}
 	}

@@ -69,10 +69,15 @@ type SparkTopologySpec struct {
 	S3Policy      resource.IAMPolicy   `json:"s3Policy" yaml:"s3Policy"`
 	EKS           resource.EKSCluster  `json:"eks" yaml:"eks"`
 	NodeGroups    []resource.NodeGroup `json:"nodeGroups" yaml:"nodeGroups"`
-	EnableClusterAutoscaler bool       `json:"enableClusterAutoscaler" yaml:"enableClusterAutoscaler"`
+	AutoScale     AutoScale            `json:"autoScale" yaml:"autoScale"`
 	SparkOperator SparkOperator        `json:"sparkOperator" yaml:"sparkOperator"`
 	NginxIngress  NginxIngress         `json:"nginxIngress" yaml:"nginxIngress"`
 	ApiGateway    SparkApiGateway      `json:"apiGateway" yaml:"apiGateway"`
+}
+
+type AutoScale struct {
+	EnableClusterAutoscaler bool       `json:"enableClusterAutoscaler" yaml:"enableClusterAutoscaler"`
+	ClusterAutoscalerIAMRole resource.IAMRole   `json:"clusterAutoscalerIAMRole" yaml:"clusterAutoscalerIAMRole"`
 }
 
 type SparkApiGateway struct {
@@ -151,6 +156,35 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 					},
 				},
 			},
+			AutoScale: AutoScale{
+				EnableClusterAutoscaler: false,
+				ClusterAutoscalerIAMRole: resource.IAMRole{
+					Name: "AmazonEKSClusterAutoscalerRole",
+					Policies: []resource.IAMPolicy{
+						resource.IAMPolicy{
+							Name: "AmazonEKSClusterAutoscalerPolicy",
+							PolicyDocument: `{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "autoscaling:DescribeAutoScalingGroups",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeLaunchConfigurations",
+                "autoscaling:DescribeTags",
+                "autoscaling:SetDesiredCapacity",
+                "autoscaling:TerminateInstanceInAutoScalingGroup",
+                "ec2:DescribeLaunchTemplateVersions"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        }
+    ]
+}`,
+						},
+					},
+				},
+			},
 			ApiGateway: SparkApiGateway{
 				UserName: DefaultApiUserName,
 			},
@@ -163,7 +197,6 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 					MinSize:       DefaultNodeGroupSize,
 				},
 			},
-			// EnableClusterAutoscaler: true,
 			SparkOperator: SparkOperator{
 				HelmInstallName:           DefaultSparkOperatorHelmInstallName,
 				ImageRepository:           DefaultOperatorImageRepository,

@@ -34,9 +34,40 @@ func CreateInstanceIAMRole(topology SparkTopology) string {
 	region := topology.Spec.Region
 	roleName, err := resource.CreateIAMRoleWithMorePolicies(region, topology.Spec.EKS.InstanceRole, []resource.IAMPolicy{topology.Spec.S3Policy})
 	if err != nil {
+		// TODO remove Fatalf
 		log.Fatalf("Failed to create instance IAM role: %s", err.Error())
 	}
 	return roleName
+}
+
+func CreateClusterAutoscalerIAMRole(topology SparkTopology) error {
+	region := topology.Spec.Region
+	role := topology.Spec.AutoScale.ClusterAutoscalerIAMRole
+	// TODO generate following use dynamic values
+	role.AssumeRolePolicyDocument = `{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Federated": "arn:aws:iam::133628591400:oidc-provider/oidc.eks.us-west-1.amazonaws.com/id/D068859C4952B7A99AF6AFD4F92D3325"
+            },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {
+                "StringEquals": {
+                    "oidc.eks.us-west-1.amazonaws.com/id/D068859C4952B7A99AF6AFD4F92D3325:aud": "sts.amazonaws.com",
+                    "oidc.eks.us-west-1.amazonaws.com/id/D068859C4952B7A99AF6AFD4F92D3325:sub": "system:serviceaccount:kube-system:cluster-autoscaler"
+                }
+            }
+        }
+    ]
+}
+`
+	err := resource.CreateIAMRole(region, role)
+	if err != nil {
+		return fmt.Errorf("failed to create cluster autoscaler IAM role: %s", err.Error())
+	}
+	return nil
 }
 
 // TODO remove log.Fatalf
