@@ -40,30 +40,34 @@ func CreateInstanceIAMRole(topology SparkTopology) string {
 	return roleName
 }
 
-func CreateClusterAutoscalerIAMRole(topology SparkTopology) error {
+func CreateClusterAutoscalerIAMRole(topology SparkTopology, oidcId string) error {
 	region := topology.Spec.Region
+	session := awslib.CreateSession(region)
+	accountId, err := awslib.GetCurrentAccount(session)
+	if err != nil {
+		return fmt.Errorf("failed to get current account: %s", err.Error())
+	}
 	role := topology.Spec.AutoScale.ClusterAutoscalerIAMRole
-	// TODO generate following use dynamic values
-	role.AssumeRolePolicyDocument = `{
+	role.AssumeRolePolicyDocument = fmt.Sprintf(`{
     "Version": "2012-10-17",
     "Statement": [
         {
             "Effect": "Allow",
             "Principal": {
-                "Federated": "arn:aws:iam::133628591400:oidc-provider/oidc.eks.us-west-1.amazonaws.com/id/D068859C4952B7A99AF6AFD4F92D3325"
+                "Federated": "arn:aws:iam::%s:oidc-provider/oidc.eks.us-west-1.amazonaws.com/id/%s"
             },
             "Action": "sts:AssumeRoleWithWebIdentity",
             "Condition": {
                 "StringEquals": {
-                    "oidc.eks.us-west-1.amazonaws.com/id/D068859C4952B7A99AF6AFD4F92D3325:aud": "sts.amazonaws.com",
-                    "oidc.eks.us-west-1.amazonaws.com/id/D068859C4952B7A99AF6AFD4F92D3325:sub": "system:serviceaccount:kube-system:cluster-autoscaler"
+                    "oidc.eks.us-west-1.amazonaws.com/id/%s:aud": "sts.amazonaws.com",
+                    "oidc.eks.us-west-1.amazonaws.com/id/%s:sub": "system:serviceaccount:kube-system:cluster-autoscaler"
                 }
             }
         }
     ]
 }
-`
-	err := resource.CreateIAMRole(region, role)
+`, accountId, oidcId, oidcId, oidcId)
+	err = resource.CreateIAMRole(region, role)
 	if err != nil {
 		return fmt.Errorf("failed to create cluster autoscaler IAM role: %s", err.Error())
 	}

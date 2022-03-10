@@ -28,6 +28,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 	"text/template"
 )
 
@@ -195,7 +196,14 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 
 			deployment.AddStep("createClusterAutoscalerIAMRole", "Create Cluster Autoscaler IAM role", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 				sparkTopology := t.(*SparkTopology)
-				err := CreateClusterAutoscalerIAMRole(*sparkTopology)
+				oidcIssuer := c.GetStepOutput("createEKSCluster")["oidcIssuer"].(string)
+				idStr := "id/"
+				index := strings.LastIndex(strings.ToLower(oidcIssuer), idStr)
+				if index == -1 {
+					return framework.NewDeploymentStepOutput(), fmt.Errorf("invalid OIDC issuer: %s", oidcIssuer)
+				}
+				oidcId := oidcIssuer[index + len(idStr):]
+				err := CreateClusterAutoscalerIAMRole(*sparkTopology, oidcId)
 				return framework.NewDeploymentStepOutput(), err
 			})
 		}
