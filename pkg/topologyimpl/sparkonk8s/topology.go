@@ -163,6 +163,7 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 					MinSize:       DefaultNodeGroupSize,
 				},
 			},
+			// EnableClusterAutoscaler: true,
 			SparkOperator: SparkOperator{
 				HelmInstallName:           DefaultSparkOperatorHelmInstallName,
 				ImageRepository:           DefaultOperatorImageRepository,

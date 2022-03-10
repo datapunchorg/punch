@@ -18,6 +18,7 @@ package awslib
 
 import (
 	"fmt"
+	"log"
 	"os/exec"
 )
 
@@ -29,3 +30,15 @@ func CheckEksCtlCmd(exeLocation string) error {
 	}
 	return nil
 }
+
+func RunEksCtlCmd(exeLocation string, arguments []string) {
+	cmd := exec.Command(exeLocation, arguments...)
+	log.Printf("Running eksctl: %s", cmd.String())
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Failed to run eksctl\n%s\n%s", err.Error(), string(out))
+	} else {
+		log.Printf("Finished running eksctl\n%s", string(out))
+	}
+}
+

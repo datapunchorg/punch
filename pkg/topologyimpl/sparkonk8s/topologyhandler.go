@@ -180,6 +180,18 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 			}
 			return framework.NewDeploymentStepOutput(), nil
 		})
+
+		if sparkTopology.Spec.EnableClusterAutoscaler {
+			deployment.AddStep("enableClusterAutoscaler", "Enable Cluster Autoscaler", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
+				sparkTopology := t.(*SparkTopology)
+				awslib.RunEksCtlCmd("eksctl",
+					[]string{"utils", "associate-iam-oidc-provider",
+					"--cluster", sparkTopology.Spec.EKS.ClusterName,
+					"--region", sparkTopology.Spec.Region,
+					"--approve"})
+				return framework.NewDeploymentStepOutput(), nil
+			})
+		}
 	}
 
 	if commandEnvironment.Get(CmdEnvNginxHelmChart) != "" {
