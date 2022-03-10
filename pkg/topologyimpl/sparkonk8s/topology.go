@@ -69,6 +69,7 @@ type SparkTopologySpec struct {
 	S3Policy      resource.IAMPolicy   `json:"s3Policy" yaml:"s3Policy"`
 	EKS           resource.EKSCluster  `json:"eks" yaml:"eks"`
 	NodeGroups    []resource.NodeGroup `json:"nodeGroups" yaml:"nodeGroups"`
+	EnableClusterAutoscaler bool       `json:"enableClusterAutoscaler" yaml:"enableClusterAutoscaler"`
 	SparkOperator SparkOperator        `json:"sparkOperator" yaml:"sparkOperator"`
 	NginxIngress  NginxIngress         `json:"nginxIngress" yaml:"nginxIngress"`
 	ApiGateway    SparkApiGateway      `json:"apiGateway" yaml:"apiGateway"`

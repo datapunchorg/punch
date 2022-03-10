@@ -97,6 +97,13 @@ func (t *TopologyHandler) Resolve(topology framework.Topology, data framework.Te
 		return nil, err
 	}
 
+	if resolvedSparkTopology.Spec.EnableClusterAutoscaler {
+		err = awslib.CheckEksCtlCmd("eksctl")
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return resolvedTopology, nil
 }
 
