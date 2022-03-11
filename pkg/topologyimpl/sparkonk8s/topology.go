@@ -46,6 +46,7 @@ const (
 	CmdEnvWithMinikube           = "withMinikube"
 	CmdEnvNginxHelmChart         = "nginxHelmChart"
 	CmdEnvSparkOperatorHelmChart = "sparkOperatorHelmChart"
+	CmdEnvClusterAutoscalerHelmChart = "ClusterAutoscalerHelmChart"
 	CmdEnvKubeConfig             = "kubeConfig"
 
 	DefaultVersion        = "datapunch.org/v1alpha1"

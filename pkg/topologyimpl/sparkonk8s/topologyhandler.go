@@ -99,6 +99,13 @@ func (t *TopologyHandler) Resolve(topology framework.Topology, data framework.Te
 	}
 
 	if resolvedSparkTopology.Spec.AutoScale.EnableClusterAutoscaler {
+		err = checkCmdEnvFolderExists(resolvedSparkTopology.Metadata, CmdEnvClusterAutoscalerHelmChart)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if resolvedSparkTopology.Spec.AutoScale.EnableClusterAutoscaler {
 		err = awslib.CheckEksCtlCmd("eksctl")
 		if err != nil {
 			return nil, err
@@ -117,6 +124,10 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 
 	if commandEnvironment.Get(CmdEnvSparkOperatorHelmChart) == "" {
 		return nil, fmt.Errorf("please provide helm chart file location for Spark Operator")
+	}
+
+	if sparkTopology.Spec.AutoScale.EnableClusterAutoscaler && commandEnvironment.Get(CmdEnvClusterAutoscalerHelmChart) == "" {
+		return nil, fmt.Errorf("please provide helm chart file location for Cluster Autoscaler")
 	}
 
 	kubelib.CheckHelmOrFatal(commandEnvironment.Get(CmdEnvHelmExecutable))
@@ -406,6 +417,7 @@ func createSparkTopologyTemplate() SparkTopology {
 	topology.Metadata.CommandEnvironment[CmdEnvWithMinikube] = "{{ or .Env.withMinikube `false` }}"
 	topology.Metadata.CommandEnvironment[CmdEnvNginxHelmChart] = "{{ or .Env.nginxHelmChart `ingress-nginx/charts/ingress-nginx` }}"
 	topology.Metadata.CommandEnvironment[CmdEnvSparkOperatorHelmChart] = "{{ or .Env.sparkOperatorHelmChart `spark-operator-service/charts/spark-operator-chart` }}"
+	topology.Metadata.CommandEnvironment[CmdEnvClusterAutoscalerHelmChart] = "{{ or .Env.clusterAutoscalerHelmChart `cluster-autoscaler/charts/cluster-autoscaler` }}"
 	topology.Metadata.CommandEnvironment[CmdEnvKubeConfig] = "{{ or .Env.kubeConfig `` }}"
 
 	topology.Metadata.Notes["apiUserPassword"] = "Please make sure to provide API gateway user password when deploying the topology, e.g. --set apiUserPassword=your-password"

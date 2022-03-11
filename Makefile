@@ -57,6 +57,7 @@ release: build
 	mkdir -p dist
 	cp -R third-party/helm-charts/ingress-nginx dist/ingress-nginx/
 	cp -R third-party/helm-charts/spark-operator-service dist/spark-operator-service/
+	cp -R third-party/helm-charts/cluster-autoscaler dist/cluster-autoscaler/
 	cp hack/pyspark-example.py dist/
 	cp hack/pyspark-iceberg-example.py dist/
 	curl -L -o dist/sparkcli.tar.gz https://github.com/datapunchorg/spark-on-k8s-operator/releases/download/v0.1.0/sparkcli.tar.gz
