@@ -92,7 +92,7 @@ func CreateClusterAutoscalerIAMServiceAccount(commandEnvironment framework.Comma
 			"--region", topology.Spec.Region,
 			"--cluster", topology.Spec.EKS.ClusterName,
 			"--namespace", systemNamespace,
-			"--attach-policy-arn", roleArn,
+			"--attach-role-arn", roleArn,
 			"--approve"})
 	err = WaitEKSServiceAccount(commandEnvironment, topology, systemNamespace, serviceAccountName)
 	return err
@@ -106,14 +106,22 @@ func WaitEKSServiceAccount(commandEnvironment framework.CommandEnvironment, topo
 	if err != nil {
 		return fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
 	}
-
-	_, err = clientset.CoreV1().ServiceAccounts(namespace).Get(
-		context.TODO(),
-		serviceAccount,
-		v12.GetOptions{},
-	)
+	err = common.RetryUntilTrue(func() (bool, error) {
+		_, err = clientset.CoreV1().ServiceAccounts(namespace).Get(
+			context.TODO(),
+			serviceAccount,
+			v12.GetOptions{},
+		)
+		if err != nil {
+			fmt.Sprintf("Failed to get service account %s in namespace %s in EKS cluster %s", serviceAccount, namespace, clusterName)
+			return false, nil
+		}
+		return true, nil
+		},
+		5*time.Minute,
+		10*time.Second)
 	if err != nil {
-		return fmt.Errorf("failed to get service account %s in namespace %s in EKS cluster %s", serviceAccount, namespace, clusterName)
+		return fmt.Errorf("failed to wait service account %s in namespace %s in EKS cluster %s", serviceAccount, namespace, clusterName)
 	}
 	return nil
 }
