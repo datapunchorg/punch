@@ -67,6 +67,7 @@ type SparkTopologySpec struct {
 	VpcId         string               `json:"vpcId" yaml:"vpcId"`
 	S3BucketName  string               `json:"s3BucketName" yaml:"s3BucketName"`
 	S3Policy      resource.IAMPolicy   `json:"s3Policy" yaml:"s3Policy"`
+	AutoScalingPolicy      resource.IAMPolicy   `json:"autoScalingPolicy" yaml:"autoScalingPolicy"`
 	EKS           resource.EKSCluster  `json:"eks" yaml:"eks"`
 	NodeGroups    []resource.NodeGroup `json:"nodeGroups" yaml:"nodeGroups"`
 	AutoScale     AutoScale            `json:"autoScale" yaml:"autoScale"`
@@ -123,6 +124,19 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 			VpcId:        "",
 			S3BucketName: s3BucketName,
 			S3Policy:     resource.IAMPolicy{},
+			AutoScalingPolicy:     resource.IAMPolicy{
+				Name: "AutoScaling",
+				PolicyDocument: `{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "autoscaling:*",
+            "Resource": "*"
+        }
+    ]
+}`,
+			},
 			EKS: resource.EKSCluster{
 				ClusterName: k8sClusterName,
 				ControlPlaneRole: resource.IAMRole{

@@ -34,7 +34,7 @@ import (
 
 func CreateInstanceIAMRole(topology SparkTopology) string {
 	region := topology.Spec.Region
-	roleName, err := resource.CreateIAMRoleWithMorePolicies(region, topology.Spec.EKS.InstanceRole, []resource.IAMPolicy{topology.Spec.S3Policy})
+	roleName, err := resource.CreateIAMRoleWithMorePolicies(region, topology.Spec.EKS.InstanceRole, []resource.IAMPolicy{topology.Spec.S3Policy, topology.Spec.AutoScalingPolicy})
 	if err != nil {
 		// TODO remove Fatalf
 		log.Fatalf("Failed to create instance IAM role: %s", err.Error())

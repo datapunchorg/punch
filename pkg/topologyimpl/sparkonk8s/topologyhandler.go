@@ -290,6 +290,14 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 			err = awslib.CheckEksCtlCmd("eksctl")
 			if err == nil {
 				awslib.RunEksCtlCmd("eksctl",
+					[]string{"delete", "iamserviceaccount",
+						"--region", sparkTopology.Spec.Region,
+						"--cluster", sparkTopology.Spec.EKS.ClusterName,
+						"--namespace", "kube-system",
+						"--name", "cluster-autoscaler",
+						"--wait",
+					})
+				awslib.RunEksCtlCmd("eksctl",
 					[]string{"delete", "cluster",
 						"--region", sparkTopology.Spec.Region,
 						"--name", sparkTopology.Spec.EKS.ClusterName,

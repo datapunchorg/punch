@@ -35,6 +35,8 @@ brew install sparkcli
 
 ## TODO
 
+Run: helm install cluster-autoscaler /Users/admin/github/datapunchorg/punch/third-party/helm-charts/cluster-autoscaler --set autoDiscovery.clusterName=my-k8s-01 --set awsRegion=us-west-1
+
 1. Delete IAM Identity provider when enabled AutoScale
 2. Attach tag (e.g. punch-topology=xxx) to AWS resources created by punch
 3. Mask password value in helm output (e.g. --set apiGateway.userPassword=xxx)
