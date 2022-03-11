@@ -71,13 +71,13 @@ type SparkTopologySpec struct {
 	AutoScalingPolicy      resource.IAMPolicy   `json:"autoScalingPolicy" yaml:"autoScalingPolicy"`
 	EKS           resource.EKSCluster  `json:"eks" yaml:"eks"`
 	NodeGroups    []resource.NodeGroup `json:"nodeGroups" yaml:"nodeGroups"`
-	AutoScale     AutoScale            `json:"autoScale" yaml:"autoScale"`
+	AutoScaling   AutoScalingSpec      `json:"autoScale" yaml:"autoScale"`
 	SparkOperator SparkOperator        `json:"sparkOperator" yaml:"sparkOperator"`
 	NginxIngress  NginxIngress         `json:"nginxIngress" yaml:"nginxIngress"`
 	ApiGateway    SparkApiGateway      `json:"apiGateway" yaml:"apiGateway"`
 }
 
-type AutoScale struct {
+type AutoScalingSpec struct {
 	EnableClusterAutoscaler bool       `json:"enableClusterAutoscaler" yaml:"enableClusterAutoscaler"`
 	ClusterAutoscalerIAMRole resource.IAMRole   `json:"clusterAutoscalerIAMRole" yaml:"clusterAutoscalerIAMRole"`
 }
@@ -171,7 +171,7 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 					},
 				},
 			},
-			AutoScale: AutoScale{
+			AutoScaling: AutoScalingSpec{
 				EnableClusterAutoscaler: false,
 				ClusterAutoscalerIAMRole: resource.IAMRole{
 					Name: "AmazonEKSClusterAutoscalerRole",

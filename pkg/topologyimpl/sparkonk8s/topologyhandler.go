@@ -98,14 +98,14 @@ func (t *TopologyHandler) Resolve(topology framework.Topology, data framework.Te
 		return nil, err
 	}
 
-	if resolvedSparkTopology.Spec.AutoScale.EnableClusterAutoscaler {
+	if resolvedSparkTopology.Spec.AutoScaling.EnableClusterAutoscaler {
 		err = checkCmdEnvFolderExists(resolvedSparkTopology.Metadata, CmdEnvClusterAutoscalerHelmChart)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	if resolvedSparkTopology.Spec.AutoScale.EnableClusterAutoscaler {
+	if resolvedSparkTopology.Spec.AutoScaling.EnableClusterAutoscaler {
 		err = awslib.CheckEksCtlCmd("eksctl")
 		if err != nil {
 			return nil, err
@@ -126,7 +126,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		return nil, fmt.Errorf("please provide helm chart file location for Spark Operator")
 	}
 
-	if sparkTopology.Spec.AutoScale.EnableClusterAutoscaler && commandEnvironment.Get(CmdEnvClusterAutoscalerHelmChart) == "" {
+	if sparkTopology.Spec.AutoScaling.EnableClusterAutoscaler && commandEnvironment.Get(CmdEnvClusterAutoscalerHelmChart) == "" {
 		return nil, fmt.Errorf("please provide helm chart file location for Cluster Autoscaler")
 	}
 
@@ -193,8 +193,8 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 			return framework.NewDeploymentStepOutput(), nil
 		})
 
-		if sparkTopology.Spec.AutoScale.EnableClusterAutoscaler {
-			deployment.AddStep("enableClusterAutoscaler", "Enable Cluster Autoscaler", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
+		if sparkTopology.Spec.AutoScaling.EnableClusterAutoscaler {
+			deployment.AddStep("enableIamOidcProvider", "Enable IAM OIDC Provider", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 				sparkTopology := t.(*SparkTopology)
 				awslib.RunEksCtlCmd("eksctl",
 					[]string{"utils", "associate-iam-oidc-provider",
@@ -223,7 +223,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 				return framework.NewDeploymentStepOutput(), err
 			})
 
-			deployment.AddStep("createClusterAutoscalerTagsOnNodeGroup", "create Cluster Autoscaler tags on node groups", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
+			deployment.AddStep("createClusterAutoscalerTagsOnNodeGroup", "Create Cluster Autoscaler tags on node groups", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 				sparkTopology := t.(*SparkTopology)
 				for _, nodeGroup := range sparkTopology.Spec.NodeGroups {
 					err := awslib.CreateOrUpdateClusterAutoscalerTagsOnNodeGroup(sparkTopology.Spec.Region, sparkTopology.Spec.EKS.ClusterName, nodeGroup.Name)
@@ -231,6 +231,12 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 						return framework.NewDeploymentStepOutput(), err
 					}
 				}
+				return framework.NewDeploymentStepOutput(), nil
+			})
+
+			deployment.AddStep("deployClusterAutoscaler", "Deploy Cluster Autoscaler", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
+				sparkTopology := t.(*SparkTopology)
+				DeployClusterAutoscaler(commandEnvironment, *sparkTopology)
 				return framework.NewDeploymentStepOutput(), nil
 			})
 		}
@@ -294,27 +300,8 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 
 		deployment.AddStep("deleteEKSCluster", "Delete EKS Cluster", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 			sparkTopology := t.(*SparkTopology)
-			err := awslib.DeleteEKSCluster(sparkTopology.Spec.Region, sparkTopology.Spec.EKS.ClusterName)
-			if err != nil {
-				fmt.Sprintf("Failed to delete EKS cluster: %s", err.Error())
-			}
-			err = awslib.CheckEksCtlCmd("eksctl")
-			if err == nil {
-				awslib.RunEksCtlCmd("eksctl",
-					[]string{"delete", "iamserviceaccount",
-						"--region", sparkTopology.Spec.Region,
-						"--cluster", sparkTopology.Spec.EKS.ClusterName,
-						"--namespace", "kube-system",
-						"--name", "cluster-autoscaler",
-						"--wait",
-					})
-				awslib.RunEksCtlCmd("eksctl",
-					[]string{"delete", "cluster",
-						"--region", sparkTopology.Spec.Region,
-						"--name", sparkTopology.Spec.EKS.ClusterName,
-					})
-			}
-			return framework.NewDeploymentStepOutput(), err
+			DeleteEKSCluster(sparkTopology.Spec.Region, sparkTopology.Spec.EKS.ClusterName)
+			return framework.NewDeploymentStepOutput(), nil
 		})
 	}
 

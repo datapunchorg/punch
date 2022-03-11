@@ -49,7 +49,7 @@ func CreateClusterAutoscalerIAMRole(topology SparkTopology, oidcId string) error
 	if err != nil {
 		return fmt.Errorf("failed to get current account: %s", err.Error())
 	}
-	role := topology.Spec.AutoScale.ClusterAutoscalerIAMRole
+	role := topology.Spec.AutoScaling.ClusterAutoscalerIAMRole
 	role.AssumeRolePolicyDocument = fmt.Sprintf(`{
     "Version": "2012-10-17",
     "Statement": [
@@ -83,7 +83,7 @@ func CreateClusterAutoscalerIAMServiceAccount(commandEnvironment framework.Comma
 	if err != nil {
 		return fmt.Errorf("failed to get current account: %s", err.Error())
 	}
-	roleArn := fmt.Sprintf("arn:aws:iam::%s:role/%s", accountId, topology.Spec.AutoScale.ClusterAutoscalerIAMRole.Name)
+	roleArn := fmt.Sprintf("arn:aws:iam::%s:role/%s", accountId, topology.Spec.AutoScaling.ClusterAutoscalerIAMRole.Name)
 	systemNamespace := "kube-system"
 	serviceAccountName := "cluster-autoscaler"
 	awslib.RunEksCtlCmd("eksctl",
@@ -191,4 +191,27 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 	output := make(map[string]interface{})
 	output["loadBalancerUrls"] = urls
 	return output
+}
+
+func DeleteEKSCluster(region string, clusterName string) {
+	err := awslib.DeleteEKSCluster(region, clusterName)
+	if err != nil {
+		fmt.Sprintf("Failed to delete EKS cluster: %s", err.Error())
+	}
+	err = awslib.CheckEksCtlCmd("eksctl")
+	if err == nil {
+		awslib.RunEksCtlCmd("eksctl",
+			[]string{"delete", "iamserviceaccount",
+				"--region", region,
+				"--cluster", clusterName,
+				"--namespace", "kube-system",
+				"--name", "cluster-autoscaler",
+				"--wait",
+			})
+		awslib.RunEksCtlCmd("eksctl",
+			[]string{"delete", "cluster",
+				"--region", region,
+				"--name", clusterName,
+			})
+	}
 }
