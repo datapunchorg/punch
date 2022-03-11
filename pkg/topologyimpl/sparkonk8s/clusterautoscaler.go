@@ -21,6 +21,7 @@ import (
 	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/kubelib"
+	v1 "k8s.io/api/core/v1"
 	"log"
 )
 
@@ -36,6 +37,8 @@ func InstallClusterAutoscalerHelm(commandEnvironment framework.CommandEnvironmen
 		log.Fatalf("Failed to get kube config: %s", err)
 	}
 
+	defer kubeConfig.Cleanup()
+
 	installName := "cluster-autoscaler"
 	installNamespace := "kube-system"
 
@@ -46,8 +49,17 @@ func InstallClusterAutoscalerHelm(commandEnvironment framework.CommandEnvironmen
 
 	kubelib.InstallHelm(commandEnvironment.Get(CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvClusterAutoscalerHelmChart), kubeConfig, arguments, installName, installNamespace)
 
-	err = kubeConfig.Cleanup()
+	region := topology.Spec.Region
+	clusterName := topology.Spec.EKS.ClusterName
+
+	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(CmdEnvKubeConfig), clusterName)
 	if err != nil {
-		log.Fatalf("Failed to delete CA file: %s", err.Error())
+		log.Fatalf("Failed to create Kubernetes client: %s", err.Error())
+	}
+
+	podNamePrefix := "cluster-autoscaler-aws-cluster-autoscaler"
+	err = kubelib.WaitPodsInPhase(clientset, installNamespace, podNamePrefix, v1.PodRunning)
+	if err != nil {
+		log.Fatalf("Pod %s*** in namespace %s is not in phase %s", podNamePrefix, installNamespace, v1.PodRunning)
 	}
 }

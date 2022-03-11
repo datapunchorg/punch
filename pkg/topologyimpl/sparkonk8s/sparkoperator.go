@@ -77,7 +77,7 @@ func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, topolo
 	sparkOperatorPodNamePrefix := helmInstallName
 	err = kubelib.WaitPodsInPhase(clientset, operatorNamespace, sparkOperatorPodNamePrefix, v1.PodRunning)
 	if err != nil {
-		log.Fatalf("Pod %s* in namespace %s is not in phase %s", sparkOperatorPodNamePrefix, operatorNamespace, v1.PodRunning)
+		log.Fatalf("Pod %s*** in namespace %s is not in phase %s", sparkOperatorPodNamePrefix, operatorNamespace, v1.PodRunning)
 	}
 
 	// Retry and handle error like following

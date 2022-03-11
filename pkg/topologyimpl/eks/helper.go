@@ -69,7 +69,7 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 	}
 	err = kubelib.WaitPodsInPhase(clientset, nginxNamespace, serviceName, v1.PodRunning)
 	if err != nil {
-		log.Fatalf("Pod %s* in namespace %s is not in phase %s", serviceName, nginxNamespace, v1.PodRunning)
+		log.Fatalf("Pod %s*** in namespace %s is not in phase %s", serviceName, nginxNamespace, v1.PodRunning)
 	}
 
 	urls, err := kubelib.GetServiceLoadBalancerUrls(clientset, nginxNamespace, serviceName)

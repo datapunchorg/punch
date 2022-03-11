@@ -28,6 +28,7 @@ const (
 	DefaultApiUserName                  = "user1"
 	DefaultInstanceType                 = "t3.large"
 	DefaultNodeGroupSize                = 3
+	DefaultMaxNodeGroupSize             = 10
 	DefaultOperatorImageRepository      = "ghcr.io/datapunchorg/spark-on-k8s-operator"
 	DefaultSparkOperatorImageTag        = "master-datapunch"
 	DefaultSparkOperatorNamespace       = "spark-operator-01"
@@ -208,7 +209,7 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 					Name:          nodeGroupName,
 					InstanceTypes: []string{DefaultInstanceType},
 					DesiredSize:   DefaultNodeGroupSize,
-					MaxSize:       DefaultNodeGroupSize,
+					MaxSize:       DefaultMaxNodeGroupSize,
 					MinSize:       DefaultNodeGroupSize,
 				},
 			},

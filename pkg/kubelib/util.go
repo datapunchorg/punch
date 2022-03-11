@@ -97,7 +97,7 @@ func CheckPodsInPhase(clientset *kubernetes.Clientset, namespace string, podName
 
 func WaitPodsInPhase(clientset *kubernetes.Clientset, namespace string, podNamePrefix string, podPhase v1.PodPhase) error {
 	return common.RetryUntilTrue(func() (bool, error) {
-		log.Printf("Checking whether pod %s* in namespace %s is in phase %s", podNamePrefix, namespace, podPhase)
+		log.Printf("Checking whether pod %s*** in namespace %s is in phase %s", podNamePrefix, namespace, podPhase)
 		result, err := CheckPodsInPhase(clientset, namespace, podNamePrefix, podPhase)
 		if err != nil {
 			return result, err
