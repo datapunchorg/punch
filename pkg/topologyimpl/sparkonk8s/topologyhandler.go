@@ -178,7 +178,6 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 				if err != nil {
 					return framework.NewDeploymentStepOutput(), err
 				}
-				awslib.CreateOrUpdateClusterAutoscalerTagsOnNodeGroup(sparkTopology.Spec.Region, sparkTopology.Spec.EKS.ClusterName, nodeGroup.Name)
 			}
 			return framework.NewDeploymentStepOutput(), nil
 		})
@@ -211,6 +210,17 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 				sparkTopology := t.(*SparkTopology)
 				err := CreateClusterAutoscalerIAMServiceAccount(commandEnvironment, *sparkTopology)
 				return framework.NewDeploymentStepOutput(), err
+			})
+
+			deployment.AddStep("createClusterAutoscalerTagsOnNodeGroup", "create Cluster Autoscaler tags on node groups", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
+				sparkTopology := t.(*SparkTopology)
+				for _, nodeGroup := range sparkTopology.Spec.NodeGroups {
+					err := awslib.CreateOrUpdateClusterAutoscalerTagsOnNodeGroup(sparkTopology.Spec.Region, sparkTopology.Spec.EKS.ClusterName, nodeGroup.Name)
+					if err != nil {
+						return framework.NewDeploymentStepOutput(), err
+					}
+				}
+				return framework.NewDeploymentStepOutput(), nil
 			})
 		}
 	}
@@ -274,6 +284,17 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 		deployment.AddStep("deleteEKSCluster", "Delete EKS Cluster", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 			sparkTopology := t.(*SparkTopology)
 			err := awslib.DeleteEKSCluster(sparkTopology.Spec.Region, sparkTopology.Spec.EKS.ClusterName)
+			if err != nil {
+				fmt.Sprintf("Failed to delete EKS cluster: %s", err.Error())
+			}
+			err = awslib.CheckEksCtlCmd("eksctl")
+			if err == nil {
+				awslib.RunEksCtlCmd("eksctl",
+					[]string{"delete", "cluster",
+						"--region", sparkTopology.Spec.Region,
+						"--name", sparkTopology.Spec.EKS.ClusterName,
+					})
+			}
 			return framework.NewDeploymentStepOutput(), err
 		})
 	}
