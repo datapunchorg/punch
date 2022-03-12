@@ -21,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"log"
+	"strings"
 )
 
 func FindAttachedPolicy(iamClient *iam.IAM, roleName string, policyArn string) (bool, error) {
@@ -143,4 +144,30 @@ func GetIAMRoleArnByName(region string, roleName string) (string, error) {
 		return "", fmt.Errorf("failed to get role %s: %s", roleName, err.Error())
 	}
 	return *getRoleOutput.Role.Arn, nil
+}
+
+func DeleteOidcProvider(region string, oidcProvider string) error {
+	httpsPrefix := "https://"
+	httpPrefix := "https://"
+	oidcProviderLower := strings.ToLower(oidcProvider)
+	if strings.HasPrefix(oidcProviderLower, httpsPrefix) {
+		oidcProvider = oidcProvider[len(httpsPrefix):]
+	} else if strings.HasPrefix(oidcProviderLower, httpPrefix) {
+		oidcProvider = oidcProvider[len(httpPrefix):]
+	}
+
+	session := CreateSession(region)
+	account, err := GetCurrentAccount(session)
+	if err != nil {
+		return err
+	}
+	iamClient := iam.New(session)
+	arn := fmt.Sprintf("arn:aws:iam::%s:oidc-provider/%s", account, oidcProvider)
+	_, err = iamClient.DeleteOpenIDConnectProvider(&iam.DeleteOpenIDConnectProviderInput{
+		OpenIDConnectProviderArn: &arn,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to get delete OIDC provider %s: %s", arn, err.Error())
+	}
+	return nil
 }

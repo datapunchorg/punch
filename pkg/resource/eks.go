@@ -212,9 +212,17 @@ func DescribeEksCluster(region string, clusterName string) (EKSClusterSummary, e
 		return EKSClusterSummary{}, fmt.Errorf("failed to describe EKS cluster %s, %s", clusterName, err.Error())
 	}
 
+	oidcIssuer := ""
+	if describeClusterOutput.Cluster != nil &&
+		describeClusterOutput.Cluster.Identity != nil &&
+		describeClusterOutput.Cluster.Identity.Oidc != nil &&
+		describeClusterOutput.Cluster.Identity.Oidc.Issuer != nil{
+		oidcIssuer = *describeClusterOutput.Cluster.Identity.Oidc.Issuer
+	}
+
 	clusterSummary := EKSClusterSummary{
 		ClusterName: clusterName,
-		OidcIssuer: *describeClusterOutput.Cluster.Identity.Oidc.Issuer,
+		OidcIssuer: oidcIssuer,
 	}
 
 	return clusterSummary, nil

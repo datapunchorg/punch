@@ -281,6 +281,23 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 			return framework.NewDeploymentStepOutput(), err
 		})
 	} else {
+		deployment.AddStep("deleteOidcProvider", "Delete OIDC Provider", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
+			sparkTopology := t.(*SparkTopology)
+			clusterSummary, err := resource.DescribeEksCluster(sparkTopology.Spec.Region, sparkTopology.Spec.EKS.ClusterName)
+			if err != nil {
+				log.Printf("[WARN] Cannot delete OIDC provider, failed to get EKS cluster %s in regsion %s: %s", sparkTopology.Spec.EKS.ClusterName, sparkTopology.Spec.Region, err.Error())
+				return framework.NewDeploymentStepOutput(), nil
+			}
+			if clusterSummary.OidcIssuer != "" {
+				log.Printf("Deleting OIDC Identity Provider %s", clusterSummary.OidcIssuer)
+				err = awslib.DeleteOidcProvider(sparkTopology.Spec.Region, clusterSummary.OidcIssuer)
+				if err != nil {
+					log.Printf("[WARN] Failed to delete OIDC provider %s: %s", clusterSummary.OidcIssuer, err.Error())
+					return framework.NewDeploymentStepOutput(), nil
+				}
+			}
+			return framework.NewDeploymentStepOutput(), nil
+		})
 		deployment.AddStep("deleteNodeGroups", "Delete Node Groups", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 			sparkTopology := t.(*SparkTopology)
 			for _, nodeGroup := range sparkTopology.Spec.NodeGroups {
