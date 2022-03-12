@@ -51,17 +51,14 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 		log.Fatalf("Failed to get kube config: %s", err)
 	}
 
+	defer kubeConfig.Cleanup()
+
 	arguments := []string{
 		"--set", fmt.Sprintf("service.enableHttp=%t", topology.Spec.NginxIngress.EnableHttp),
 		"--set", fmt.Sprintf("service.enableHttps=%t", topology.Spec.NginxIngress.EnableHttps),
 	}
 
 	kubelib.InstallHelm(commandEnvironment.Get(CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvNginxHelmChart), kubeConfig, arguments, helmInstallName, nginxNamespace)
-
-	err = kubeConfig.Cleanup()
-	if err != nil {
-		log.Fatalf("Failed to delete CA file: %s", err.Error())
-	}
 
 	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(CmdEnvKubeConfig), eksClusterName)
 	if err != nil {

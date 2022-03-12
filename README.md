@@ -35,14 +35,17 @@ brew install sparkcli
 
 ## TODO
 
-1. Use "defer kubeConfig.Cleanup()" to make sure it is cleaned up
-2. Delete IAM Identity provider when enabled AutoScale
-3. Attach tag (e.g. punch-topology=xxx) to AWS resources created by punch
-4. Mask password value in helm output (e.g. --set apiGateway.userPassword=xxx)
-5. Remove unnecessary argument like "--set apiUserPassword=password1" in "punch uninstall" command
-6. Allow patch topology like --patch foo.field1=value1
-7. Allow set values by file like --values values.yaml
-8. Return HTTP 404 when sparkcli getting a non-existing application
-9. Get application error message from Spark Operator
-10. Set up convenient tool to benchmark Spark TPC-DS
-11. Create public demo (tech news, mailing list)
+1. Delete IAM Identity provider when enabled AutoScale
+2. Attach tag (e.g. punch-topology=xxx) to AWS resources created by punch
+3. Mask password value in helm output (e.g. --set apiGateway.userPassword=xxx)
+4. Remove unnecessary argument like "--set apiUserPassword=password1" in "punch uninstall" command
+5. Allow patch topology like --patch foo.field1=value1
+6. Allow set values by file like --values values.yaml
+7. Return HTTP 404 when sparkcli getting a non-existing application
+8. Get application error message from Spark Operator
+9. Set up convenient tool to benchmark Spark TPC-DS
+10. Create public demo (tech news, mailing list)
+
+## Supported By
+
+Thanks for support from [JetBrains](https://jb.gg/OpenSourceSupport) with the great development tool and licenses.

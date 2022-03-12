@@ -163,6 +163,8 @@ func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, t
 		log.Fatalf("Failed to get kube config: %s", err)
 	}
 
+	defer kubeConfig.Cleanup()
+
 	installName := topology.Spec.SparkOperator.HelmInstallName
 	operatorNamespace := topology.Spec.SparkOperator.Namespace
 	sparkApplicationNamespace := topology.Spec.SparkOperator.SparkApplicationNamespace
@@ -181,11 +183,6 @@ func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, t
 	}
 
 	kubelib.InstallHelm(commandEnvironment.Get(CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvSparkOperatorHelmChart), kubeConfig, arguments, installName, operatorNamespace)
-
-	err = kubeConfig.Cleanup()
-	if err != nil {
-		log.Fatalf("Failed to delete CA file: %s", err.Error())
-	}
 }
 
 func CreateSparkServiceAccount(clientset *kubernetes.Clientset, sparkOperatorNamespace string, sparkApplicationNamespace string, sparkServiceAccountName string) {
