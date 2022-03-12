@@ -213,13 +213,14 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 					return framework.NewDeploymentStepOutput(), fmt.Errorf("invalid OIDC issuer: %s", oidcIssuer)
 				}
 				oidcId := oidcIssuer[index + len(idStr):]
-				err := CreateClusterAutoscalerIAMRole(*sparkTopology, oidcId)
-				return framework.NewDeploymentStepOutput(), err
+				roleName, err := CreateClusterAutoscalerIAMRole(*sparkTopology, oidcId)
+				return framework.DeploymentStepOutput{"roleName": roleName}, err
 			})
 
 			deployment.AddStep("createClusterAutoscalerIAMServiceAccount", "Create Cluster Autoscaler IAM service account", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 				sparkTopology := t.(*SparkTopology)
-				err := CreateClusterAutoscalerIAMServiceAccount(commandEnvironment, *sparkTopology)
+				roleName := c.GetStepOutput("createClusterAutoscalerIAMRole")["roleName"].(string)
+				err := CreateClusterAutoscalerIAMServiceAccount(commandEnvironment, *sparkTopology, roleName)
 				return framework.NewDeploymentStepOutput(), err
 			})
 
@@ -295,6 +296,7 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 					log.Printf("[WARN] Failed to delete OIDC provider %s: %s", clusterSummary.OidcIssuer, err.Error())
 					return framework.NewDeploymentStepOutput(), nil
 				}
+				log.Printf("Deleted OIDC Identity Provider %s", clusterSummary.OidcIssuer)
 			}
 			return framework.NewDeploymentStepOutput(), nil
 		})

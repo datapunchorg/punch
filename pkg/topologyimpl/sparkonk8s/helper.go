@@ -42,12 +42,13 @@ func CreateInstanceIAMRole(topology SparkTopology) string {
 	return roleName
 }
 
-func CreateClusterAutoscalerIAMRole(topology SparkTopology, oidcId string) error {
+// CreateClusterAutoscalerIAMRole returns IAM Role name like: AmazonEKSClusterAutoscalerRole-xxx
+func CreateClusterAutoscalerIAMRole(topology SparkTopology, oidcId string) (string, error) {
 	region := topology.Spec.Region
 	session := awslib.CreateSession(region)
 	accountId, err := awslib.GetCurrentAccount(session)
 	if err != nil {
-		return fmt.Errorf("failed to get current account: %s", err.Error())
+		return "", fmt.Errorf("failed to get current account: %s", err.Error())
 	}
 	role := topology.Spec.AutoScaling.ClusterAutoscalerIAMRole
 	role.AssumeRolePolicyDocument = fmt.Sprintf(`{
@@ -69,21 +70,22 @@ func CreateClusterAutoscalerIAMRole(topology SparkTopology, oidcId string) error
     ]
 }
 `, accountId, oidcId, oidcId, oidcId)
+	role.Name += "-" + oidcId
 	err = resource.CreateIAMRole(region, role)
 	if err != nil {
-		return fmt.Errorf("failed to create cluster autoscaler IAM role: %s", err.Error())
+		return "", fmt.Errorf("failed to create cluster autoscaler IAM role: %s", err.Error())
 	}
-	return nil
+	return role.Name, nil
 }
 
-func CreateClusterAutoscalerIAMServiceAccount(commandEnvironment framework.CommandEnvironment, topology SparkTopology) error {
+func CreateClusterAutoscalerIAMServiceAccount(commandEnvironment framework.CommandEnvironment, topology SparkTopology, iamRoleName string) error {
 	region := topology.Spec.Region
 	session := awslib.CreateSession(region)
 	accountId, err := awslib.GetCurrentAccount(session)
 	if err != nil {
 		return fmt.Errorf("failed to get current account: %s", err.Error())
 	}
-	roleArn := fmt.Sprintf("arn:aws:iam::%s:role/%s", accountId, topology.Spec.AutoScaling.ClusterAutoscalerIAMRole.Name)
+	roleArn := fmt.Sprintf("arn:aws:iam::%s:role/%s", accountId, iamRoleName)
 	systemNamespace := "kube-system"
 	serviceAccountName := "cluster-autoscaler"
 	awslib.RunEksCtlCmd("eksctl",
