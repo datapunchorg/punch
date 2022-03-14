@@ -45,6 +45,9 @@ func InstallClusterAutoscalerHelm(commandEnvironment framework.CommandEnvironmen
 	arguments := []string{
 		"--set", fmt.Sprintf("awsRegion=%s", topology.Spec.Region),
 		"--set", fmt.Sprintf("autoDiscovery.clusterName=%s", topology.Spec.EKS.ClusterName),
+		"--set", "cloudProvider=aws",
+		"--set", "rbac.serviceAccount.create=false",
+		"--set", "rbac.serviceAccount.name=cluster-autoscaler",
 	}
 
 	kubelib.InstallHelm(commandEnvironment.Get(CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvClusterAutoscalerHelmChart), kubeConfig, arguments, installName, installNamespace)

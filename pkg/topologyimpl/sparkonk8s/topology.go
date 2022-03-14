@@ -126,8 +126,9 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 			VpcId:        "",
 			S3BucketName: s3BucketName,
 			S3Policy:     resource.IAMPolicy{},
+			// TODO should not need AutoScalingPolicy, delete it
 			AutoScalingPolicy:     resource.IAMPolicy{
-				Name: "AutoScaling",
+				Name: fmt.Sprintf("%s-autoscaling", namePrefix),
 				PolicyDocument: `{
     "Version": "2012-10-17",
     "Statement": [
@@ -175,10 +176,10 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 			AutoScaling: AutoScalingSpec{
 				EnableClusterAutoscaler: false,
 				ClusterAutoscalerIAMRole: resource.IAMRole{
-					Name: "AmazonEKSClusterAutoscalerRole",
+					Name: fmt.Sprintf("%s-cluster-autoscaler-role", namePrefix),
 					Policies: []resource.IAMPolicy{
 						resource.IAMPolicy{
-							Name: "AmazonEKSClusterAutoscalerPolicy",
+							Name: fmt.Sprintf("%s-cluster-autoscaler-policy", namePrefix),
 							PolicyDocument: `{
     "Version": "2012-10-17",
     "Statement": [
@@ -190,7 +191,8 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
                 "autoscaling:DescribeTags",
                 "autoscaling:SetDesiredCapacity",
                 "autoscaling:TerminateInstanceInAutoScalingGroup",
-                "ec2:DescribeLaunchTemplateVersions"
+                "ec2:DescribeLaunchTemplateVersions",
+                "ec2:DescribeInstanceTypes"
             ],
             "Resource": "*",
             "Effect": "Allow"
