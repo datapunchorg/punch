@@ -160,7 +160,7 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 				},
 			},
 			AutoScaling: AutoScalingSpec{
-				EnableClusterAutoscaler: true,
+				EnableClusterAutoscaler: false,
 				ClusterAutoscalerIAMRole: resource.IAMRole{
 					Name: fmt.Sprintf("%s-cluster-autoscaler-role", namePrefix),
 					Policies: []resource.IAMPolicy{
