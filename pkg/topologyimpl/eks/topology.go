@@ -24,19 +24,22 @@ import (
 )
 
 const (
-	ToBeReplacedS3BucketName           = "todo_use_your_own_bucket_name"
-	DefaultInstanceType                = "t3.large"
-	DefaultNodeGroupSize               = 4
-	DefaultNginxIngressHelmInstallName = "ingress-nginx"
-	DefaultNginxIngressNamespace       = "ingress-nginx"
-	DefaultNginxEnableHttp             = true
-	DefaultNginxEnableHttps            = true
+	ToBeReplacedS3BucketName            = "todo_use_your_own_bucket_name"
+	DefaultInstanceType                 = "t3.large"
+	DefaultNodeGroupSize                = 3
+	DefaultMaxNodeGroupSize             = 10
+	DefaultNginxIngressHelmInstallName  = "ingress-nginx"
+	DefaultNginxIngressNamespace        = "ingress-nginx"
+	DefaultNginxEnableHttp              = true
+	DefaultNginxEnableHttps             = true
 
 	KindEksTopology = "Eks"
 
-	CmdEnvHelmExecutable = "helmExecutable"
-	CmdEnvNginxHelmChart = "nginxHelmChart"
-	CmdEnvKubeConfig     = "kubeConfig"
+	CmdEnvHelmExecutable         = "helmExecutable"
+	CmdEnvWithMinikube           = "withMinikube"
+	CmdEnvNginxHelmChart         = "nginxHelmChart"
+	CmdEnvClusterAutoscalerHelmChart = "ClusterAutoscalerHelmChart"
+	CmdEnvKubeConfig             = "kubeConfig"
 
 	DefaultVersion        = "datapunch.org/v1alpha1"
 	DefaultRegion         = "us-west-1"
@@ -48,7 +51,7 @@ type EksTopology struct {
 	ApiVersion string                     `json:"apiVersion" yaml:"apiVersion"`
 	Kind       string                     `json:"kind" yaml:"kind"`
 	Metadata   framework.TopologyMetadata `json:"metadata"`
-	Spec       EksTopologySpec            `json:"spec"`
+	Spec       EksTopologySpec          `json:"spec"`
 }
 
 type EksTopologySpec struct {
@@ -64,19 +67,6 @@ type EksTopologySpec struct {
 	NginxIngress  NginxIngress         `json:"nginxIngress" yaml:"nginxIngress"`
 }
 
-type SparkApiGateway struct {
-	UserName     string `json:"userName" yaml:"userName"`
-	UserPassword string `json:"userPassword" yaml:"userPassword"`
-}
-
-type SparkOperator struct {
-	HelmInstallName           string `json:"helmInstallName" yaml:"helmInstallName"`
-	Namespace                 string `json:"namespace" yaml:"namespace"`
-	ImageRepository           string `json:"imageRepository" yaml:"imageRepository"`
-	ImageTag                  string `json:"imageTag" yaml:"imageTag"`
-	SparkApplicationNamespace string `json:"sparkApplicationNamespace" yaml:"sparkApplicationNamespace"`
-}
-
 type NginxIngress struct {
 	HelmInstallName string `json:"helmInstallName" yaml:"helmInstallName"`
 	Namespace       string `json:"namespace" yaml:"namespace"`
@@ -85,7 +75,7 @@ type NginxIngress struct {
 }
 
 func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopology {
-	topologyName := fmt.Sprintf("%s-spark-k8s", namePrefix)
+	topologyName := fmt.Sprintf("%s-Eks-k8s", namePrefix)
 	k8sClusterName := fmt.Sprintf("%s-k8s-01", namePrefix)
 	controlPlaneRoleName := fmt.Sprintf("%s-eks-control-plane", namePrefix)
 	instanceRoleName := fmt.Sprintf("%s-eks-instance", namePrefix)
@@ -140,12 +130,42 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 					},
 				},
 			},
+			AutoScaling: resource.AutoScalingSpec{
+				EnableClusterAutoscaler: false,
+				ClusterAutoscalerIAMRole: resource.IAMRole{
+					Name: fmt.Sprintf("%s-cluster-autoscaler-role", namePrefix),
+					Policies: []resource.IAMPolicy{
+						resource.IAMPolicy{
+							Name: fmt.Sprintf("%s-cluster-autoscaler-policy", namePrefix),
+							PolicyDocument: `{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "autoscaling:DescribeAutoScalingGroups",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeLaunchConfigurations",
+                "autoscaling:DescribeTags",
+                "autoscaling:SetDesiredCapacity",
+                "autoscaling:TerminateInstanceInAutoScalingGroup",
+                "ec2:DescribeLaunchTemplateVersions",
+                "ec2:DescribeInstanceTypes"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        }
+    ]
+}`,
+						},
+					},
+				},
+			},
 			NodeGroups: []resource.NodeGroup{
 				{
 					Name:          nodeGroupName,
 					InstanceTypes: []string{DefaultInstanceType},
 					DesiredSize:   DefaultNodeGroupSize,
-					MaxSize:       DefaultNodeGroupSize,
+					MaxSize:       DefaultMaxNodeGroupSize,
 					MinSize:       DefaultNodeGroupSize,
 				},
 			},
@@ -157,11 +177,11 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 			},
 		},
 	}
-	UpdateSparkTopologyByS3BucketName(&topology, s3BucketName)
+	UpdateEksTopologyByS3BucketName(&topology, s3BucketName)
 	return topology
 }
 
-func UpdateSparkTopologyByS3BucketName(topology *EksTopology, s3BucketName string) {
+func UpdateEksTopologyByS3BucketName(topology *EksTopology, s3BucketName string) {
 	topology.Spec.S3BucketName = s3BucketName
 	topology.Spec.S3Policy.Name = fmt.Sprintf("%s-s3", s3BucketName)
 	topology.Spec.S3Policy.PolicyDocument = fmt.Sprintf(`{"Version":"2012-10-17","Statement":[
@@ -177,6 +197,15 @@ func (t *EksTopology) ToString() string {
 	topologyBytes, err := yaml.Marshal(t)
 	if err != nil {
 		return fmt.Sprintf("(Failed to serialize topology: %s)", err.Error())
+	}
+	var copy EksTopology
+	err = yaml.Unmarshal(topologyBytes, &copy)
+	if err != nil {
+		return fmt.Sprintf("(Failed to deserialize topology in ToYamlString(): %s)", err.Error())
+	}
+	topologyBytes, err = yaml.Marshal(copy)
+	if err != nil {
+		return fmt.Sprintf("(Failed to serialize topology in ToYamlString(): %s)", err.Error())
 	}
 	return string(topologyBytes)
 }

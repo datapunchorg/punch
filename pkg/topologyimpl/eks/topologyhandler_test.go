@@ -31,22 +31,22 @@ func TestGenerateTopology(t *testing.T) {
 
 	log.Printf("-----\n%s\n-----\n", topology.ToString())
 
-	sparkTopology := topology.(*EksTopology)
-	assert.Equal(t, "{{ or .Values.namePrefix `my` }}", sparkTopology.Spec.NamePrefix)
+	specificTopology := topology.(*EksTopology)
+	assert.Equal(t, "{{ or .Values.namePrefix `my` }}", specificTopology.Spec.NamePrefix)
 }
 
 func TestParseTopology(t *testing.T) {
 	handler := &TopologyHandler{}
 	topology, err := handler.Generate()
-	sparkTopology := topology.(*EksTopology)
-	sparkTopology.Spec.NamePrefix = "foo"
+	specificTopology := topology.(*EksTopology)
+	specificTopology.Spec.NamePrefix = "foo"
 	yamlContent := topology.ToString()
 
 	topology, err = handler.Parse([]byte(yamlContent))
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "Eks", topology.GetKind())
-	sparkTopology = topology.(*EksTopology)
-	assert.Equal(t, "foo", sparkTopology.Spec.NamePrefix)
+	specificTopology = topology.(*EksTopology)
+	assert.Equal(t, "foo", specificTopology.Spec.NamePrefix)
 }
 
 func TestResolveTopology(t *testing.T) {
