@@ -32,7 +32,7 @@ func TestTemplate(t *testing.T) {
 	topology := CreateDefaultSparkTopology("my", "{{ or .Values.s3BucketName .DefaultS3BucketName }}")
 	topology.Metadata.CommandEnvironment["kubeConfig"] = "{{ or .Env.kubeConfig `` }}"
 	topology.Metadata.CommandEnvironment["helmExecutable"] = "{{ or .Env.helmExecutable `helm` }}"
-	topology.Spec.EKS.ClusterName = "{{ .Values.eksCluster.name }}"
+	topology.Spec.EksSpec.EKS.ClusterName = "{{ .Values.eksCluster.name }}"
 
 	tmpl, err := template.New("").Parse(topology.ToString())
 	assert.Equal(t, nil, err)
@@ -52,8 +52,8 @@ func TestTemplate(t *testing.T) {
 
 	sparkTopology := SparkTopology{}
 	yaml.Unmarshal([]byte(str), &sparkTopology)
-	assert.Equal(t, "bucket123abc", sparkTopology.Spec.S3BucketName)
-	assert.Equal(t, "cluster1", sparkTopology.Spec.EKS.ClusterName)
+	assert.Equal(t, "bucket123abc", sparkTopology.Spec.EksSpec.S3BucketName)
+	assert.Equal(t, "cluster1", sparkTopology.Spec.EksSpec.EKS.ClusterName)
 	assert.Equal(t, "./foo/kube.config", sparkTopology.Metadata.CommandEnvironment["kubeConfig"])
 	assert.Equal(t, "./bar/helm", sparkTopology.Metadata.CommandEnvironment["helmExecutable"])
 }
@@ -79,7 +79,7 @@ func TestTemplateWithAlternativeValue(t *testing.T) {
 
 	sparkTopology := SparkTopology{}
 	yaml.Unmarshal([]byte(str), &sparkTopology)
-	assert.Equal(t, "abcde12345", sparkTopology.Spec.S3BucketName)
+	assert.Equal(t, "abcde12345", sparkTopology.Spec.EksSpec.S3BucketName)
 	assert.Equal(t, "", sparkTopology.Metadata.CommandEnvironment["kubeConfig"])
 	assert.Equal(t, "helm", sparkTopology.Metadata.CommandEnvironment["helmExecutable"])
 }
@@ -102,5 +102,5 @@ func TestTemplateWithUnresolvedValue(t *testing.T) {
 
 	sparkTopology := SparkTopology{}
 	yaml.Unmarshal([]byte(str), &sparkTopology)
-	assert.Equal(t, "<no value>", sparkTopology.Spec.S3BucketName)
+	assert.Equal(t, "<no value>", sparkTopology.Spec.EksSpec.S3BucketName)
 }

@@ -23,6 +23,7 @@ import (
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/kubelib"
 	"github.com/datapunchorg/punch/pkg/resource"
+	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	"gopkg.in/yaml.v3"
 	"io/fs"
 	"io/ioutil"
@@ -98,14 +99,14 @@ func (t *TopologyHandler) Resolve(topology framework.Topology, data framework.Te
 		return nil, err
 	}
 
-	if resolvedSparkTopology.Spec.AutoScaling.EnableClusterAutoscaler {
+	if resolvedSparkTopology.Spec.EksSpec.AutoScaling.EnableClusterAutoscaler {
 		err = checkCmdEnvFolderExists(resolvedSparkTopology.Metadata, CmdEnvClusterAutoscalerHelmChart)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	if resolvedSparkTopology.Spec.AutoScaling.EnableClusterAutoscaler {
+	if resolvedSparkTopology.Spec.EksSpec.AutoScaling.EnableClusterAutoscaler {
 		err = awslib.CheckEksCtlCmd("eksctl")
 		if err != nil {
 			return nil, err
@@ -126,7 +127,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		return nil, fmt.Errorf("please provide helm chart file location for Spark Operator")
 	}
 
-	if sparkTopology.Spec.AutoScaling.EnableClusterAutoscaler && commandEnvironment.Get(CmdEnvClusterAutoscalerHelmChart) == "" {
+	if sparkTopology.Spec.EksSpec.AutoScaling.EnableClusterAutoscaler && commandEnvironment.Get(CmdEnvClusterAutoscalerHelmChart) == "" {
 		return nil, fmt.Errorf("please provide helm chart file location for Cluster Autoscaler")
 	}
 
@@ -134,7 +135,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 	if commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
 		commandEnvironment.Set(CmdEnvKubeConfig, kubelib.GetKubeConfigPath())
 		deployment.AddStep("minikubeProfile", "Set Minikube Profile", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
-			_, err := resource.MinikubeExec("profile", sparkTopology.Spec.EKS.ClusterName)
+			_, err := resource.MinikubeExec("profile", sparkTopology.Spec.EksSpec.EKS.ClusterName)
 			return framework.NewDeploymentStepOutput(), err
 		})
 
@@ -150,23 +151,23 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 	} else {
 		deployment.AddStep("createS3Bucket", "Create S3 bucket", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 			sparkTopology := t.(*SparkTopology)
-			err := awslib.CreateS3Bucket(sparkTopology.Spec.Region, sparkTopology.Spec.S3BucketName)
-			return framework.DeploymentStepOutput{"bucketName": sparkTopology.Spec.S3BucketName}, err
+			err := awslib.CreateS3Bucket(sparkTopology.Spec.EksSpec.Region, sparkTopology.Spec.EksSpec.S3BucketName)
+			return framework.DeploymentStepOutput{"bucketName": sparkTopology.Spec.EksSpec.S3BucketName}, err
 		})
 
 		deployment.AddStep("createInstanceIAMRole", "Create EKS instance IAM role", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 			sparkTopology := t.(*SparkTopology)
-			roleName := CreateInstanceIAMRole(*sparkTopology)
+			roleName := eks.CreateInstanceIAMRole(sparkTopology.Spec.EksSpec)
 			return framework.DeploymentStepOutput{"roleName": roleName}, nil
 		})
 
 		deployment.AddStep("createEKSCluster", "Create EKS cluster", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 			sparkTopology := t.(*SparkTopology)
-			err := resource.CreateEksCluster(sparkTopology.Spec.Region, sparkTopology.Spec.VpcId, sparkTopology.Spec.EKS)
+			err := resource.CreateEksCluster(sparkTopology.Spec.EksSpec.Region, sparkTopology.Spec.EksSpec.VpcId, sparkTopology.Spec.EksSpec.EKS)
 			if err != nil {
 				return framework.NewDeploymentStepOutput(), err
 			}
-			clusterSummary, err := resource.DescribeEksCluster(sparkTopology.Spec.Region, sparkTopology.Spec.EKS.ClusterName)
+			clusterSummary, err := resource.DescribeEksCluster(sparkTopology.Spec.EksSpec.Region, sparkTopology.Spec.EksSpec.EKS.ClusterName)
 			if err != nil {
 				return framework.NewDeploymentStepOutput(), err
 			}
@@ -180,12 +181,12 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 			if roleName == "" {
 				return framework.NewDeploymentStepOutput(), fmt.Errorf("failed to get role name from previous step")
 			}
-			roleArn, err := awslib.GetIAMRoleArnByName(sparkTopology.Spec.Region, roleName)
+			roleArn, err := awslib.GetIAMRoleArnByName(sparkTopology.Spec.EksSpec.Region, roleName)
 			if err != nil {
 				return framework.NewDeploymentStepOutput(), err
 			}
-			for _, nodeGroup := range sparkTopology.Spec.NodeGroups {
-				err := resource.CreateNodeGroup(sparkTopology.Spec.Region, sparkTopology.Spec.EKS.ClusterName, nodeGroup, roleArn)
+			for _, nodeGroup := range sparkTopology.Spec.EksSpec.NodeGroups {
+				err := resource.CreateNodeGroup(sparkTopology.Spec.EksSpec.Region, sparkTopology.Spec.EksSpec.EKS.ClusterName, nodeGroup, roleArn)
 				if err != nil {
 					return framework.NewDeploymentStepOutput(), err
 				}
@@ -193,13 +194,13 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 			return framework.NewDeploymentStepOutput(), nil
 		})
 
-		if sparkTopology.Spec.AutoScaling.EnableClusterAutoscaler {
+		if sparkTopology.Spec.EksSpec.AutoScaling.EnableClusterAutoscaler {
 			deployment.AddStep("enableIamOidcProvider", "Enable IAM OIDC Provider", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 				sparkTopology := t.(*SparkTopology)
 				awslib.RunEksCtlCmd("eksctl",
 					[]string{"utils", "associate-iam-oidc-provider",
-						"--region", sparkTopology.Spec.Region,
-						"--cluster", sparkTopology.Spec.EKS.ClusterName,
+						"--region", sparkTopology.Spec.EksSpec.Region,
+						"--cluster", sparkTopology.Spec.EksSpec.EKS.ClusterName,
 						"--approve"})
 				return framework.NewDeploymentStepOutput(), nil
 			})
@@ -213,21 +214,21 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 					return framework.NewDeploymentStepOutput(), fmt.Errorf("invalid OIDC issuer: %s", oidcIssuer)
 				}
 				oidcId := oidcIssuer[index + len(idStr):]
-				roleName, err := CreateClusterAutoscalerIAMRole(*sparkTopology, oidcId)
+				roleName, err := eks.CreateClusterAutoscalerIAMRole(sparkTopology.Spec.EksSpec, oidcId)
 				return framework.DeploymentStepOutput{"roleName": roleName}, err
 			})
 
 			deployment.AddStep("createClusterAutoscalerIAMServiceAccount", "Create Cluster Autoscaler IAM service account", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 				sparkTopology := t.(*SparkTopology)
 				roleName := c.GetStepOutput("createClusterAutoscalerIAMRole")["roleName"].(string)
-				err := CreateClusterAutoscalerIAMServiceAccount(commandEnvironment, *sparkTopology, roleName)
+				err := eks.CreateClusterAutoscalerIAMServiceAccount(commandEnvironment, sparkTopology.Spec.EksSpec, roleName)
 				return framework.NewDeploymentStepOutput(), err
 			})
 
 			deployment.AddStep("createClusterAutoscalerTagsOnNodeGroup", "Create Cluster Autoscaler tags on node groups", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 				sparkTopology := t.(*SparkTopology)
-				for _, nodeGroup := range sparkTopology.Spec.NodeGroups {
-					err := awslib.CreateOrUpdateClusterAutoscalerTagsOnNodeGroup(sparkTopology.Spec.Region, sparkTopology.Spec.EKS.ClusterName, nodeGroup.Name)
+				for _, nodeGroup := range sparkTopology.Spec.EksSpec.NodeGroups {
+					err := awslib.CreateOrUpdateClusterAutoscalerTagsOnNodeGroup(sparkTopology.Spec.EksSpec.Region, sparkTopology.Spec.EksSpec.EKS.ClusterName, nodeGroup.Name)
 					if err != nil {
 						return framework.NewDeploymentStepOutput(), err
 					}
@@ -237,7 +238,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 
 			deployment.AddStep("deployClusterAutoscaler", "Deploy Cluster Autoscaler", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 				sparkTopology := t.(*SparkTopology)
-				DeployClusterAutoscaler(commandEnvironment, *sparkTopology)
+				eks.DeployClusterAutoscaler(commandEnvironment, sparkTopology.Spec.EksSpec)
 				return framework.NewDeploymentStepOutput(), nil
 			})
 		}
@@ -246,7 +247,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 	if commandEnvironment.Get(CmdEnvNginxHelmChart) != "" {
 		deployment.AddStep("deployNginxIngressController", "Deploy Nginx ingress controller", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 			sparkTopology := t.(*SparkTopology)
-			return DeployNginxIngressController(commandEnvironment, *sparkTopology), nil
+			return eks.DeployNginxIngressController(commandEnvironment, sparkTopology.Spec.EksSpec), nil
 		})
 	}
 
@@ -268,7 +269,7 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 
 	if commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
 		deployment.AddStep("minikubeProfile", "Set Minikube Profile", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
-			_, err := resource.MinikubeExec("profile", sparkTopology.Spec.EKS.ClusterName)
+			_, err := resource.MinikubeExec("profile", sparkTopology.Spec.EksSpec.EKS.ClusterName)
 			return framework.NewDeploymentStepOutput(), err
 		})
 
@@ -284,14 +285,14 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 	} else {
 		deployment.AddStep("deleteOidcProvider", "Delete OIDC Provider", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 			sparkTopology := t.(*SparkTopology)
-			clusterSummary, err := resource.DescribeEksCluster(sparkTopology.Spec.Region, sparkTopology.Spec.EKS.ClusterName)
+			clusterSummary, err := resource.DescribeEksCluster(sparkTopology.Spec.EksSpec.Region, sparkTopology.Spec.EksSpec.EKS.ClusterName)
 			if err != nil {
-				log.Printf("[WARN] Cannot delete OIDC provider, failed to get EKS cluster %s in regsion %s: %s", sparkTopology.Spec.EKS.ClusterName, sparkTopology.Spec.Region, err.Error())
+				log.Printf("[WARN] Cannot delete OIDC provider, failed to get EKS cluster %s in regsion %s: %s", sparkTopology.Spec.EksSpec.EKS.ClusterName, sparkTopology.Spec.EksSpec.Region, err.Error())
 				return framework.NewDeploymentStepOutput(), nil
 			}
 			if clusterSummary.OidcIssuer != "" {
 				log.Printf("Deleting OIDC Identity Provider %s", clusterSummary.OidcIssuer)
-				err = awslib.DeleteOidcProvider(sparkTopology.Spec.Region, clusterSummary.OidcIssuer)
+				err = awslib.DeleteOidcProvider(sparkTopology.Spec.EksSpec.Region, clusterSummary.OidcIssuer)
 				if err != nil {
 					log.Printf("[WARN] Failed to delete OIDC provider %s: %s", clusterSummary.OidcIssuer, err.Error())
 					return framework.NewDeploymentStepOutput(), nil
@@ -302,8 +303,8 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 		})
 		deployment.AddStep("deleteNodeGroups", "Delete Node Groups", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 			sparkTopology := t.(*SparkTopology)
-			for _, nodeGroup := range sparkTopology.Spec.NodeGroups {
-				err := awslib.DeleteNodeGroup(sparkTopology.Spec.Region, sparkTopology.Spec.EKS.ClusterName, nodeGroup.Name)
+			for _, nodeGroup := range sparkTopology.Spec.EksSpec.NodeGroups {
+				err := awslib.DeleteNodeGroup(sparkTopology.Spec.EksSpec.Region, sparkTopology.Spec.EksSpec.EKS.ClusterName, nodeGroup.Name)
 				if err != nil {
 					return framework.NewDeploymentStepOutput(), err
 				}
@@ -313,13 +314,13 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 
 		deployment.AddStep("deleteLoadBalancer", "Delete Load Balancer", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 			sparkTopology := t.(*SparkTopology)
-			err := awslib.DeleteLoadBalancerOnEKS(sparkTopology.Spec.Region, sparkTopology.Spec.VpcId, sparkTopology.Spec.EKS.ClusterName, "ingress-nginx")
+			err := awslib.DeleteLoadBalancerOnEKS(sparkTopology.Spec.EksSpec.Region, sparkTopology.Spec.EksSpec.VpcId, sparkTopology.Spec.EksSpec.EKS.ClusterName, "ingress-nginx")
 			return framework.NewDeploymentStepOutput(), err
 		})
 
 		deployment.AddStep("deleteEKSCluster", "Delete EKS Cluster", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 			sparkTopology := t.(*SparkTopology)
-			DeleteEKSCluster(sparkTopology.Spec.Region, sparkTopology.Spec.EKS.ClusterName)
+			eks.DeleteEKSCluster(sparkTopology.Spec.EksSpec.Region, sparkTopology.Spec.EksSpec.EKS.ClusterName)
 			return framework.NewDeploymentStepOutput(), nil
 		})
 	}
@@ -409,14 +410,15 @@ Another example using sparkcli to run Python Spark application from local file (
 	log.Printf(anotherStr, userName, userPassword, url, file.Name())
 }
 
+// TODO use eks.createEksTopologyTemplate
 func createSparkTopologyTemplate() SparkTopology {
 	namePrefix := "{{ or .Values.namePrefix `my` }}"
 	s3BucketName := "{{ or .Values.s3BucketName .DefaultS3BucketName }}"
 
 	topology := CreateDefaultSparkTopology(namePrefix, s3BucketName)
 
-	topology.Spec.Region = "{{ or .Values.region `us-west-1` }}"
-	topology.Spec.VpcId = "{{ or .Values.vpcId .DefaultVpcId }}"
+	topology.Spec.EksSpec.Region = "{{ or .Values.region `us-west-1` }}"
+	topology.Spec.EksSpec.VpcId = "{{ or .Values.vpcId .DefaultVpcId }}"
 	topology.Spec.ApiGateway.UserPassword = "{{ .Values.apiUserPassword }}"
 
 	topology.Metadata.CommandEnvironment[CmdEnvHelmExecutable] = "{{ or .Env.helmExecutable `helm` }}"

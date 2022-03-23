@@ -25,14 +25,14 @@ import (
 	"log"
 )
 
-func DeployClusterAutoscaler(commandEnvironment framework.CommandEnvironment, topology EksTopology) {
+func DeployClusterAutoscaler(commandEnvironment framework.CommandEnvironment, topology EksTopologySpec) {
 	InstallClusterAutoscalerHelm(commandEnvironment, topology)
 }
 
-func InstallClusterAutoscalerHelm(commandEnvironment framework.CommandEnvironment, topology EksTopology) {
+func InstallClusterAutoscalerHelm(commandEnvironment framework.CommandEnvironment, topology EksTopologySpec) {
 	// helm install cluster-autoscaler third-party/helm-charts/cluster-autoscaler --set autoDiscovery.clusterName=my-k8s-01 --set awsRegion=us-west-1
 
-	kubeConfig, err := awslib.CreateKubeConfig(topology.Spec.Region, commandEnvironment.Get(CmdEnvKubeConfig), topology.Spec.EKS.ClusterName)
+	kubeConfig, err := awslib.CreateKubeConfig(topology.Region, commandEnvironment.Get(CmdEnvKubeConfig), topology.EKS.ClusterName)
 	if err != nil {
 		log.Fatalf("Failed to get kube config: %s", err)
 	}
@@ -43,8 +43,8 @@ func InstallClusterAutoscalerHelm(commandEnvironment framework.CommandEnvironmen
 	installNamespace := "kube-system"
 
 	arguments := []string{
-		"--set", fmt.Sprintf("awsRegion=%s", topology.Spec.Region),
-		"--set", fmt.Sprintf("autoDiscovery.clusterName=%s", topology.Spec.EKS.ClusterName),
+		"--set", fmt.Sprintf("awsRegion=%s", topology.Region),
+		"--set", fmt.Sprintf("autoDiscovery.clusterName=%s", topology.EKS.ClusterName),
 		"--set", "cloudProvider=aws",
 		"--set", "rbac.serviceAccount.create=false",
 		"--set", "rbac.serviceAccount.name=cluster-autoscaler",
@@ -52,8 +52,8 @@ func InstallClusterAutoscalerHelm(commandEnvironment framework.CommandEnvironmen
 
 	kubelib.InstallHelm(commandEnvironment.Get(CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvClusterAutoscalerHelmChart), kubeConfig, arguments, installName, installNamespace)
 
-	region := topology.Spec.Region
-	clusterName := topology.Spec.EKS.ClusterName
+	region := topology.Region
+	clusterName := topology.EKS.ClusterName
 
 	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(CmdEnvKubeConfig), clusterName)
 	if err != nil {

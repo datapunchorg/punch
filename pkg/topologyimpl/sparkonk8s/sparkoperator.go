@@ -37,8 +37,8 @@ import (
 )
 
 func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, topology SparkTopology) {
-	region := topology.Spec.Region
-	clusterName := topology.Spec.EKS.ClusterName
+	region := topology.Spec.EksSpec.Region
+	clusterName := topology.Spec.EksSpec.EKS.ClusterName
 	operatorNamespace := topology.Spec.SparkOperator.Namespace
 
 	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(CmdEnvKubeConfig), clusterName)
@@ -158,7 +158,7 @@ func CreateApiGatewayService(clientset *kubernetes.Clientset, namespace string, 
 func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, topology SparkTopology) {
 	// helm install my-release spark-operator/spark-operator --namespace spark-operator --create-namespace --set sparkJobNamespace=default
 
-	kubeConfig, err := awslib.CreateKubeConfig(topology.Spec.Region, commandEnvironment.Get(CmdEnvKubeConfig), topology.Spec.EKS.ClusterName)
+	kubeConfig, err := awslib.CreateKubeConfig(topology.Spec.EksSpec.Region, commandEnvironment.Get(CmdEnvKubeConfig), topology.Spec.EksSpec.EKS.ClusterName)
 	if err != nil {
 		log.Fatalf("Failed to get kube config: %s", err)
 	}
@@ -177,8 +177,8 @@ func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, t
 		"--set", "serviceAccounts.spark.name=spark",
 		"--set", "apiGateway.userName=" + topology.Spec.ApiGateway.UserName,
 		"--set", "apiGateway.userPassword=" + topology.Spec.ApiGateway.UserPassword,
-		"--set", "apiGateway.s3Region=" + topology.Spec.Region,
-		"--set", "apiGateway.s3Bucket=" + topology.Spec.S3BucketName,
+		"--set", "apiGateway.s3Region=" + topology.Spec.EksSpec.Region,
+		"--set", "apiGateway.s3Bucket=" + topology.Spec.EksSpec.S3BucketName,
 		// "--set", "webhook.enable=true",
 	}
 

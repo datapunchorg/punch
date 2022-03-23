@@ -177,14 +177,14 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 			},
 		},
 	}
-	UpdateEksTopologyByS3BucketName(&topology, s3BucketName)
+	UpdateEksTopologyByS3BucketName(&topology.Spec, s3BucketName)
 	return topology
 }
 
-func UpdateEksTopologyByS3BucketName(topology *EksTopology, s3BucketName string) {
-	topology.Spec.S3BucketName = s3BucketName
-	topology.Spec.S3Policy.Name = fmt.Sprintf("%s-s3", s3BucketName)
-	topology.Spec.S3Policy.PolicyDocument = fmt.Sprintf(`{"Version":"2012-10-17","Statement":[
+func UpdateEksTopologyByS3BucketName(spec *EksTopologySpec, s3BucketName string) {
+	spec.S3BucketName = s3BucketName
+	spec.S3Policy.Name = fmt.Sprintf("%s-s3", s3BucketName)
+	spec.S3Policy.PolicyDocument = fmt.Sprintf(`{"Version":"2012-10-17","Statement":[
 {"Effect":"Allow","Action":"s3:*","Resource":["arn:aws:s3:::%s", "arn:aws:s3:::%s/*"]}
 ]}`, s3BucketName, s3BucketName)
 }

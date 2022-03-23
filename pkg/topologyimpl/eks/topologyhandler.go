@@ -138,7 +138,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 
 		deployment.AddStep("createInstanceIAMRole", "Create EKS instance IAM role", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 			specificTopology := t.(*EksTopology)
-			roleName := CreateInstanceIAMRole(*specificTopology)
+			roleName := CreateInstanceIAMRole(specificTopology.Spec)
 			return framework.DeploymentStepOutput{"roleName": roleName}, nil
 		})
 
@@ -195,14 +195,14 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 					return framework.NewDeploymentStepOutput(), fmt.Errorf("invalid OIDC issuer: %s", oidcIssuer)
 				}
 				oidcId := oidcIssuer[index + len(idStr):]
-				roleName, err := CreateClusterAutoscalerIAMRole(*specificTopology, oidcId)
+				roleName, err := CreateClusterAutoscalerIAMRole(specificTopology.Spec, oidcId)
 				return framework.DeploymentStepOutput{"roleName": roleName}, err
 			})
 
 			deployment.AddStep("createClusterAutoscalerIAMServiceAccount", "Create Cluster Autoscaler IAM service account", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 				specificTopology := t.(*EksTopology)
 				roleName := c.GetStepOutput("createClusterAutoscalerIAMRole")["roleName"].(string)
-				err := CreateClusterAutoscalerIAMServiceAccount(commandEnvironment, *specificTopology, roleName)
+				err := CreateClusterAutoscalerIAMServiceAccount(commandEnvironment, specificTopology.Spec, roleName)
 				return framework.NewDeploymentStepOutput(), err
 			})
 
@@ -219,7 +219,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 
 			deployment.AddStep("deployClusterAutoscaler", "Deploy Cluster Autoscaler", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 				specificTopology := t.(*EksTopology)
-				DeployClusterAutoscaler(commandEnvironment, *specificTopology)
+				DeployClusterAutoscaler(commandEnvironment, specificTopology.Spec)
 				return framework.NewDeploymentStepOutput(), nil
 			})
 		}
@@ -228,7 +228,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 	if commandEnvironment.Get(CmdEnvNginxHelmChart) != "" {
 		deployment.AddStep("deployNginxIngressController", "Deploy Nginx ingress controller", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 			specificTopology := t.(*EksTopology)
-			return DeployNginxIngressController(commandEnvironment, *specificTopology), nil
+			return DeployNginxIngressController(commandEnvironment, specificTopology.Spec), nil
 		})
 	}
 

@@ -19,7 +19,7 @@ package sparkonk8s
 import (
 	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
-	"github.com/datapunchorg/punch/pkg/resource"
+	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	"gopkg.in/yaml.v3"
 )
 
@@ -64,17 +64,8 @@ type SparkTopology struct {
 }
 
 type SparkTopologySpec struct {
-	NamePrefix    string               `json:"namePrefix" yaml:"namePrefix"`
-	Region        string               `json:"region"`
-	VpcId         string               `json:"vpcId" yaml:"vpcId"`
-	S3BucketName  string               `json:"s3BucketName" yaml:"s3BucketName"`
-	S3Policy      resource.IAMPolicy   `json:"s3Policy" yaml:"s3Policy"`
-	AutoScalingPolicy      resource.IAMPolicy   `json:"autoScalingPolicy" yaml:"autoScalingPolicy"`
-	EKS           resource.EKSCluster  `json:"eks" yaml:"eks"`
-	NodeGroups    []resource.NodeGroup `json:"nodeGroups" yaml:"nodeGroups"`
-	AutoScaling   resource.AutoScalingSpec      `json:"autoScale" yaml:"autoScale"`
-	NginxIngress  NginxIngress         `json:"nginxIngress" yaml:"nginxIngress"`
-	SparkOperator SparkOperator        `json:"sparkOperator" yaml:"sparkOperator"`
+	EksSpec       eks.EksTopologySpec `json:"eksSpec" yaml:"eksSpec"`
+	SparkOperator SparkOperator       `json:"sparkOperator" yaml:"sparkOperator"`
 	ApiGateway    SparkApiGateway      `json:"apiGateway" yaml:"apiGateway"`
 }
 
@@ -100,11 +91,6 @@ type NginxIngress struct {
 
 func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTopology {
 	topologyName := fmt.Sprintf("%s-spark-k8s", namePrefix)
-	k8sClusterName := fmt.Sprintf("%s-k8s-01", namePrefix)
-	controlPlaneRoleName := fmt.Sprintf("%s-eks-control-plane", namePrefix)
-	instanceRoleName := fmt.Sprintf("%s-eks-instance", namePrefix)
-	securityGroupName := fmt.Sprintf("%s-sg-01", namePrefix)
-	nodeGroupName := fmt.Sprintf("%s-ng-01", k8sClusterName)
 	topology := SparkTopology{
 		ApiVersion: DefaultVersion,
 		Kind:       KindSparkTopology,
@@ -116,85 +102,9 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 			Notes: map[string]string{},
 		},
 		Spec: SparkTopologySpec{
-			NamePrefix:   namePrefix,
-			Region:       DefaultRegion,
-			VpcId:        "",
-			S3BucketName: s3BucketName,
-			S3Policy:     resource.IAMPolicy{},
-			EKS: resource.EKSCluster{
-				ClusterName: k8sClusterName,
-				ControlPlaneRole: resource.IAMRole{
-					Name:                     controlPlaneRoleName,
-					AssumeRolePolicyDocument: framework.DefaultEKSAssumeRolePolicyDocument,
-					ExtraPolicyArns: []string{
-						"arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
-					},
-				},
-				InstanceRole: resource.IAMRole{
-					Name:                     instanceRoleName,
-					AssumeRolePolicyDocument: framework.DefaultEC2AssumeRolePolicyDocument,
-					ExtraPolicyArns: []string{
-						"arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy",
-						"arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
-						"arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy",
-						"arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
-					},
-				},
-				SecurityGroups: []resource.SecurityGroup{
-					{
-						Name: securityGroupName,
-						InboundRules: []resource.SecurityGroupInboundRule{
-							{
-								IPProtocol: "-1",
-								FromPort:   -1,
-								ToPort:     -1,
-								IPRanges:   []string{"0.0.0.0/0"},
-							},
-						},
-					},
-				},
-			},
-			AutoScaling: resource.AutoScalingSpec{
-				EnableClusterAutoscaler: false,
-				ClusterAutoscalerIAMRole: resource.IAMRole{
-					Name: fmt.Sprintf("%s-cluster-autoscaler-role", namePrefix),
-					Policies: []resource.IAMPolicy{
-						resource.IAMPolicy{
-							Name: fmt.Sprintf("%s-cluster-autoscaler-policy", namePrefix),
-							PolicyDocument: `{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Action": [
-                "autoscaling:DescribeAutoScalingGroups",
-                "autoscaling:DescribeAutoScalingInstances",
-                "autoscaling:DescribeLaunchConfigurations",
-                "autoscaling:DescribeTags",
-                "autoscaling:SetDesiredCapacity",
-                "autoscaling:TerminateInstanceInAutoScalingGroup",
-                "ec2:DescribeLaunchTemplateVersions",
-                "ec2:DescribeInstanceTypes"
-            ],
-            "Resource": "*",
-            "Effect": "Allow"
-        }
-    ]
-}`,
-						},
-					},
-				},
-			},
+			EksSpec: eks.CreateDefaultEksTopology(namePrefix, s3BucketName).Spec,
 			ApiGateway: SparkApiGateway{
 				UserName: DefaultApiUserName,
-			},
-			NodeGroups: []resource.NodeGroup{
-				{
-					Name:          nodeGroupName,
-					InstanceTypes: []string{DefaultInstanceType},
-					DesiredSize:   DefaultNodeGroupSize,
-					MaxSize:       DefaultMaxNodeGroupSize,
-					MinSize:       DefaultNodeGroupSize,
-				},
 			},
 			SparkOperator: SparkOperator{
 				HelmInstallName:           DefaultSparkOperatorHelmInstallName,
@@ -203,12 +113,6 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 				Namespace:                 DefaultSparkOperatorNamespace,
 				SparkApplicationNamespace: DefaultSparkApplicationNamespace,
 			},
-			NginxIngress: NginxIngress{
-				HelmInstallName: DefaultNginxIngressHelmInstallName,
-				Namespace:       DefaultNginxIngressNamespace,
-				EnableHttp:      DefaultNginxEnableHttp,
-				EnableHttps:     DefaultNginxEnableHttps,
-			},
 		},
 	}
 	UpdateSparkTopologyByS3BucketName(&topology, s3BucketName)
@@ -216,11 +120,7 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 }
 
 func UpdateSparkTopologyByS3BucketName(topology *SparkTopology, s3BucketName string) {
-	topology.Spec.S3BucketName = s3BucketName
-	topology.Spec.S3Policy.Name = fmt.Sprintf("%s-s3", s3BucketName)
-	topology.Spec.S3Policy.PolicyDocument = fmt.Sprintf(`{"Version":"2012-10-17","Statement":[
-{"Effect":"Allow","Action":"s3:*","Resource":["arn:aws:s3:::%s", "arn:aws:s3:::%s/*"]}
-]}`, s3BucketName, s3BucketName)
+	eks.UpdateEksTopologyByS3BucketName(&topology.Spec.EksSpec, s3BucketName)
 }
 
 func (t *SparkTopology) GetKind() string {
