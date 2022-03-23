@@ -104,19 +104,44 @@ func (t *TopologyHandler) Resolve(topology framework.Topology, data framework.Te
 func (t *TopologyHandler) Install(topology framework.Topology) (framework.DeploymentOutput, error) {
 	specificTopology := topology.(*EksTopology)
 
-	deployment := framework.NewDeployment()
+	commandEnvironment := framework.CreateCommandEnvironment(specificTopology.Metadata.CommandEnvironment)
+
+	deployment, err := BuildInstallDeployment(specificTopology.Spec, commandEnvironment)
+	if err != nil {
+		return deployment.GetOutput(), err
+	}
+
+	err = deployment.RunSteps(specificTopology)
+	return deployment.GetOutput(), err
+}
+
+func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
+	specificTopology := topology.(*EksTopology)
 
 	commandEnvironment := framework.CreateCommandEnvironment(specificTopology.Metadata.CommandEnvironment)
 
-	if specificTopology.Spec.AutoScaling.EnableClusterAutoscaler && commandEnvironment.Get(CmdEnvClusterAutoscalerHelmChart) == "" {
-		return nil, fmt.Errorf("please provide helm chart file location for Cluster Autoscaler")
+	deployment, err := BuildUninstallDeployment(specificTopology.Spec, commandEnvironment)
+	if err != nil {
+		return deployment.GetOutput(), err
+	}
+
+	err = deployment.RunSteps(specificTopology)
+	return deployment.GetOutput(), err
+}
+
+
+func BuildInstallDeployment(specificTopologySpec EksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.DeploymentImpl, error) {
+	deployment := framework.NewDeployment()
+
+	if specificTopologySpec.AutoScaling.EnableClusterAutoscaler && commandEnvironment.Get(CmdEnvClusterAutoscalerHelmChart) == "" {
+		return framework.DeploymentImpl{}, fmt.Errorf("please provide helm chart file location for Cluster Autoscaler")
 	}
 
 	kubelib.CheckHelmOrFatal(commandEnvironment.Get(CmdEnvHelmExecutable))
 	if commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
 		commandEnvironment.Set(CmdEnvKubeConfig, kubelib.GetKubeConfigPath())
 		deployment.AddStep("minikubeProfile", "Set Minikube Profile", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
-			_, err := resource.MinikubeExec("profile", specificTopology.Spec.EKS.ClusterName)
+			_, err := resource.MinikubeExec("profile", specificTopologySpec.EKS.ClusterName)
 			return framework.NewDeploymentStepOutput(), err
 		})
 
@@ -175,7 +200,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 			return framework.NewDeploymentStepOutput(), nil
 		})
 
-		if specificTopology.Spec.AutoScaling.EnableClusterAutoscaler {
+		if specificTopologySpec.AutoScaling.EnableClusterAutoscaler {
 			deployment.AddStep("enableIamOidcProvider", "Enable IAM OIDC Provider", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
 				specificTopology := t.(*EksTopology)
 				awslib.RunEksCtlCmd("eksctl",
@@ -194,7 +219,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 				if index == -1 {
 					return framework.NewDeploymentStepOutput(), fmt.Errorf("invalid OIDC issuer: %s", oidcIssuer)
 				}
-				oidcId := oidcIssuer[index + len(idStr):]
+				oidcId := oidcIssuer[index+len(idStr):]
 				roleName, err := CreateClusterAutoscalerIAMRole(specificTopology.Spec, oidcId)
 				return framework.DeploymentStepOutput{"roleName": roleName}, err
 			})
@@ -232,19 +257,16 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		})
 	}
 
-	err := deployment.RunSteps(specificTopology)
-	return deployment.GetOutput(), err
+	return deployment, nil
 }
 
-func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
-	specificTopology := topology.(*EksTopology)
 
-	commandEnvironment := framework.CreateCommandEnvironment(specificTopology.Metadata.CommandEnvironment)
+func BuildUninstallDeployment(specificTopologySpec EksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.DeploymentImpl, error) {
 	deployment := framework.NewDeployment()
 
 	if commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
 		deployment.AddStep("minikubeProfile", "Set Minikube Profile", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
-			_, err := resource.MinikubeExec("profile", specificTopology.Spec.EKS.ClusterName)
+			_, err := resource.MinikubeExec("profile", specificTopologySpec.EKS.ClusterName)
 			return framework.NewDeploymentStepOutput(), err
 		})
 
@@ -299,9 +321,7 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 			return framework.NewDeploymentStepOutput(), nil
 		})
 	}
-
-	err := deployment.RunSteps(specificTopology)
-	return deployment.GetOutput(), err
+	return deployment, nil
 }
 
 func createEksTopologyTemplate() EksTopology {
