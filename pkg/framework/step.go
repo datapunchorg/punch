@@ -19,7 +19,7 @@ package framework
 type DeploymentStep interface {
 	Name() string
 	Description() string
-	Run(context DeploymentContext, topology TopologySpec) (DeploymentStepOutput, error)
+	Run(context DeploymentContext) (DeploymentStepOutput, error)
 }
 
 type deploymentStepWrapper struct {
@@ -36,11 +36,11 @@ func (d deploymentStepWrapper) Description() string {
 	return d.description
 }
 
-func (d deploymentStepWrapper) Run(context DeploymentContext, topology TopologySpec) (DeploymentStepOutput, error) {
-	return d.run(context, topology)
+func (d deploymentStepWrapper) Run(context DeploymentContext) (DeploymentStepOutput, error) {
+	return d.run(context)
 }
 
-type DeploymentStepFunc func(context DeploymentContext, topology TopologySpec) (DeploymentStepOutput, error)
+type DeploymentStepFunc func(context DeploymentContext) (DeploymentStepOutput, error)
 
 type DeploymentStepOutput map[string]interface{}
 

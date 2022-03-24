@@ -263,7 +263,7 @@ func BuildInstallDeployment(topologySpec SparkTopologySpec, commandEnvironment f
 		return deployment, err
 	}
 
-	deployment.AddStep("deploySparkOperator", "Deploy Spark Operator", func(c framework.DeploymentContext, t framework.TopologySpec) (framework.DeploymentStepOutput, error) {
+	deployment.AddStep("deploySparkOperator", "Deploy Spark Operator", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
 		DeploySparkOperator(commandEnvironment, topologySpec)
 		return framework.NewDeploymentStepOutput(), nil
 	})

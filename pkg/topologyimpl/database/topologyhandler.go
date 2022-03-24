@@ -91,7 +91,7 @@ func (t *TopologyHandler) Resolve(topology framework.Topology, data framework.Te
 func (t *TopologyHandler) Install(topology framework.Topology) (framework.DeploymentOutput, error) {
 	databaseTopology := topology.(*DatabaseTopology)
 	deployment := framework.NewDeployment()
-	deployment.AddStep("createDatabase", "Create database", func(c framework.DeploymentContext, t framework.TopologySpec) (framework.DeploymentStepOutput, error) {
+	deployment.AddStep("createDatabase", "Create database", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
 		result, err := CreateDatabase(databaseTopology.Spec)
 		if err != nil {
 			return framework.NewDeploymentStepOutput(), err
@@ -105,7 +105,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
 	databaseTopology := topology.(*DatabaseTopology)
 	deployment := framework.NewDeployment()
-	deployment.AddStep("deleteDatabase", "Delete database", func(c framework.DeploymentContext, t framework.TopologySpec) (framework.DeploymentStepOutput, error) {
+	deployment.AddStep("deleteDatabase", "Delete database", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
 		region := databaseTopology.Spec.Region
 		databaseId := databaseTopology.Spec.DatabaseId
 		err := DeleteDatabase(region, databaseId)

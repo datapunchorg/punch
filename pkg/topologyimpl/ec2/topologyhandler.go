@@ -91,7 +91,7 @@ func (t *TopologyHandler) Resolve(topology framework.Topology, data framework.Te
 func (t *TopologyHandler) Install(topology framework.Topology) (framework.DeploymentOutput, error) {
 	specificTopology := topology.(*Ec2Topology)
 	deployment := framework.NewDeployment()
-	deployment.AddStep("createInstances", "Create instances", func(c framework.DeploymentContext, t framework.TopologySpec) (framework.DeploymentStepOutput, error) {
+	deployment.AddStep("createInstances", "Create instances", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
 		// TODO check existing running instances and only create new instances when needed
 		result, err := CreateInstances(specificTopology.Metadata.Name, specificTopology.Spec)
 		if err != nil {
@@ -110,7 +110,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
 	specificTopology := topology.(*Ec2Topology)
 	deployment := framework.NewDeployment()
-	deployment.AddStep("deleteInstances", "Delete instances", func(c framework.DeploymentContext, t framework.TopologySpec) (framework.DeploymentStepOutput, error) {
+	deployment.AddStep("deleteInstances", "Delete instances", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
 		instanceIds, err := GetInstanceIdsByTopology(specificTopology.Spec.Region, specificTopology.Metadata.Name)
 		if err != nil {
 			return nil, err

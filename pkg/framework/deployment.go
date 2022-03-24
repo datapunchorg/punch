@@ -56,7 +56,7 @@ func (d *DeploymentImpl) AddStep(name string, description string, run Deployment
 func (d *DeploymentImpl) RunSteps(topology TopologySpec) error {
 	for _, step := range d.steps {
 		log.Printf("[StepBegin] %s: %s", step.Name(), step.Description())
-		output, err := step.Run(d.context, topology)
+		output, err := step.Run(d.context)
 		if err != nil {
 			return fmt.Errorf("failed to run step %s: %s", step.Name(), err.Error())
 		}
