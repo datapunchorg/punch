@@ -95,6 +95,10 @@ func (t *DatabaseTopology) GetKind() string {
 	return t.Kind
 }
 
+func (t *DatabaseTopology) GetSpec() framework.TopologySpec {
+	return t.Spec
+}
+
 func (t *DatabaseTopology) ToString() string {
 	topologyBytes, err := yaml.Marshal(t)
 	if err != nil {

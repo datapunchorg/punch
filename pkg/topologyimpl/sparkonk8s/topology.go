@@ -26,18 +26,11 @@ import (
 const (
 	ToBeReplacedS3BucketName            = "todo_use_your_own_bucket_name"
 	DefaultApiUserName                  = "user1"
-	DefaultInstanceType                 = "t3.large"
-	DefaultNodeGroupSize                = 3
-	DefaultMaxNodeGroupSize             = 10
 	DefaultOperatorImageRepository      = "ghcr.io/datapunchorg/spark-on-k8s-operator"
 	DefaultSparkOperatorImageTag        = "master-datapunch"
 	DefaultSparkOperatorNamespace       = "spark-operator-01"
 	DefaultSparkOperatorHelmInstallName = "spark-operator-01"
 	DefaultSparkApplicationNamespace    = "spark-01"
-	DefaultNginxIngressHelmInstallName  = "ingress-nginx"
-	DefaultNginxIngressNamespace        = "ingress-nginx"
-	DefaultNginxEnableHttp              = true
-	DefaultNginxEnableHttps             = true
 
 	KindSparkTopology = "SparkOnK8s"
 
@@ -51,7 +44,6 @@ const (
 	CmdEnvKubeConfig             = "kubeConfig"
 
 	DefaultVersion        = "datapunch.org/v1alpha1"
-	DefaultRegion         = "us-west-1"
 	DefaultNamePrefix     = "my"
 	DefaultHelmExecutable = "helm"
 )
@@ -125,6 +117,10 @@ func UpdateSparkTopologyByS3BucketName(topology *SparkTopology, s3BucketName str
 
 func (t *SparkTopology) GetKind() string {
 	return t.Kind
+}
+
+func (t *SparkTopology) GetSpec() framework.TopologySpec {
+	return t.Spec
 }
 
 func (t *SparkTopology) ToString() string {

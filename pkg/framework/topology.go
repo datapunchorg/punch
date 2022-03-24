@@ -25,8 +25,13 @@ const (
 
 type Topology interface {
 	GetKind() string
+	GetSpec() TopologySpec
 	// TODO remove ToString and make password mask generic function, instead of doing password mask inside ToString
 	ToString() string
+}
+
+// TODO
+type TopologySpec interface {
 }
 
 type TopologyMetadata struct {

@@ -89,11 +89,11 @@ func (t *TopologyHandler) Resolve(topology framework.Topology, data framework.Te
 // TODO check instance status after install/uninstall
 
 func (t *TopologyHandler) Install(topology framework.Topology) (framework.DeploymentOutput, error) {
+	specificTopology := topology.(*Ec2Topology)
 	deployment := framework.NewDeployment()
-	deployment.AddStep("createInstances", "Create instances", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
-		ec2Topology := t.(*Ec2Topology)
+	deployment.AddStep("createInstances", "Create instances", func(c framework.DeploymentContext, t framework.TopologySpec) (framework.DeploymentStepOutput, error) {
 		// TODO check existing running instances and only create new instances when needed
-		result, err := CreateInstances(ec2Topology.Metadata.Name, ec2Topology.Spec)
+		result, err := CreateInstances(specificTopology.Metadata.Name, specificTopology.Spec)
 		if err != nil {
 			return framework.NewDeploymentStepOutput(), err
 		}
@@ -103,28 +103,28 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		}
 		return framework.DeploymentStepOutput{"instanceIds": instanceIds}, nil
 	})
-	err := deployment.RunSteps(topology)
+	err := deployment.RunSteps(topology.GetSpec())
 	return deployment.GetOutput(), err
 }
 
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
+	specificTopology := topology.(*Ec2Topology)
 	deployment := framework.NewDeployment()
-	deployment.AddStep("deleteInstances", "Delete instances", func(c framework.DeploymentContext, t framework.Topology) (framework.DeploymentStepOutput, error) {
-		ec2Topology := t.(*Ec2Topology)
-		instanceIds, err := GetInstanceIdsByTopology(ec2Topology.Spec.Region, ec2Topology.Metadata.Name)
+	deployment.AddStep("deleteInstances", "Delete instances", func(c framework.DeploymentContext, t framework.TopologySpec) (framework.DeploymentStepOutput, error) {
+		instanceIds, err := GetInstanceIdsByTopology(specificTopology.Spec.Region, specificTopology.Metadata.Name)
 		if err != nil {
 			return nil, err
 		}
 		if len(instanceIds) == 0 {
-			log.Printf("Found no instances for topology %s, do not delete any instances", ec2Topology.Metadata.Name)
+			log.Printf("Found no instances for topology %s, do not delete any instances", specificTopology.Metadata.Name)
 			return framework.NewDeploymentStepOutput(), nil
 		}
-		err = DeleteInstances(ec2Topology.Spec.Region, instanceIds)
+		err = DeleteInstances(specificTopology.Spec.Region, instanceIds)
 		if err != nil {
 			return nil, err
 		}
 		return framework.NewDeploymentStepOutput(), nil
 	})
-	err := deployment.RunSteps(topology)
+	err := deployment.RunSteps(topology.GetSpec())
 	return deployment.GetOutput(), err
 }

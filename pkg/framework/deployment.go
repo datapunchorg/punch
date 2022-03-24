@@ -24,7 +24,7 @@ import (
 type Deployment interface {
 	GetContext() DeploymentContext
 	AddStep(name string, description string, run DeploymentStepFunc)
-	RunSteps(topology Topology) error
+	RunSteps(topology TopologySpec) error
 	GetOutput() DeploymentOutput
 }
 
@@ -53,7 +53,7 @@ func (d *DeploymentImpl) AddStep(name string, description string, run Deployment
 	d.steps = append(d.steps, step)
 }
 
-func (d *DeploymentImpl) RunSteps(topology Topology) error {
+func (d *DeploymentImpl) RunSteps(topology TopologySpec) error {
 	for _, step := range d.steps {
 		log.Printf("[StepBegin] %s: %s", step.Name(), step.Description())
 		output, err := step.Run(d.context, topology)

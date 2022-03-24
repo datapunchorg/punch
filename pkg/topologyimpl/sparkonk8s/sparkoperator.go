@@ -36,10 +36,10 @@ import (
 	"time"
 )
 
-func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, topology SparkTopology) {
-	region := topology.Spec.EksSpec.Region
-	clusterName := topology.Spec.EksSpec.EKS.ClusterName
-	operatorNamespace := topology.Spec.SparkOperator.Namespace
+func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, topology SparkTopologySpec) {
+	region := topology.EksSpec.Region
+	clusterName := topology.EksSpec.EKS.ClusterName
+	operatorNamespace := topology.SparkOperator.Namespace
 
 	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(CmdEnvKubeConfig), clusterName)
 	if err != nil {
@@ -71,7 +71,7 @@ func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, topolo
 
 	// CreateSparkServiceAccount(clientset, operatorNamespace, sparkApplicationNamespace, "spark")
 
-	helmInstallName := topology.Spec.SparkOperator.HelmInstallName
+	helmInstallName := topology.SparkOperator.HelmInstallName
 	CreateApiGatewayService(clientset, operatorNamespace, helmInstallName, helmInstallName)
 
 	sparkOperatorPodNamePrefix := helmInstallName
@@ -155,30 +155,30 @@ func CreateApiGatewayService(clientset *kubernetes.Clientset, namespace string, 
 }
 
 // TODO remove log.Fatalf
-func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, topology SparkTopology) {
+func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, topology SparkTopologySpec) {
 	// helm install my-release spark-operator/spark-operator --namespace spark-operator --create-namespace --set sparkJobNamespace=default
 
-	kubeConfig, err := awslib.CreateKubeConfig(topology.Spec.EksSpec.Region, commandEnvironment.Get(CmdEnvKubeConfig), topology.Spec.EksSpec.EKS.ClusterName)
+	kubeConfig, err := awslib.CreateKubeConfig(topology.EksSpec.Region, commandEnvironment.Get(CmdEnvKubeConfig), topology.EksSpec.EKS.ClusterName)
 	if err != nil {
 		log.Fatalf("Failed to get kube config: %s", err)
 	}
 
 	defer kubeConfig.Cleanup()
 
-	installName := topology.Spec.SparkOperator.HelmInstallName
-	operatorNamespace := topology.Spec.SparkOperator.Namespace
-	sparkApplicationNamespace := topology.Spec.SparkOperator.SparkApplicationNamespace
+	installName := topology.SparkOperator.HelmInstallName
+	operatorNamespace := topology.SparkOperator.Namespace
+	sparkApplicationNamespace := topology.SparkOperator.SparkApplicationNamespace
 
 	arguments := []string{
 		"--set", fmt.Sprintf("sparkJobNamespace=%s", sparkApplicationNamespace),
-		"--set", fmt.Sprintf("image.repository=%s", topology.Spec.SparkOperator.ImageRepository),
-		"--set", fmt.Sprintf("image.tag=%s", topology.Spec.SparkOperator.ImageTag),
+		"--set", fmt.Sprintf("image.repository=%s", topology.SparkOperator.ImageRepository),
+		"--set", fmt.Sprintf("image.tag=%s", topology.SparkOperator.ImageTag),
 		"--set", "serviceAccounts.spark.create=true",
 		"--set", "serviceAccounts.spark.name=spark",
-		"--set", "apiGateway.userName=" + topology.Spec.ApiGateway.UserName,
-		"--set", "apiGateway.userPassword=" + topology.Spec.ApiGateway.UserPassword,
-		"--set", "apiGateway.s3Region=" + topology.Spec.EksSpec.Region,
-		"--set", "apiGateway.s3Bucket=" + topology.Spec.EksSpec.S3BucketName,
+		"--set", "apiGateway.userName=" + topology.ApiGateway.UserName,
+		"--set", "apiGateway.userPassword=" + topology.ApiGateway.UserPassword,
+		"--set", "apiGateway.s3Region=" + topology.EksSpec.Region,
+		"--set", "apiGateway.s3Bucket=" + topology.EksSpec.S3BucketName,
 		// "--set", "webhook.enable=true",
 	}
 

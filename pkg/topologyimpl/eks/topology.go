@@ -193,6 +193,10 @@ func (t *EksTopology) GetKind() string {
 	return t.Kind
 }
 
+func (t *EksTopology) GetSpec() framework.TopologySpec {
+	return t.Spec
+}
+
 func (t *EksTopology) ToString() string {
 	topologyBytes, err := yaml.Marshal(t)
 	if err != nil {
