@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sparkonk8s
+package eks
 
 import (
 	"bytes"
@@ -29,15 +29,15 @@ import (
 func TestTemplate(t *testing.T) {
 	d := framework.CreateTemplateData(nil, nil)
 
-	topology := CreateDefaultSparkTopology("my", "{{ or .Values.s3BucketName .DefaultS3BucketName }}")
+	topology := CreateDefaultEksTopology("my", "{{ or .Values.s3BucketName .DefaultS3BucketName }}")
 	topology.Metadata.CommandEnvironment["kubeConfig"] = "{{ or .Env.kubeConfig `` }}"
 	topology.Metadata.CommandEnvironment["helmExecutable"] = "{{ or .Env.helmExecutable `helm` }}"
-	topology.Spec.EksSpec.EKS.ClusterName = "{{ .Values.eksCluster.name }}"
+	topology.Spec.EKS.ClusterName = "{{ .Values.eksCluster.name }}"
 
 	tmpl, err := template.New("").Parse(topology.ToString())
 	assert.Equal(t, nil, err)
 
-	data := CreateSparkTemplateData(&d)
+	data := CreateEksTemplateData(&d)
 	data.AddValue("s3BucketName", "bucket123abc")
 	data.AddValue("eksCluster", map[string]interface{}{"name": "cluster1"})
 	data.AddEnv("kubeConfig", "./foo/kube.config")
@@ -50,25 +50,25 @@ func TestTemplate(t *testing.T) {
 	str := buffer.String()
 	fmt.Println(str)
 
-	sparkTopology := SparkTopology{}
-	yaml.Unmarshal([]byte(str), &sparkTopology)
-	assert.Equal(t, "bucket123abc", sparkTopology.Spec.EksSpec.S3BucketName)
-	assert.Equal(t, "cluster1", sparkTopology.Spec.EksSpec.EKS.ClusterName)
-	assert.Equal(t, "./foo/kube.config", sparkTopology.Metadata.CommandEnvironment["kubeConfig"])
-	assert.Equal(t, "./bar/helm", sparkTopology.Metadata.CommandEnvironment["helmExecutable"])
+	eksTopology := EksTopology{}
+	yaml.Unmarshal([]byte(str), &eksTopology)
+	assert.Equal(t, "bucket123abc", eksTopology.Spec.S3BucketName)
+	assert.Equal(t, "cluster1", eksTopology.Spec.EKS.ClusterName)
+	assert.Equal(t, "./foo/kube.config", eksTopology.Metadata.CommandEnvironment["kubeConfig"])
+	assert.Equal(t, "./bar/helm", eksTopology.Metadata.CommandEnvironment["helmExecutable"])
 }
 
 func TestTemplateWithAlternativeValue(t *testing.T) {
 	d := framework.CreateTemplateData(nil, nil)
 
-	topology := CreateDefaultSparkTopology("my", "{{ or .Values.s3BucketName `abcde12345` }}")
+	topology := CreateDefaultEksTopology("my", "{{ or .Values.s3BucketName `abcde12345` }}")
 	topology.Metadata.CommandEnvironment["kubeConfig"] = "{{ or .Env.kubeConfig `` }}"
 	topology.Metadata.CommandEnvironment["helmExecutable"] = "{{ or .Env.helmExecutable `helm` }}"
 
 	tmpl, err := template.New("").Parse(topology.ToString())
 	assert.Equal(t, nil, err)
 
-	data := CreateSparkTemplateData(&d)
+	data := CreateEksTemplateData(&d)
 
 	buffer := bytes.Buffer{}
 	err = tmpl.Execute(&buffer, &data)
@@ -77,21 +77,21 @@ func TestTemplateWithAlternativeValue(t *testing.T) {
 	str := buffer.String()
 	fmt.Println(str)
 
-	sparkTopology := SparkTopology{}
-	yaml.Unmarshal([]byte(str), &sparkTopology)
-	assert.Equal(t, "abcde12345", sparkTopology.Spec.EksSpec.S3BucketName)
-	assert.Equal(t, "", sparkTopology.Metadata.CommandEnvironment["kubeConfig"])
-	assert.Equal(t, "helm", sparkTopology.Metadata.CommandEnvironment["helmExecutable"])
+	eksTopology := EksTopology{}
+	yaml.Unmarshal([]byte(str), &eksTopology)
+	assert.Equal(t, "abcde12345", eksTopology.Spec.S3BucketName)
+	assert.Equal(t, "", eksTopology.Metadata.CommandEnvironment["kubeConfig"])
+	assert.Equal(t, "helm", eksTopology.Metadata.CommandEnvironment["helmExecutable"])
 }
 
 func TestTemplateWithUnresolvedValue(t *testing.T) {
 	d := framework.CreateTemplateData(nil, nil)
 
-	topology := CreateDefaultSparkTopology("my", "{{ .Values.s3BucketName }}")
+	topology := CreateDefaultEksTopology("my", "{{ .Values.s3BucketName }}")
 	tmpl, err := template.New("").Parse(topology.ToString())
 	assert.Equal(t, nil, err)
 
-	data := CreateSparkTemplateData(&d)
+	data := CreateEksTemplateData(&d)
 
 	buffer := bytes.Buffer{}
 	err = tmpl.Execute(&buffer, &data)
@@ -100,7 +100,7 @@ func TestTemplateWithUnresolvedValue(t *testing.T) {
 	str := buffer.String()
 	fmt.Println(str)
 
-	sparkTopology := SparkTopology{}
-	yaml.Unmarshal([]byte(str), &sparkTopology)
-	assert.Equal(t, "<no value>", sparkTopology.Spec.EksSpec.S3BucketName)
+	eksTopology := EksTopology{}
+	yaml.Unmarshal([]byte(str), &eksTopology)
+	assert.Equal(t, "<no value>", eksTopology.Spec.S3BucketName)
 }

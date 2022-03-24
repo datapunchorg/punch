@@ -24,7 +24,6 @@ import (
 )
 
 const (
-	ToBeReplacedS3BucketName            = "todo_use_your_own_bucket_name"
 	DefaultApiUserName                  = "user1"
 	DefaultOperatorImageRepository      = "ghcr.io/datapunchorg/spark-on-k8s-operator"
 	DefaultSparkOperatorImageTag        = "master-datapunch"
@@ -36,16 +35,10 @@ const (
 
 	FieldMaskValue = "***"
 
-	CmdEnvHelmExecutable         = "helmExecutable"
-	CmdEnvWithMinikube           = "withMinikube"
-	CmdEnvNginxHelmChart         = "nginxHelmChart"
 	CmdEnvSparkOperatorHelmChart = "sparkOperatorHelmChart"
-	CmdEnvClusterAutoscalerHelmChart = "ClusterAutoscalerHelmChart"
-	CmdEnvKubeConfig             = "kubeConfig"
 
 	DefaultVersion        = "datapunch.org/v1alpha1"
 	DefaultNamePrefix     = "my"
-	DefaultHelmExecutable = "helm"
 )
 
 type SparkTopology struct {
@@ -74,13 +67,6 @@ type SparkOperator struct {
 	SparkApplicationNamespace string `json:"sparkApplicationNamespace" yaml:"sparkApplicationNamespace"`
 }
 
-type NginxIngress struct {
-	HelmInstallName string `json:"helmInstallName" yaml:"helmInstallName"`
-	Namespace       string `json:"namespace" yaml:"namespace"`
-	EnableHttp      bool   `json:"enableHttp" yaml:"enableHttp"`
-	EnableHttps     bool   `json:"enableHttps" yaml:"enableHttps"`
-}
-
 func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTopology {
 	topologyName := fmt.Sprintf("%s-spark-k8s", namePrefix)
 	topology := SparkTopology{
@@ -89,7 +75,7 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 		Metadata: framework.TopologyMetadata{
 			Name: topologyName,
 			CommandEnvironment: map[string]string{
-				CmdEnvHelmExecutable: DefaultHelmExecutable,
+				eks.CmdEnvHelmExecutable: eks.DefaultHelmExecutable,
 			},
 			Notes: map[string]string{},
 		},

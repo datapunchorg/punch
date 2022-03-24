@@ -48,7 +48,7 @@ func (t *TopologyHandler) Generate() (framework.Topology, error) {
 }
 
 func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) {
-	result := CreateDefaultSparkTopology(DefaultNamePrefix, ToBeReplacedS3BucketName)
+	result := CreateDefaultSparkTopology(DefaultNamePrefix, eks.ToBeReplacedS3BucketName)
 	err := yaml.Unmarshal(yamlContent, &result)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse YAML (%s): \n%s", err.Error(), string(yamlContent))
@@ -68,7 +68,7 @@ func (t *TopologyHandler) Resolve(topology framework.Topology, data framework.Te
 		return nil, fmt.Errorf("failed to parse topology template (%s): %s", err.Error(), yamlContent)
 	}
 
-	sparkData := CreateSparkTemplateData(data)
+	sparkData := eks.CreateEksTemplateData(data)
 
 	buffer := bytes.Buffer{}
 	err = tmpl.Execute(&buffer, &sparkData)
@@ -86,7 +86,7 @@ func (t *TopologyHandler) Resolve(topology framework.Topology, data framework.Te
 		return nil, fmt.Errorf("spec.apiGateway.userPassword is emmpty, please provide the value for the password")
 	}
 
-	err = checkCmdEnvFolderExists(resolvedSparkTopology.Metadata, CmdEnvNginxHelmChart)
+	err = checkCmdEnvFolderExists(resolvedSparkTopology.Metadata, eks.CmdEnvNginxHelmChart)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +97,7 @@ func (t *TopologyHandler) Resolve(topology framework.Topology, data framework.Te
 	}
 
 	if resolvedSparkTopology.Spec.EksSpec.AutoScaling.EnableClusterAutoscaler {
-		err = checkCmdEnvFolderExists(resolvedSparkTopology.Metadata, CmdEnvClusterAutoscalerHelmChart)
+		err = checkCmdEnvFolderExists(resolvedSparkTopology.Metadata, eks.CmdEnvClusterAutoscalerHelmChart)
 		if err != nil {
 			return nil, err
 		}
@@ -229,16 +229,13 @@ func createSparkTopologyTemplate() SparkTopology {
 
 	topology := CreateDefaultSparkTopology(namePrefix, s3BucketName)
 
-	topology.Spec.EksSpec.Region = "{{ or .Values.region `us-west-1` }}"
-	topology.Spec.EksSpec.VpcId = "{{ or .Values.vpcId .DefaultVpcId }}"
+	eksTemplate := eks.CreateEksTopologyTemplate()
+
+	topology.Spec.EksSpec = eksTemplate.Spec
 	topology.Spec.ApiGateway.UserPassword = "{{ .Values.apiUserPassword }}"
 
-	topology.Metadata.CommandEnvironment[CmdEnvHelmExecutable] = "{{ or .Env.helmExecutable `helm` }}"
-	topology.Metadata.CommandEnvironment[CmdEnvWithMinikube] = "{{ or .Env.withMinikube `false` }}"
-	topology.Metadata.CommandEnvironment[CmdEnvNginxHelmChart] = "{{ or .Env.nginxHelmChart `ingress-nginx/charts/ingress-nginx` }}"
+	topology.Metadata.CommandEnvironment = eksTemplate.Metadata.CommandEnvironment
 	topology.Metadata.CommandEnvironment[CmdEnvSparkOperatorHelmChart] = "{{ or .Env.sparkOperatorHelmChart `spark-operator-service/charts/spark-operator-chart` }}"
-	topology.Metadata.CommandEnvironment[CmdEnvClusterAutoscalerHelmChart] = "{{ or .Env.clusterAutoscalerHelmChart `cluster-autoscaler/charts/cluster-autoscaler` }}"
-	topology.Metadata.CommandEnvironment[CmdEnvKubeConfig] = "{{ or .Env.kubeConfig `` }}"
 
 	topology.Metadata.Notes["apiUserPassword"] = "Please make sure to provide API gateway user password when deploying the topology, e.g. --set apiUserPassword=your-password"
 

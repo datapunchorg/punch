@@ -39,7 +39,7 @@ type TopologyHandler struct {
 }
 
 func (t *TopologyHandler) Generate() (framework.Topology, error) {
-	topology := createEksTopologyTemplate()
+	topology := CreateEksTopologyTemplate()
 	return &topology, nil
 }
 
@@ -310,7 +310,7 @@ func BuildUninstallDeployment(topologySpec EksTopologySpec, commandEnvironment f
 	return deployment, nil
 }
 
-func createEksTopologyTemplate() EksTopology {
+func CreateEksTopologyTemplate() EksTopology {
 	namePrefix := "{{ or .Values.namePrefix `my` }}"
 	s3BucketName := "{{ or .Values.s3BucketName .DefaultS3BucketName }}"
 

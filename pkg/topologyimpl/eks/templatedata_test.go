@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sparkonk8s
+package eks
 
 import (
 	"github.com/datapunchorg/punch/pkg/framework"
@@ -24,7 +24,7 @@ import (
 
 func TestAddValueWithNestedKey(t *testing.T) {
 	d := framework.CreateTemplateData(nil, nil)
-	data := CreateSparkTemplateData(&d)
+	data := CreateEksTemplateData(&d)
 	data.AddValueWithNestedKey("key1", "value1")
 	assert.Equal(t, "value1", data.GetStringValueOrDefault("key1", ""))
 	data.AddValueWithNestedKey("d1.key2", "a.value2")
