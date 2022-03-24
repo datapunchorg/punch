@@ -39,7 +39,7 @@ import (
 
 func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, topology SparkTopologySpec) {
 	region := topology.EksSpec.Region
-	clusterName := topology.EksSpec.EKS.ClusterName
+	clusterName := topology.EksSpec.Eks.ClusterName
 	operatorNamespace := topology.SparkOperator.Namespace
 
 	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(eks.CmdEnvKubeConfig), clusterName)
@@ -159,7 +159,7 @@ func CreateApiGatewayService(clientset *kubernetes.Clientset, namespace string, 
 func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, topology SparkTopologySpec) {
 	// helm install my-release spark-operator/spark-operator --namespace spark-operator --create-namespace --set sparkJobNamespace=default
 
-	kubeConfig, err := awslib.CreateKubeConfig(topology.EksSpec.Region, commandEnvironment.Get(eks.CmdEnvKubeConfig), topology.EksSpec.EKS.ClusterName)
+	kubeConfig, err := awslib.CreateKubeConfig(topology.EksSpec.Region, commandEnvironment.Get(eks.CmdEnvKubeConfig), topology.EksSpec.Eks.ClusterName)
 	if err != nil {
 		log.Fatalf("Failed to get kube config: %s", err)
 	}

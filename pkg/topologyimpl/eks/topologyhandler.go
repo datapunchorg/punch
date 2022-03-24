@@ -110,7 +110,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		return deployment.GetOutput(), err
 	}
 
-	err = deployment.RunSteps(specificTopology.GetSpec())
+	err = deployment.Run()
 	return deployment.GetOutput(), err
 }
 
@@ -124,7 +124,7 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 		return deployment.GetOutput(), err
 	}
 
-	err = deployment.RunSteps(specificTopology.GetSpec())
+	err = deployment.Run()
 	return deployment.GetOutput(), err
 }
 
@@ -139,7 +139,7 @@ func BuildInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fra
 	if commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
 		commandEnvironment.Set(CmdEnvKubeConfig, kubelib.GetKubeConfigPath())
 		deployment.AddStep("minikubeProfile", "Set Minikube Profile", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
-			_, err := resource.MinikubeExec("profile", topologySpec.EKS.ClusterName)
+			_, err := resource.MinikubeExec("profile", topologySpec.Eks.ClusterName)
 			return framework.NewDeploymentStepOutput(), err
 		})
 
@@ -158,17 +158,17 @@ func BuildInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fra
 			return framework.DeploymentStepOutput{"bucketName": topologySpec.S3BucketName}, err
 		})
 
-		deployment.AddStep("createInstanceIAMRole", "Create EKS instance IAM role", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
-			roleName := CreateInstanceIAMRole(topologySpec)
+		deployment.AddStep("createInstanceIamRole", "Create Eks instance IAM role", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
+			roleName := CreateInstanceIamRole(topologySpec)
 			return framework.DeploymentStepOutput{"roleName": roleName}, nil
 		})
 
-		deployment.AddStep("createEKSCluster", "Create EKS cluster", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
-			err := resource.CreateEksCluster(topologySpec.Region, topologySpec.VpcId, topologySpec.EKS)
+		deployment.AddStep("createEksCluster", "Create Eks cluster", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
+			err := resource.CreateEksCluster(topologySpec.Region, topologySpec.VpcId, topologySpec.Eks)
 			if err != nil {
 				return framework.NewDeploymentStepOutput(), err
 			}
-			clusterSummary, err := resource.DescribeEksCluster(topologySpec.Region, topologySpec.EKS.ClusterName)
+			clusterSummary, err := resource.DescribeEksCluster(topologySpec.Region, topologySpec.Eks.ClusterName)
 			if err != nil {
 				return framework.NewDeploymentStepOutput(), err
 			}
@@ -176,7 +176,7 @@ func BuildInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fra
 		})
 
 		deployment.AddStep("createNodeGroups", "Create node groups", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
-			stepOutput := c.GetStepOutput("createInstanceIAMRole")
+			stepOutput := c.GetStepOutput("createInstanceIamRole")
 			roleName := stepOutput["roleName"].(string)
 			if roleName == "" {
 				return framework.NewDeploymentStepOutput(), fmt.Errorf("failed to get role name from previous step")
@@ -186,7 +186,7 @@ func BuildInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fra
 				return framework.NewDeploymentStepOutput(), err
 			}
 			for _, nodeGroup := range topologySpec.NodeGroups {
-				err := resource.CreateNodeGroup(topologySpec.Region, topologySpec.EKS.ClusterName, nodeGroup, roleArn)
+				err := resource.CreateNodeGroup(topologySpec.Region, topologySpec.Eks.ClusterName, nodeGroup, roleArn)
 				if err != nil {
 					return framework.NewDeploymentStepOutput(), err
 				}
@@ -199,32 +199,32 @@ func BuildInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fra
 				awslib.RunEksCtlCmd("eksctl",
 					[]string{"utils", "associate-iam-oidc-provider",
 						"--region", topologySpec.Region,
-						"--cluster", topologySpec.EKS.ClusterName,
+						"--cluster", topologySpec.Eks.ClusterName,
 						"--approve"})
 				return framework.NewDeploymentStepOutput(), nil
 			})
 
 			deployment.AddStep("createClusterAutoscalerIAMRole", "Create Cluster Autoscaler IAM role", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
-				oidcIssuer := c.GetStepOutput("createEKSCluster")["oidcIssuer"].(string)
+				oidcIssuer := c.GetStepOutput("createEksCluster")["oidcIssuer"].(string)
 				idStr := "id/"
 				index := strings.LastIndex(strings.ToLower(oidcIssuer), idStr)
 				if index == -1 {
 					return framework.NewDeploymentStepOutput(), fmt.Errorf("invalid OIDC issuer: %s", oidcIssuer)
 				}
 				oidcId := oidcIssuer[index+len(idStr):]
-				roleName, err := CreateClusterAutoscalerIAMRole(topologySpec, oidcId)
+				roleName, err := CreateClusterAutoscalerIamRole(topologySpec, oidcId)
 				return framework.DeploymentStepOutput{"roleName": roleName}, err
 			})
 
 			deployment.AddStep("createClusterAutoscalerIAMServiceAccount", "Create Cluster Autoscaler IAM service account", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
 				roleName := c.GetStepOutput("createClusterAutoscalerIAMRole")["roleName"].(string)
-				err := CreateClusterAutoscalerIAMServiceAccount(commandEnvironment, topologySpec, roleName)
+				err := CreateClusterAutoscalerIamServiceAccount(commandEnvironment, topologySpec, roleName)
 				return framework.NewDeploymentStepOutput(), err
 			})
 
 			deployment.AddStep("createClusterAutoscalerTagsOnNodeGroup", "Create Cluster Autoscaler tags on node groups", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
 				for _, nodeGroup := range topologySpec.NodeGroups {
-					err := awslib.CreateOrUpdateClusterAutoscalerTagsOnNodeGroup(topologySpec.Region, topologySpec.EKS.ClusterName, nodeGroup.Name)
+					err := awslib.CreateOrUpdateClusterAutoscalerTagsOnNodeGroup(topologySpec.Region, topologySpec.Eks.ClusterName, nodeGroup.Name)
 					if err != nil {
 						return framework.NewDeploymentStepOutput(), err
 					}
@@ -253,7 +253,7 @@ func BuildUninstallDeployment(topologySpec EksTopologySpec, commandEnvironment f
 
 	if commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
 		deployment.AddStep("minikubeProfile", "Set Minikube Profile", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
-			_, err := resource.MinikubeExec("profile", topologySpec.EKS.ClusterName)
+			_, err := resource.MinikubeExec("profile", topologySpec.Eks.ClusterName)
 			return framework.NewDeploymentStepOutput(), err
 		})
 
@@ -268,9 +268,9 @@ func BuildUninstallDeployment(topologySpec EksTopologySpec, commandEnvironment f
 		})
 	} else {
 		deployment.AddStep("deleteOidcProvider", "Delete OIDC Provider", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
-			clusterSummary, err := resource.DescribeEksCluster(topologySpec.Region, topologySpec.EKS.ClusterName)
+			clusterSummary, err := resource.DescribeEksCluster(topologySpec.Region, topologySpec.Eks.ClusterName)
 			if err != nil {
-				log.Printf("[WARN] Cannot delete OIDC provider, failed to get EKS cluster %s in regsion %s: %s", topologySpec.EKS.ClusterName, topologySpec.Region, err.Error())
+				log.Printf("[WARN] Cannot delete OIDC provider, failed to get Eks cluster %s in regsion %s: %s", topologySpec.Eks.ClusterName, topologySpec.Region, err.Error())
 				return framework.NewDeploymentStepOutput(), nil
 			}
 			if clusterSummary.OidcIssuer != "" {
@@ -286,7 +286,7 @@ func BuildUninstallDeployment(topologySpec EksTopologySpec, commandEnvironment f
 		})
 		deployment.AddStep("deleteNodeGroups", "Delete Node Groups", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
 			for _, nodeGroup := range topologySpec.NodeGroups {
-				err := awslib.DeleteNodeGroup(topologySpec.Region, topologySpec.EKS.ClusterName, nodeGroup.Name)
+				err := awslib.DeleteNodeGroup(topologySpec.Region, topologySpec.Eks.ClusterName, nodeGroup.Name)
 				if err != nil {
 					return framework.NewDeploymentStepOutput(), err
 				}
@@ -295,12 +295,12 @@ func BuildUninstallDeployment(topologySpec EksTopologySpec, commandEnvironment f
 		})
 
 		deployment.AddStep("deleteLoadBalancer", "Delete Load Balancer", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
-			err := awslib.DeleteLoadBalancerOnEKS(topologySpec.Region, topologySpec.VpcId, topologySpec.EKS.ClusterName, "ingress-nginx")
+			err := awslib.DeleteLoadBalancerOnEKS(topologySpec.Region, topologySpec.VpcId, topologySpec.Eks.ClusterName, "ingress-nginx")
 			return framework.NewDeploymentStepOutput(), err
 		})
 
-		deployment.AddStep("deleteEKSCluster", "Delete EKS Cluster", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
-			DeleteEKSCluster(topologySpec.Region, topologySpec.EKS.ClusterName)
+		deployment.AddStep("deleteEksCluster", "Delete Eks Cluster", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
+			DeleteEksCluster(topologySpec.Region, topologySpec.Eks.ClusterName)
 			return framework.NewDeploymentStepOutput(), nil
 		})
 	}

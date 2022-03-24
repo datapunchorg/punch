@@ -32,7 +32,7 @@ func TestTemplate(t *testing.T) {
 	topology := CreateDefaultEksTopology("my", "{{ or .Values.s3BucketName .DefaultS3BucketName }}")
 	topology.Metadata.CommandEnvironment["kubeConfig"] = "{{ or .Env.kubeConfig `` }}"
 	topology.Metadata.CommandEnvironment["helmExecutable"] = "{{ or .Env.helmExecutable `helm` }}"
-	topology.Spec.EKS.ClusterName = "{{ .Values.eksCluster.name }}"
+	topology.Spec.Eks.ClusterName = "{{ .Values.eksCluster.name }}"
 
 	tmpl, err := template.New("").Parse(topology.ToString())
 	assert.Equal(t, nil, err)
@@ -53,7 +53,7 @@ func TestTemplate(t *testing.T) {
 	eksTopology := EksTopology{}
 	yaml.Unmarshal([]byte(str), &eksTopology)
 	assert.Equal(t, "bucket123abc", eksTopology.Spec.S3BucketName)
-	assert.Equal(t, "cluster1", eksTopology.Spec.EKS.ClusterName)
+	assert.Equal(t, "cluster1", eksTopology.Spec.Eks.ClusterName)
 	assert.Equal(t, "./foo/kube.config", eksTopology.Metadata.CommandEnvironment["kubeConfig"])
 	assert.Equal(t, "./bar/helm", eksTopology.Metadata.CommandEnvironment["helmExecutable"])
 }

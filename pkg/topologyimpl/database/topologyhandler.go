@@ -98,7 +98,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		}
 		return framework.DeploymentStepOutput{"endpoint": *result.Endpoint}, nil
 	})
-	err := deployment.RunSteps(topology.GetSpec())
+	err := deployment.Run()
 	return deployment.GetOutput(), err
 }
 
@@ -111,7 +111,7 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 		err := DeleteDatabase(region, databaseId)
 		return framework.NewDeploymentStepOutput(), err
 	})
-	err := deployment.RunSteps(topology.GetSpec())
+	err := deployment.Run()
 	return deployment.GetOutput(), err
 }
 

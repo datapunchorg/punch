@@ -60,9 +60,9 @@ type EksTopologySpec struct {
 	VpcId             string                   `json:"vpcId" yaml:"vpcId"`
 	S3BucketName      string                   `json:"s3BucketName" yaml:"s3BucketName"`
 	S3Policy          resource.IAMPolicy       `json:"s3Policy" yaml:"s3Policy"`
-	AutoScalingPolicy resource.IAMPolicy       `json:"autoScalingPolicy" yaml:"autoScalingPolicy"`
-	EKS               resource.EKSCluster      `json:"eks" yaml:"eks"`
-	NodeGroups        []resource.NodeGroup     `json:"nodeGroups" yaml:"nodeGroups"`
+	AutoScalingPolicy resource.IAMPolicy   `json:"autoScalingPolicy" yaml:"autoScalingPolicy"`
+	Eks               resource.EKSCluster  `json:"eks" yaml:"eks"`
+	NodeGroups        []resource.NodeGroup `json:"nodeGroups" yaml:"nodeGroups"`
 	AutoScaling       resource.AutoScalingSpec `json:"autoScale" yaml:"autoScale"`
 	NginxIngress      NginxIngress             `json:"nginxIngress" yaml:"nginxIngress"`
 }
@@ -97,7 +97,7 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 			VpcId:        "",
 			S3BucketName: s3BucketName,
 			S3Policy:     resource.IAMPolicy{},
-			EKS: resource.EKSCluster{
+			Eks: resource.EKSCluster{
 				ClusterName: k8sClusterName,
 				ControlPlaneRole: resource.IAMRole{
 					Name:                     controlPlaneRoleName,
@@ -201,15 +201,6 @@ func (t *EksTopology) ToString() string {
 	topologyBytes, err := yaml.Marshal(t)
 	if err != nil {
 		return fmt.Sprintf("(Failed to serialize topology: %s)", err.Error())
-	}
-	var copy EksTopology
-	err = yaml.Unmarshal(topologyBytes, &copy)
-	if err != nil {
-		return fmt.Sprintf("(Failed to deserialize topology in ToYamlString(): %s)", err.Error())
-	}
-	topologyBytes, err = yaml.Marshal(copy)
-	if err != nil {
-		return fmt.Sprintf("(Failed to serialize topology in ToYamlString(): %s)", err.Error())
 	}
 	return string(topologyBytes)
 }

@@ -32,9 +32,9 @@ import (
 	"time"
 )
 
-func CreateInstanceIAMRole(topology EksTopologySpec) string {
+func CreateInstanceIamRole(topology EksTopologySpec) string {
 	region := topology.Region
-	roleName, err := resource.CreateIAMRoleWithMorePolicies(region, topology.EKS.InstanceRole, []resource.IAMPolicy{topology.S3Policy})
+	roleName, err := resource.CreateIAMRoleWithMorePolicies(region, topology.Eks.InstanceRole, []resource.IAMPolicy{topology.S3Policy})
 	if err != nil {
 		// TODO remove Fatalf
 		log.Fatalf("Failed to create instance IAM role: %s", err.Error())
@@ -42,8 +42,8 @@ func CreateInstanceIAMRole(topology EksTopologySpec) string {
 	return roleName
 }
 
-// CreateClusterAutoscalerIAMRole returns IAM Role name like: AmazonEKSClusterAutoscalerRole-xxx
-func CreateClusterAutoscalerIAMRole(topology EksTopologySpec, oidcId string) (string, error) {
+// CreateClusterAutoscalerIamRole returns IAM Role name like: AmazonEKSClusterAutoscalerRole-xxx
+func CreateClusterAutoscalerIamRole(topology EksTopologySpec, oidcId string) (string, error) {
 	region := topology.Region
 	session := awslib.CreateSession(region)
 	accountId, err := awslib.GetCurrentAccount(session)
@@ -78,7 +78,7 @@ func CreateClusterAutoscalerIAMRole(topology EksTopologySpec, oidcId string) (st
 	return role.Name, nil
 }
 
-func CreateClusterAutoscalerIAMServiceAccount(commandEnvironment framework.CommandEnvironment, topology EksTopologySpec, iamRoleName string) error {
+func CreateClusterAutoscalerIamServiceAccount(commandEnvironment framework.CommandEnvironment, topology EksTopologySpec, iamRoleName string) error {
 	region := topology.Region
 	session := awslib.CreateSession(region)
 	accountId, err := awslib.GetCurrentAccount(session)
@@ -92,17 +92,17 @@ func CreateClusterAutoscalerIAMServiceAccount(commandEnvironment framework.Comma
 		[]string{"create", "iamserviceaccount",
 			"--name", serviceAccountName,
 			"--region", topology.Region,
-			"--cluster", topology.EKS.ClusterName,
+			"--cluster", topology.Eks.ClusterName,
 			"--namespace", systemNamespace,
 			"--attach-role-arn", roleArn,
 			"--approve"})
-	err = WaitEKSServiceAccount(commandEnvironment, topology, systemNamespace, serviceAccountName)
+	err = WaitEksServiceAccount(commandEnvironment, topology, systemNamespace, serviceAccountName)
 	return err
 }
 
-func WaitEKSServiceAccount(commandEnvironment framework.CommandEnvironment, topology EksTopologySpec, namespace string, serviceAccount string) error {
+func WaitEksServiceAccount(commandEnvironment framework.CommandEnvironment, topology EksTopologySpec, namespace string, serviceAccount string) error {
 	region := topology.Region
-	clusterName := topology.EKS.ClusterName
+	clusterName := topology.Eks.ClusterName
 
 	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(CmdEnvKubeConfig), clusterName)
 	if err != nil {
@@ -115,7 +115,7 @@ func WaitEKSServiceAccount(commandEnvironment framework.CommandEnvironment, topo
 			v12.GetOptions{},
 		)
 		if err != nil {
-			fmt.Sprintf("Failed to get service account %s in namespace %s in EKS cluster %s", serviceAccount, namespace, clusterName)
+			fmt.Sprintf("Failed to get service account %s in namespace %s in Eks cluster %s", serviceAccount, namespace, clusterName)
 			return false, nil
 		}
 		return true, nil
@@ -123,7 +123,7 @@ func WaitEKSServiceAccount(commandEnvironment framework.CommandEnvironment, topo
 		5*time.Minute,
 		10*time.Second)
 	if err != nil {
-		return fmt.Errorf("failed to wait service account %s in namespace %s in EKS cluster %s", serviceAccount, namespace, clusterName)
+		return fmt.Errorf("failed to wait service account %s in namespace %s in Eks cluster %s", serviceAccount, namespace, clusterName)
 	}
 	return nil
 }
@@ -134,7 +134,7 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 	helmInstallName := topology.NginxIngress.HelmInstallName
 	serviceName := "ingress-nginx-controller"
 	region := topology.Region
-	eksClusterName := topology.EKS.ClusterName
+	eksClusterName := topology.Eks.ClusterName
 	kubeConfig, err := awslib.CreateKubeConfig(region, commandEnvironment.Get(CmdEnvKubeConfig), eksClusterName)
 	if err != nil {
 		log.Fatalf("Failed to get kube config: %s", err)
@@ -192,10 +192,10 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 	return output
 }
 
-func DeleteEKSCluster(region string, clusterName string) {
+func DeleteEksCluster(region string, clusterName string) {
 	err := awslib.DeleteEKSCluster(region, clusterName)
 	if err != nil {
-		fmt.Sprintf("Failed to delete EKS cluster: %s", err.Error())
+		fmt.Sprintf("Failed to delete Eks cluster: %s", err.Error())
 	}
 	err = awslib.CheckEksCtlCmd("eksctl")
 	if err == nil {

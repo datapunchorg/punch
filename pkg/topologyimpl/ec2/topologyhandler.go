@@ -103,7 +103,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		}
 		return framework.DeploymentStepOutput{"instanceIds": instanceIds}, nil
 	})
-	err := deployment.RunSteps(topology.GetSpec())
+	err := deployment.Run()
 	return deployment.GetOutput(), err
 }
 
@@ -125,6 +125,6 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 		}
 		return framework.NewDeploymentStepOutput(), nil
 	})
-	err := deployment.RunSteps(topology.GetSpec())
+	err := deployment.Run()
 	return deployment.GetOutput(), err
 }

@@ -123,7 +123,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		return deployment.GetOutput(), err
 	}
 
-	err = deployment.RunSteps(specificTopology.GetSpec())
+	err = deployment.Run()
 	return deployment.GetOutput(), err
 }
 
@@ -137,7 +137,7 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 		return deployment.GetOutput(), err
 	}
 
-	err = deployment.RunSteps(specificTopology)
+	err = deployment.Run()
 	return deployment.GetOutput(), err
 }
 

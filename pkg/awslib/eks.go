@@ -48,14 +48,14 @@ func CreateEksCluster(eksClient *eks.EKS, createClusterInput *eks.CreateClusterI
 		createClusterInputCopy.ClientRequestToken = aws.String(fmt.Sprintf("create-eks-%s-%v", name, uuid.New().String()))
 	}
 
-	log.Printf("Creating EKS cluster: %v", createClusterInputCopy)
+	log.Printf("Creating Eks cluster: %v", createClusterInputCopy)
 
 	createClusterOutput, err := eksClient.CreateCluster(&createClusterInputCopy)
 	if err != nil {
 		return err
 	}
 
-	log.Printf("Created EKS cluster: %v", createClusterOutput)
+	log.Printf("Created Eks cluster: %v", createClusterOutput)
 	return nil
 }
 
@@ -114,7 +114,7 @@ func CreateEksKubeConfig(region string, clusterName string) (kubelib.KubeConfig,
 		return kubelib.KubeConfig{}, err
 	}
 
-	log.Printf("Getting client for EKS Cluster: %s", clusterName)
+	log.Printf("Getting client for Eks Cluster: %s", clusterName)
 
 	cluster := describeClusterOutput.Cluster
 
@@ -218,7 +218,7 @@ func CreateKubernetesClient(region string, kubeConfigFile string, clusterName st
 func DeleteEKSCluster(region string, clusterName string) error {
 	session := CreateSession(region)
 
-	log.Printf("Deleting EKS cluster %s in AWS region: %v", clusterName, region)
+	log.Printf("Deleting Eks cluster %s in AWS region: %v", clusterName, region)
 
 	eksClient := eks.New(session)
 
@@ -226,7 +226,7 @@ func DeleteEKSCluster(region string, clusterName string) error {
 		Name: aws.String(clusterName),
 	})
 	if err != nil {
-		return fmt.Errorf("failed to delete EKS cluster %s: %s", clusterName, err.Error())
+		return fmt.Errorf("failed to delete Eks cluster %s: %s", clusterName, err.Error())
 	}
 
 	waitDeletedErr := common.RetryUntilTrue(func() (bool, error) {
