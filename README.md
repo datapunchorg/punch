@@ -18,11 +18,18 @@ make release
 
 Go to `dist` folder, then check [User Guide](UserGuide.md) to see how to run punch command.
 
-## Quick Start
+## Quick Start - Run Spark on Minikube
 
 You could build this project (`make release`) and use `punch` to deploy Spark on [Minikube](https://minikube.sigs.k8s.io/docs/start/), and run Spark application for a quick try.
 
 See [Quick Start Guide](QuickStart_Minikube.md) for details.
+
+## Quick Start - Create EKS Cluster
+
+You could build this project (`make release`) and use `punch` to crate an AWS EKS cluster and play with it.
+
+See [Quick Start Guide](QuickStart_CreateEks.md) for details.
+
 
 ## Install using Homebrew
 

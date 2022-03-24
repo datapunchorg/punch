@@ -93,12 +93,8 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 			},
 		},
 	}
-	UpdateSparkTopologyByS3BucketName(&topology, s3BucketName)
-	return topology
-}
-
-func UpdateSparkTopologyByS3BucketName(topology *SparkTopology, s3BucketName string) {
 	eks.UpdateEksTopologyByS3BucketName(&topology.Spec.EksSpec, s3BucketName)
+	return topology
 }
 
 func (t *SparkTopology) GetKind() string {
