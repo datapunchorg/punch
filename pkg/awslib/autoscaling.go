@@ -28,7 +28,7 @@ func CreateOrUpdateClusterAutoscalerTagsOnNodeGroup(region string, eksClusterNam
 
 	eksClient := eks.New(session)
 	describeNodegroupOutput, err := eksClient.DescribeNodegroup(&eks.DescribeNodegroupInput{
-		ClusterName: &eksClusterName,
+		ClusterName:   &eksClusterName,
 		NodegroupName: &nodeGroupName,
 	})
 	if err != nil {
@@ -47,17 +47,17 @@ func CreateOrUpdateClusterAutoscalerTagsOnNodeGroup(region string, eksClusterNam
 	_, err = svc.CreateOrUpdateTags(&autoscaling.CreateOrUpdateTagsInput{
 		Tags: []*autoscaling.Tag{
 			&autoscaling.Tag{
-				ResourceId: resourceId,
-				ResourceType: aws.String("auto-scaling-group"),
-				Key: aws.String(key1),
-				Value: aws.String("owned"),
+				ResourceId:        resourceId,
+				ResourceType:      aws.String("auto-scaling-group"),
+				Key:               aws.String(key1),
+				Value:             aws.String("owned"),
 				PropagateAtLaunch: aws.Bool(true),
 			},
 			&autoscaling.Tag{
-				ResourceId: resourceId,
-				ResourceType: aws.String("auto-scaling-group"),
-				Key: aws.String("k8s.io/cluster-autoscaler/enabled"),
-				Value: aws.String("TRUE"),
+				ResourceId:        resourceId,
+				ResourceType:      aws.String("auto-scaling-group"),
+				Key:               aws.String("k8s.io/cluster-autoscaler/enabled"),
+				Value:             aws.String("TRUE"),
 				PropagateAtLaunch: aws.Bool(true),
 			},
 		},
@@ -67,4 +67,3 @@ func CreateOrUpdateClusterAutoscalerTagsOnNodeGroup(region string, eksClusterNam
 	}
 	return nil
 }
-

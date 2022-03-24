@@ -253,7 +253,6 @@ func checkCmdEnvFolderExists(metadata framework.TopologyMetadata, cmdEnvKey stri
 	return nil
 }
 
-
 func BuildInstallDeployment(topologySpec SparkTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.DeploymentImpl, error) {
 	deployment, err := eks.BuildInstallDeployment(topologySpec.EksSpec, commandEnvironment)
 	if err != nil {

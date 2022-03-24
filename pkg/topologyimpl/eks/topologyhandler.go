@@ -30,7 +30,6 @@ import (
 	"text/template"
 )
 
-
 func init() {
 	framework.DefaultTopologyHandlerManager.AddHandler(KindEksTopology, &TopologyHandler{})
 }
@@ -128,7 +127,6 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 	err = deployment.RunSteps(specificTopology.GetSpec())
 	return deployment.GetOutput(), err
 }
-
 
 func BuildInstallDeployment(topologySpec EksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.DeploymentImpl, error) {
 	deployment := framework.NewDeployment()
@@ -249,7 +247,6 @@ func BuildInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fra
 
 	return deployment, nil
 }
-
 
 func BuildUninstallDeployment(topologySpec EksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.DeploymentImpl, error) {
 	deployment := framework.NewDeployment()

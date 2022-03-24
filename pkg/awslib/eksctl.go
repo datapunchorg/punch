@@ -41,4 +41,3 @@ func RunEksCtlCmd(exeLocation string, arguments []string) {
 		log.Printf("Finished running eksctl\n%s", string(out))
 	}
 }
-

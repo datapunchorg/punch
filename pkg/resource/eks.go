@@ -44,7 +44,7 @@ type EKSCluster struct {
 
 type EKSClusterSummary struct {
 	ClusterName string `json:"clusterName" yaml:"clusterName"`
-	OidcIssuer string `json:"oidcIssuer" yaml:"oidcIssuer"`
+	OidcIssuer  string `json:"oidcIssuer" yaml:"oidcIssuer"`
 }
 
 func CreateEksCluster(region string, vpcId string, eksCluster EKSCluster) error {
@@ -216,13 +216,13 @@ func DescribeEksCluster(region string, clusterName string) (EKSClusterSummary, e
 	if describeClusterOutput.Cluster != nil &&
 		describeClusterOutput.Cluster.Identity != nil &&
 		describeClusterOutput.Cluster.Identity.Oidc != nil &&
-		describeClusterOutput.Cluster.Identity.Oidc.Issuer != nil{
+		describeClusterOutput.Cluster.Identity.Oidc.Issuer != nil {
 		oidcIssuer = *describeClusterOutput.Cluster.Identity.Oidc.Issuer
 	}
 
 	clusterSummary := EKSClusterSummary{
 		ClusterName: clusterName,
-		OidcIssuer: oidcIssuer,
+		OidcIssuer:  oidcIssuer,
 	}
 
 	return clusterSummary, nil

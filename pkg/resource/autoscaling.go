@@ -17,6 +17,6 @@ limitations under the License.
 package resource
 
 type AutoScalingSpec struct {
-	EnableClusterAutoscaler bool       `json:"enableClusterAutoscaler" yaml:"enableClusterAutoscaler"`
-	ClusterAutoscalerIAMRole IAMRole   `json:"clusterAutoscalerIAMRole" yaml:"clusterAutoscalerIAMRole"`
+	EnableClusterAutoscaler  bool    `json:"enableClusterAutoscaler" yaml:"enableClusterAutoscaler"`
+	ClusterAutoscalerIAMRole IAMRole `json:"clusterAutoscalerIAMRole" yaml:"clusterAutoscalerIAMRole"`
 }

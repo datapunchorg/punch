@@ -37,8 +37,8 @@ const (
 
 	CmdEnvSparkOperatorHelmChart = "sparkOperatorHelmChart"
 
-	DefaultVersion        = "datapunch.org/v1alpha1"
-	DefaultNamePrefix     = "my"
+	DefaultVersion    = "datapunch.org/v1alpha1"
+	DefaultNamePrefix = "my"
 )
 
 type SparkTopology struct {
@@ -51,7 +51,7 @@ type SparkTopology struct {
 type SparkTopologySpec struct {
 	EksSpec       eks.EksTopologySpec `json:"eksSpec" yaml:"eksSpec"`
 	SparkOperator SparkOperator       `json:"sparkOperator" yaml:"sparkOperator"`
-	ApiGateway    SparkApiGateway      `json:"apiGateway" yaml:"apiGateway"`
+	ApiGateway    SparkApiGateway     `json:"apiGateway" yaml:"apiGateway"`
 }
 
 type SparkApiGateway struct {

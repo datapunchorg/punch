@@ -38,6 +38,12 @@ export GO111MODULE
 all:
 	$(MAKE) -C $(dir $(BASE_DIR)) clean test build
 
+# Format files
+.PHONY: format
+format:
+	@echo "formatting files ..."
+	go fmt ./...
+
 # Build binaries
 .PHONY: build
 build:

@@ -24,22 +24,22 @@ import (
 )
 
 const (
-	ToBeReplacedS3BucketName            = "todo_use_your_own_bucket_name"
-	DefaultInstanceType                 = "t3.large"
-	DefaultNodeGroupSize                = 3
-	DefaultMaxNodeGroupSize             = 10
-	DefaultNginxIngressHelmInstallName  = "ingress-nginx"
-	DefaultNginxIngressNamespace        = "ingress-nginx"
-	DefaultNginxEnableHttp              = true
-	DefaultNginxEnableHttps             = true
+	ToBeReplacedS3BucketName           = "todo_use_your_own_bucket_name"
+	DefaultInstanceType                = "t3.large"
+	DefaultNodeGroupSize               = 3
+	DefaultMaxNodeGroupSize            = 10
+	DefaultNginxIngressHelmInstallName = "ingress-nginx"
+	DefaultNginxIngressNamespace       = "ingress-nginx"
+	DefaultNginxEnableHttp             = true
+	DefaultNginxEnableHttps            = true
 
 	KindEksTopology = "Eks"
 
-	CmdEnvHelmExecutable         = "helmExecutable"
-	CmdEnvWithMinikube           = "withMinikube"
-	CmdEnvNginxHelmChart         = "nginxHelmChart"
+	CmdEnvHelmExecutable             = "helmExecutable"
+	CmdEnvWithMinikube               = "withMinikube"
+	CmdEnvNginxHelmChart             = "nginxHelmChart"
 	CmdEnvClusterAutoscalerHelmChart = "ClusterAutoscalerHelmChart"
-	CmdEnvKubeConfig             = "kubeConfig"
+	CmdEnvKubeConfig                 = "kubeConfig"
 
 	DefaultVersion        = "datapunch.org/v1alpha1"
 	DefaultRegion         = "us-west-1"
@@ -51,20 +51,20 @@ type EksTopology struct {
 	ApiVersion string                     `json:"apiVersion" yaml:"apiVersion"`
 	Kind       string                     `json:"kind" yaml:"kind"`
 	Metadata   framework.TopologyMetadata `json:"metadata"`
-	Spec       EksTopologySpec          `json:"spec"`
+	Spec       EksTopologySpec            `json:"spec"`
 }
 
 type EksTopologySpec struct {
-	NamePrefix    string               `json:"namePrefix" yaml:"namePrefix"`
-	Region        string               `json:"region"`
-	VpcId         string               `json:"vpcId" yaml:"vpcId"`
-	S3BucketName  string               `json:"s3BucketName" yaml:"s3BucketName"`
-	S3Policy      resource.IAMPolicy   `json:"s3Policy" yaml:"s3Policy"`
-	AutoScalingPolicy      resource.IAMPolicy   `json:"autoScalingPolicy" yaml:"autoScalingPolicy"`
-	EKS           resource.EKSCluster  `json:"eks" yaml:"eks"`
-	NodeGroups    []resource.NodeGroup `json:"nodeGroups" yaml:"nodeGroups"`
-	AutoScaling   resource.AutoScalingSpec      `json:"autoScale" yaml:"autoScale"`
-	NginxIngress  NginxIngress         `json:"nginxIngress" yaml:"nginxIngress"`
+	NamePrefix        string                   `json:"namePrefix" yaml:"namePrefix"`
+	Region            string                   `json:"region"`
+	VpcId             string                   `json:"vpcId" yaml:"vpcId"`
+	S3BucketName      string                   `json:"s3BucketName" yaml:"s3BucketName"`
+	S3Policy          resource.IAMPolicy       `json:"s3Policy" yaml:"s3Policy"`
+	AutoScalingPolicy resource.IAMPolicy       `json:"autoScalingPolicy" yaml:"autoScalingPolicy"`
+	EKS               resource.EKSCluster      `json:"eks" yaml:"eks"`
+	NodeGroups        []resource.NodeGroup     `json:"nodeGroups" yaml:"nodeGroups"`
+	AutoScaling       resource.AutoScalingSpec `json:"autoScale" yaml:"autoScale"`
+	NginxIngress      NginxIngress             `json:"nginxIngress" yaml:"nginxIngress"`
 }
 
 type NginxIngress struct {
