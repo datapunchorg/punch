@@ -63,7 +63,7 @@ func (t *TopologyHandler) Resolve(topology framework.Topology, data framework.Te
 		return nil, fmt.Errorf("failed to parse topology template (%s): %s", err.Error(), yamlContent)
 	}
 
-	templateData := CreateEksTemplateData(data)
+	templateData := framework.CreateTemplateDataWithRegion(data)
 
 	buffer := bytes.Buffer{}
 	err = tmpl.Execute(&buffer, &templateData)

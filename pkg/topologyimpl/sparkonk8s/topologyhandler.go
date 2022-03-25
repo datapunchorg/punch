@@ -68,10 +68,10 @@ func (t *TopologyHandler) Resolve(topology framework.Topology, data framework.Te
 		return nil, fmt.Errorf("failed to parse topology template (%s): %s", err.Error(), yamlContent)
 	}
 
-	sparkData := eks.CreateEksTemplateData(data)
+	templateData := framework.CreateTemplateDataWithRegion(data)
 
 	buffer := bytes.Buffer{}
-	err = tmpl.Execute(&buffer, &sparkData)
+	err = tmpl.Execute(&buffer, &templateData)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute topology template: %s", err.Error())
 	}
@@ -81,29 +81,29 @@ func (t *TopologyHandler) Resolve(topology framework.Topology, data framework.Te
 		return nil, fmt.Errorf("failed to parse resolved topology (%s): %s", err.Error(), resolvedContent)
 	}
 
-	resolvedSparkTopology := resolvedTopology.(*SparkTopology)
-	if resolvedSparkTopology.Spec.ApiGateway.UserPassword == "" || resolvedSparkTopology.Spec.ApiGateway.UserPassword == framework.TemplateNoValue {
+	resolvedSpecificTopology := resolvedTopology.(*SparkTopology)
+	if resolvedSpecificTopology.Spec.ApiGateway.UserPassword == "" || resolvedSpecificTopology.Spec.ApiGateway.UserPassword == framework.TemplateNoValue {
 		return nil, fmt.Errorf("spec.apiGateway.userPassword is emmpty, please provide the value for the password")
 	}
 
-	err = checkCmdEnvFolderExists(resolvedSparkTopology.Metadata, eks.CmdEnvNginxHelmChart)
+	err = checkCmdEnvFolderExists(resolvedSpecificTopology.Metadata, eks.CmdEnvNginxHelmChart)
 	if err != nil {
 		return nil, err
 	}
 
-	err = checkCmdEnvFolderExists(resolvedSparkTopology.Metadata, CmdEnvSparkOperatorHelmChart)
+	err = checkCmdEnvFolderExists(resolvedSpecificTopology.Metadata, CmdEnvSparkOperatorHelmChart)
 	if err != nil {
 		return nil, err
 	}
 
-	if resolvedSparkTopology.Spec.EksSpec.AutoScaling.EnableClusterAutoscaler {
-		err = checkCmdEnvFolderExists(resolvedSparkTopology.Metadata, eks.CmdEnvClusterAutoscalerHelmChart)
+	if resolvedSpecificTopology.Spec.EksSpec.AutoScaling.EnableClusterAutoscaler {
+		err = checkCmdEnvFolderExists(resolvedSpecificTopology.Metadata, eks.CmdEnvClusterAutoscalerHelmChart)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	if resolvedSparkTopology.Spec.EksSpec.AutoScaling.EnableClusterAutoscaler {
+	if resolvedSpecificTopology.Spec.EksSpec.AutoScaling.EnableClusterAutoscaler {
 		err = awslib.CheckEksCtlCmd("eksctl")
 		if err != nil {
 			return nil, err
@@ -142,15 +142,15 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 }
 
 func (t *TopologyHandler) PrintUsageExample(topology framework.Topology, deploymentOutput framework.DeploymentOutput) {
-	sparkTopology := topology.(*SparkTopology)
+	specificTopology := topology.(*SparkTopology)
 
 	if _, ok := deploymentOutput.Output()["minikubeStart"]; ok {
-		printExampleCommandToRunSparkOnMinikube(*sparkTopology)
+		printExampleCommandToRunSparkOnMinikube(*specificTopology)
 	} else {
 		var loadBalancerUrls []string
 		loadBalancerUrls = deploymentOutput.Output()["deployNginxIngressController"]["loadBalancerUrls"].([]string)
 		if len(loadBalancerUrls) > 0 {
-			printExampleCommandToRunSparkOnAws(loadBalancerUrls[0], *sparkTopology)
+			printExampleCommandToRunSparkOnAws(loadBalancerUrls[0], *specificTopology)
 		} else {
 			log.Printf("Did not find load balancer url, cannot print usage example command")
 		}
@@ -222,19 +222,18 @@ Another example using sparkcli to run Python Spark application from local file (
 	log.Printf(anotherStr, userName, userPassword, url, file.Name())
 }
 
-// TODO use eks.createEksTopologyTemplate
 func createSparkTopologyTemplate() SparkTopology {
 	namePrefix := "{{ or .Values.namePrefix `my` }}"
 	s3BucketName := "{{ or .Values.s3BucketName .DefaultS3BucketName }}"
 
 	topology := CreateDefaultSparkTopology(namePrefix, s3BucketName)
 
-	eksTemplate := eks.CreateEksTopologyTemplate()
+	eksTopology := eks.CreateEksTopologyTemplate()
 
-	topology.Spec.EksSpec = eksTemplate.Spec
+	topology.Spec.EksSpec = eksTopology.Spec
 	topology.Spec.ApiGateway.UserPassword = "{{ .Values.apiUserPassword }}"
 
-	topology.Metadata.CommandEnvironment = eksTemplate.Metadata.CommandEnvironment
+	topology.Metadata.CommandEnvironment = eksTopology.Metadata.CommandEnvironment
 	topology.Metadata.CommandEnvironment[CmdEnvSparkOperatorHelmChart] = "{{ or .Env.sparkOperatorHelmChart `spark-operator-service/charts/spark-operator-chart` }}"
 
 	topology.Metadata.Notes["apiUserPassword"] = "Please make sure to provide API gateway user password when deploying the topology, e.g. --set apiUserPassword=your-password"

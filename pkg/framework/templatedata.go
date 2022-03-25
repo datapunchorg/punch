@@ -166,3 +166,10 @@ func (t *TemplateDataWithRegion) DefaultS3BucketName() string {
 
 	return fmt.Sprintf("%s-%s-%s", namePrefix, account, region)
 }
+
+func CreateTemplateDataWithRegion(data TemplateData) TemplateDataWithRegion {
+	copy := CopyTemplateData(data)
+	return TemplateDataWithRegion{
+		TemplateDataImpl: copy,
+	}
+}

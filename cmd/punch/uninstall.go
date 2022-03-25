@@ -19,7 +19,6 @@ package main
 import (
 	"github.com/datapunchorg/punch/pkg/framework"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/database"
-	_ "github.com/datapunchorg/punch/pkg/topologyimpl/ec2"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/sparkonk8s"
 	"github.com/spf13/cobra"
