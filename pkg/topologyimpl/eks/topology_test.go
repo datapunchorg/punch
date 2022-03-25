@@ -37,7 +37,7 @@ func TestTemplate(t *testing.T) {
 	tmpl, err := template.New("").Parse(topology.ToString())
 	assert.Equal(t, nil, err)
 
-	data := CreateEksTemplateData(&d)
+	data := framework.CreateTemplateDataWithRegion(&d)
 	data.AddValue("s3BucketName", "bucket123abc")
 	data.AddValue("eksCluster", map[string]interface{}{"name": "cluster1"})
 	data.AddEnv("kubeConfig", "./foo/kube.config")
@@ -68,7 +68,7 @@ func TestTemplateWithAlternativeValue(t *testing.T) {
 	tmpl, err := template.New("").Parse(topology.ToString())
 	assert.Equal(t, nil, err)
 
-	data := CreateEksTemplateData(&d)
+	data := framework.CreateTemplateDataWithRegion(&d)
 
 	buffer := bytes.Buffer{}
 	err = tmpl.Execute(&buffer, &data)
@@ -91,7 +91,7 @@ func TestTemplateWithUnresolvedValue(t *testing.T) {
 	tmpl, err := template.New("").Parse(topology.ToString())
 	assert.Equal(t, nil, err)
 
-	data := CreateEksTemplateData(&d)
+	data := framework.CreateTemplateDataWithRegion(&d)
 
 	buffer := bytes.Buffer{}
 	err = tmpl.Execute(&buffer, &data)

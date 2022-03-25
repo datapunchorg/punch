@@ -14,17 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package eks
+package framework
 
 import (
-	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestAddValueWithNestedKey(t *testing.T) {
-	d := framework.CreateTemplateData(nil, nil)
-	data := CreateEksTemplateData(&d)
+	d := CreateTemplateData(nil, nil)
+	data := CreateTemplateDataWithRegion(&d)
 	data.AddValueWithNestedKey("key1", "value1")
 	assert.Equal(t, "value1", data.GetStringValueOrDefault("key1", ""))
 	data.AddValueWithNestedKey("d1.key2", "a.value2")
