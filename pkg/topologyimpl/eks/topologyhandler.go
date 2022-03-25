@@ -128,11 +128,11 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 	return deployment.GetOutput(), err
 }
 
-func BuildInstallDeployment(topologySpec EksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.DeploymentImpl, error) {
+func BuildInstallDeployment(topologySpec EksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
 	deployment := framework.NewDeployment()
 
 	if topologySpec.AutoScaling.EnableClusterAutoscaler && commandEnvironment.Get(CmdEnvClusterAutoscalerHelmChart) == "" {
-		return framework.DeploymentImpl{}, fmt.Errorf("please provide helm chart file location for Cluster Autoscaler")
+		return framework.NewDeployment(), fmt.Errorf("please provide helm chart file location for Cluster Autoscaler")
 	}
 
 	kubelib.CheckHelmOrFatal(commandEnvironment.Get(CmdEnvHelmExecutable))
@@ -248,7 +248,7 @@ func BuildInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fra
 	return deployment, nil
 }
 
-func BuildUninstallDeployment(topologySpec EksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.DeploymentImpl, error) {
+func BuildUninstallDeployment(topologySpec EksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
 	deployment := framework.NewDeployment()
 
 	if commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {

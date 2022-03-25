@@ -28,23 +28,23 @@ type Deployment interface {
 	GetOutput() DeploymentOutput
 }
 
-type DeploymentImpl struct {
+type deploymentImpl struct {
 	context DeploymentContext
 	steps   []DeploymentStep
 }
 
-func NewDeployment() DeploymentImpl {
-	return DeploymentImpl{
+func NewDeployment() Deployment {
+	return &deploymentImpl{
 		context: NewDefaultDeploymentContext(),
 		steps:   []DeploymentStep{},
 	}
 }
 
-func (d *DeploymentImpl) GetContext() DeploymentContext {
+func (d *deploymentImpl) GetContext() DeploymentContext {
 	return d.context
 }
 
-func (d *DeploymentImpl) AddStep(name string, description string, run DeploymentStepFunc) {
+func (d *deploymentImpl) AddStep(name string, description string, run DeploymentStepFunc) {
 	step := deploymentStepWrapper{
 		name:        name,
 		description: description,
@@ -53,7 +53,7 @@ func (d *DeploymentImpl) AddStep(name string, description string, run Deployment
 	d.steps = append(d.steps, step)
 }
 
-func (d *DeploymentImpl) Run() error {
+func (d *deploymentImpl) Run() error {
 	for _, step := range d.steps {
 		log.Printf("[StepBegin] %s: %s", step.Name(), step.Description())
 		output, err := step.Run(d.context)
@@ -66,7 +66,7 @@ func (d *DeploymentImpl) Run() error {
 	return nil
 }
 
-func (d *DeploymentImpl) GetOutput() DeploymentOutput {
+func (d *deploymentImpl) GetOutput() DeploymentOutput {
 	result := DeploymentOutputImpl{
 		steps:  []string{},
 		output: map[string]DeploymentStepOutput{},
@@ -79,7 +79,7 @@ func (d *DeploymentImpl) GetOutput() DeploymentOutput {
 	return &result
 }
 
-func (d *DeploymentImpl) getStepNames() []string {
+func (d *deploymentImpl) getStepNames() []string {
 	var result []string
 	for _, entry := range d.steps {
 		result = append(result, entry.Name())

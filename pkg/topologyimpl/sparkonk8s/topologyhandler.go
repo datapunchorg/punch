@@ -252,10 +252,10 @@ func checkCmdEnvFolderExists(metadata framework.TopologyMetadata, cmdEnvKey stri
 	return nil
 }
 
-func BuildInstallDeployment(topologySpec SparkTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.DeploymentImpl, error) {
+func BuildInstallDeployment(topologySpec SparkTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
 	deployment, err := eks.BuildInstallDeployment(topologySpec.EksSpec, commandEnvironment)
 	if err != nil {
-		return deployment, err
+		return nil, err
 	}
 
 	deployment.AddStep("deploySparkOperator", "Deploy Spark Operator", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
@@ -266,7 +266,7 @@ func BuildInstallDeployment(topologySpec SparkTopologySpec, commandEnvironment f
 	return deployment, nil
 }
 
-func BuildUninstallDeployment(topologySpec SparkTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.DeploymentImpl, error) {
+func BuildUninstallDeployment(topologySpec SparkTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
 	deployment, err := eks.BuildUninstallDeployment(topologySpec.EksSpec, commandEnvironment)
 	return deployment, err
 }
