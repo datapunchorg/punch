@@ -21,21 +21,21 @@ type DeploymentContext interface {
 	GetStepOutput(name string) map[string]interface{}
 }
 
-type DefaultDeploymentContext struct {
+type deploymentContextImpl struct {
 	outputs map[string]map[string]interface{}
 }
 
-func NewDefaultDeploymentContext() DeploymentContext {
-	return DefaultDeploymentContext{
+func NewDeploymentContext() DeploymentContext {
+	return &deploymentContextImpl{
 		outputs: map[string]map[string]interface{}{},
 	}
 }
 
-func (d DefaultDeploymentContext) AddStepOutput(name string, output map[string]interface{}) {
+func (d *deploymentContextImpl) AddStepOutput(name string, output map[string]interface{}) {
 	d.outputs[name] = output
 }
 
-func (d DefaultDeploymentContext) GetStepOutput(name string) map[string]interface{} {
+func (d *deploymentContextImpl) GetStepOutput(name string) map[string]interface{} {
 	output := d.outputs[name]
 	return output
 }

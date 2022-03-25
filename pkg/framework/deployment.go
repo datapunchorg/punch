@@ -35,7 +35,7 @@ type deploymentImpl struct {
 
 func NewDeployment() Deployment {
 	return &deploymentImpl{
-		context: NewDefaultDeploymentContext(),
+		context: NewDeploymentContext(),
 		steps:   []DeploymentStep{},
 	}
 }
