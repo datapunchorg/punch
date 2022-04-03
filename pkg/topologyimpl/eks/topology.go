@@ -60,11 +60,10 @@ type EksTopologySpec struct {
 	VpcId             string                   `json:"vpcId" yaml:"vpcId"`
 	S3BucketName      string                   `json:"s3BucketName" yaml:"s3BucketName"`
 	S3Policy          resource.IAMPolicy       `json:"s3Policy" yaml:"s3Policy"`
-	AutoScalingPolicy resource.IAMPolicy   `json:"autoScalingPolicy" yaml:"autoScalingPolicy"`
 	Eks               resource.EKSCluster  `json:"eks" yaml:"eks"`
 	NodeGroups        []resource.NodeGroup `json:"nodeGroups" yaml:"nodeGroups"`
-	AutoScaling       resource.AutoScalingSpec `json:"autoScale" yaml:"autoScale"`
 	NginxIngress      NginxIngress             `json:"nginxIngress" yaml:"nginxIngress"`
+	AutoScaling       resource.AutoScalingSpec `json:"autoScaling" yaml:"autoScaling"`
 }
 
 type NginxIngress struct {
