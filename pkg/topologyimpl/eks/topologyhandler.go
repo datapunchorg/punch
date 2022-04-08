@@ -128,6 +128,18 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 	return deployment.GetOutput(), err
 }
 
+func (t *TopologyHandler) PrintUsageExample(topology framework.Topology, deploymentOutput framework.DeploymentOutput) {
+	specificTopology := topology.(*EksTopology)
+
+	str := `
+------------------------------
+Example commands to use EKS cluster:
+------------------------------
+Step 1: run: aws eks update-kubeconfig --region %s --name %s
+Step 2: run: kubectl get pods -A`
+	log.Printf(str, specificTopology.Spec.Region, specificTopology.Spec.Eks.ClusterName)
+}
+
 func BuildInstallDeployment(topologySpec EksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
 	deployment := framework.NewDeployment()
 
