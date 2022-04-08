@@ -55,7 +55,7 @@ type DatabaseTopologySpec struct {
 }
 
 func CreateDefaultDatabaseTopology(namePrefix string) DatabaseTopology {
-	topologyName := fmt.Sprintf("%s-db", namePrefix)
+	topologyName := fmt.Sprintf("%s-db-01", namePrefix)
 	securityGroupName := fmt.Sprintf("%s-sg-01", namePrefix)
 	topology := DatabaseTopology{
 		ApiVersion: DefaultVersion,
@@ -70,7 +70,7 @@ func CreateDefaultDatabaseTopology(namePrefix string) DatabaseTopology {
 			Region:             DefaultRegion,
 			VpcId:              "{{ or .Values.vpcId .DefaultVpcId }}",
 			AvailabilityZones:  []string{"us-west-1a"},
-			DatabaseId:         fmt.Sprintf("%s-db", namePrefix),
+			DatabaseId:         topologyName,
 			MasterUserName:     DefaultUserName,
 			MasterUserPassword: "{{ .Values.masterUserPassword }}",
 			SecurityGroups: []resource.SecurityGroup{

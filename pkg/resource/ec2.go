@@ -107,3 +107,27 @@ func CreateSecurityGroup(ec2Client *ec2.EC2, securityGroup SecurityGroup, vpcId 
 	}
 	return *securityGroupId, nil
 }
+
+func GetSubnetIds(region string, vpcId string) ([]string, error) {
+	session := awslib.CreateSession(region)
+	ec2Client := ec2.New(session)
+	describeSubnetsOutput, err := ec2Client.DescribeSubnets(&ec2.DescribeSubnetsInput{
+		Filters: []*ec2.Filter{
+			{
+				Name: aws.String("vpc-id"),
+				Values: []*string{
+					aws.String(vpcId),
+				},
+			},
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to describe subnets: %s", err.Error())
+	}
+
+	subnetIds := make([]string, 0, 100)
+	for _, entry := range describeSubnetsOutput.Subnets {
+		subnetIds = append(subnetIds, *entry.SubnetId)
+	}
+	return subnetIds, nil
+}

@@ -77,29 +77,12 @@ func CreateEksCluster(region string, vpcId string, eksCluster EKSCluster) error 
 		securityGroupIds = append(securityGroupIds, &securityGroupId)
 	}
 
-	describeSubnetsOutput, err := ec2Client.DescribeSubnets(&ec2.DescribeSubnetsInput{
-		Filters: []*ec2.Filter{
-			{
-				Name: aws.String("vpc-id"),
-				Values: []*string{
-					aws.String(vpcId),
-				},
-			},
-		},
-	})
+	subnetIds, err := GetSubnetIds(region, vpcId)
 	if err != nil {
-		return fmt.Errorf("failed to describe subnets: %s", err.Error())
+		return fmt.Errorf("failed to get subnect ids for region %s vpc %s: %s", region, vpcId, err.Error())
 	}
-
-	subnetIds := make([]*string, 0, 10)
-
-	for _, entry := range describeSubnetsOutput.Subnets {
-		subnetIds = append(subnetIds, entry.SubnetId)
-		log.Printf("Find subnet %s", *(entry.SubnetId))
-	}
-
 	if len(subnetIds) == 0 {
-		return fmt.Errorf("did not find subnet in describeSubnetsOutput: %v", describeSubnetsOutput)
+		return fmt.Errorf("did not get any subnect id for region %s vpc %s: %s", region, vpcId, err.Error())
 	}
 
 	iamClient := iam.New(session)
@@ -148,7 +131,7 @@ func CreateEksCluster(region string, vpcId string, eksCluster EKSCluster) error 
 		Name: aws.String(clusterName),
 		ResourcesVpcConfig: &eks.VpcConfigRequest{
 			SecurityGroupIds: securityGroupIds,
-			SubnetIds:        subnetIds,
+			SubnetIds:        aws.StringSlice(subnetIds),
 			// TODO make following configurable
 			EndpointPrivateAccess: aws.Bool(true),
 			EndpointPublicAccess:  aws.Bool(true),
