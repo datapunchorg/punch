@@ -30,9 +30,16 @@ func CreateKafkaCluster(spec KafkaTopologySpec) (string, error) {
 	clusterName := spec.ClusterName
 	// see https://github.com/aws/aws-sdk-go/blob/main/service/kafka/service.go
 	svc := kafka.New(session)
-	subnetIds, err := resource.GetSubnetIds(spec.Region, spec.VpcId)
-	if err != nil {
-		return "", err
+	subnetIds := spec.SubnetIds
+	var err error
+	if len(subnetIds) == 0 {
+		subnetIds, err = resource.GetSubnetIds(spec.Region, spec.VpcId)
+		if err != nil {
+			return "", err
+		}
+		if len(subnetIds) == 0 {
+			return "", fmt.Errorf("did not get any subnect id for region %s vpc %s: %s", spec.Region, spec.VpcId, err.Error())
+		}
 	}
 	securityGroupIds, err := resource.CreateSecurityGroups(spec.Region, spec.VpcId, spec.SecurityGroups)
 	if err != nil {

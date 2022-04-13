@@ -48,6 +48,7 @@ type KafkaTopologySpec struct {
 	Region            string   `json:"region" yaml:"region"`
 	VpcId             string   `json:"vpcId" yaml:"vpcId"`
 	ClusterName       string   `json:"clusterName" yaml:"clusterName"`
+	SubnetIds         []string                  `json:"subnetIds" yaml:"subnetIds"`
 	KafkaVersion      string   `json:"kafkaVersion" yaml:"kafkaVersion"`
 	SecurityGroups    []resource.SecurityGroup `json:"securityGroups" yaml:"securityGroups"`
 	BrokerStorageGB   int64    `json:"brokerStorageGB" yaml:"brokerStorageGB"`

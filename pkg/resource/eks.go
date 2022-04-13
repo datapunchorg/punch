@@ -31,6 +31,7 @@ import (
 
 type EKSCluster struct {
 	ClusterName string `json:"clusterName" yaml:"clusterName"`
+	SubnetIds         []string                  `json:"subnetIds" yaml:"subnetIds"`
 	// The Amazon Resource Name (ARN) of the IAM role that provides permissions
 	// for the Kubernetes control plane to make calls to Amazon Web Services API
 	// operations on your behalf. For more information, see Amazon Eks Service IAM
@@ -73,12 +74,15 @@ func CreateEksCluster(region string, vpcId string, eksCluster EKSCluster) error 
 		return fmt.Errorf("failed to create security groups in region %s vpc %s: %s", region, vpcId, err.Error())
 	}
 
-	subnetIds, err := GetSubnetIds(region, vpcId)
-	if err != nil {
-		return fmt.Errorf("failed to get subnect ids for region %s vpc %s: %s", region, vpcId, err.Error())
-	}
+	subnetIds := eksCluster.SubnetIds
 	if len(subnetIds) == 0 {
-		return fmt.Errorf("did not get any subnect id for region %s vpc %s: %s", region, vpcId, err.Error())
+		subnetIds, err = GetSubnetIds(region, vpcId)
+		if err != nil {
+			return fmt.Errorf("failed to get subnect ids for region %s vpc %s: %s", region, vpcId, err.Error())
+		}
+		if len(subnetIds) == 0 {
+			return fmt.Errorf("did not get any subnect id for region %s vpc %s: %s", region, vpcId, err.Error())
+		}
 	}
 
 	iamClient := iam.New(session)
