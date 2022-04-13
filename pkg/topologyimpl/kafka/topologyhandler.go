@@ -87,11 +87,18 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 	kafkaTopology := topology.(*KafkaTopology)
 	deployment := framework.NewDeployment()
 	deployment.AddStep("createKafkaCluster", "Create Kafka cluster", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
-		result, err := CreateKafkaCluster(kafkaTopology.Spec)
+		cluster, err := CreateKafkaCluster(kafkaTopology.Spec)
 		if err != nil {
 			return framework.NewDeploymentStepOutput(), err
 		}
-		return framework.DeploymentStepOutput{"kafkaClusterArn": result}, nil
+		bootstrap, err := GetBootstrapBrokerString(kafkaTopology.Spec.Region, *cluster.ClusterArn)
+		if err != nil {
+			return framework.NewDeploymentStepOutput(), err
+		}
+		return framework.DeploymentStepOutput{
+			"kafkaClusterArn": cluster.ClusterArn,
+			"bootstrapBrokerStringTls": *bootstrap.BootstrapBrokerStringTls,
+		}, nil
 	})
 	err := deployment.Run()
 	return deployment.GetOutput(), err
