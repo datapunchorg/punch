@@ -98,6 +98,7 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 			S3Policy:     resource.IAMPolicy{},
 			Eks: resource.EKSCluster{
 				ClusterName: k8sClusterName,
+				// TODO fill in default value for SubnetIds
 				ControlPlaneRole: resource.IAMRole{
 					Name:                     controlPlaneRoleName,
 					AssumeRolePolicyDocument: framework.DefaultEKSAssumeRolePolicyDocument,

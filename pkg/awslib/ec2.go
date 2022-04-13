@@ -220,3 +220,15 @@ func DeleteNodeGroup(region string, clusterName string, nodeGroupName string) er
 
 	return nil
 }
+
+func GetDefaultVpcId(region string) (string, error) {
+	session := CreateSession(region)
+	ec2Client := ec2.New(session)
+
+	vpcId, err := GetFirstVpcId(ec2Client)
+	if err != nil {
+		return "", err
+	}
+
+	return vpcId, nil
+}

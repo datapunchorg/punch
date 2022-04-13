@@ -18,6 +18,7 @@ package kafka
 
 import (
 	"fmt"
+	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/resource"
 	"gopkg.in/yaml.v3"
@@ -57,6 +58,15 @@ type KafkaTopologySpec struct {
 func CreateDefaultKafkaTopology(namePrefix string) KafkaTopology {
 	topologyName := fmt.Sprintf("%s-kafka-01", namePrefix)
 	securityGroupName := fmt.Sprintf("%s-kafka-sg-01", namePrefix)
+	region := DefaultRegion
+	vpcId, err := awslib.GetDefaultVpcId(region)
+	if err != nil {
+		vpcId = fmt.Sprintf("INVALID: %s", err.Error())
+	}
+	subnetIds, err := resource.GetSubnetIds(region, vpcId)
+	if err != nil {
+		subnetIds = []string{fmt.Sprintf("INVALID: %s", err.Error())}
+	}
 	topology := KafkaTopology{
 		ApiVersion: DefaultVersion,
 		Kind:       KindKafkaTopology,
@@ -67,9 +77,10 @@ func CreateDefaultKafkaTopology(namePrefix string) KafkaTopology {
 		},
 		Spec: KafkaTopologySpec{
 			NamePrefix:         namePrefix,
-			Region:             DefaultRegion,
-			VpcId:              "{{ or .Values.vpcId .DefaultVpcId }}",
-			ClusterName:         topologyName,
+			Region:             region,
+			VpcId:              vpcId,
+			ClusterName:        topologyName,
+			SubnetIds:          subnetIds,
 			KafkaVersion:       "2.8.1",
 			SecurityGroups: []resource.SecurityGroup{
 				{
