@@ -19,6 +19,7 @@ package kafka
 import (
 	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
+	"github.com/datapunchorg/punch/pkg/resource"
 	"gopkg.in/yaml.v3"
 )
 
@@ -46,11 +47,15 @@ type KafkaTopologySpec struct {
 	NamePrefix        string   `json:"namePrefix" yaml:"namePrefix"`
 	Region            string   `json:"region" yaml:"region"`
 	VpcId             string   `json:"vpcId" yaml:"vpcId"`
-	ClusterName        string   `json:"clusterName" yaml:"clusterName"`
+	ClusterName       string   `json:"clusterName" yaml:"clusterName"`
+	KafkaVersion      string   `json:"kafkaVersion" yaml:"kafkaVersion"`
+	SecurityGroups    []resource.SecurityGroup `json:"securityGroups" yaml:"securityGroups"`
+	BrokerStorageGB   int64    `json:"brokerStorageGB" yaml:"brokerStorageGB"`
 }
 
 func CreateDefaultKafkaTopology(namePrefix string) KafkaTopology {
 	topologyName := fmt.Sprintf("%s-kafka-01", namePrefix)
+	securityGroupName := fmt.Sprintf("%s-kafka-sg-01", namePrefix)
 	topology := KafkaTopology{
 		ApiVersion: DefaultVersion,
 		Kind:       KindKafkaTopology,
@@ -64,6 +69,21 @@ func CreateDefaultKafkaTopology(namePrefix string) KafkaTopology {
 			Region:             DefaultRegion,
 			VpcId:              "{{ or .Values.vpcId .DefaultVpcId }}",
 			ClusterName:         topologyName,
+			KafkaVersion:       "2.8.1",
+			SecurityGroups: []resource.SecurityGroup{
+				{
+					Name: securityGroupName,
+					InboundRules: []resource.SecurityGroupInboundRule{
+						{
+							IPProtocol: "-1",
+							FromPort:   -1,
+							ToPort:     -1,
+							IPRanges:   []string{"0.0.0.0/0"},
+						},
+					},
+				},
+			},
+			BrokerStorageGB: 20,
 		},
 	}
 	return topology

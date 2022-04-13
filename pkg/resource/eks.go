@@ -68,13 +68,9 @@ func CreateEksCluster(region string, vpcId string, eksCluster EKSCluster) error 
 		log.Printf("Use provided VPC: %s", vpcId)
 	}
 
-	securityGroupIds := make([]*string, 0, 10)
-	for _, entry := range eksCluster.SecurityGroups {
-		securityGroupId, err := CreateSecurityGroup(ec2Client, entry, vpcId)
-		if err != nil {
-			return err
-		}
-		securityGroupIds = append(securityGroupIds, &securityGroupId)
+	securityGroupIds, err := CreateSecurityGroups(region, vpcId, eksCluster.SecurityGroups)
+	if err != nil {
+		return fmt.Errorf("failed to create security groups in region %s vpc %s: %s", region, vpcId, err.Error())
 	}
 
 	subnetIds, err := GetSubnetIds(region, vpcId)
@@ -130,7 +126,7 @@ func CreateEksCluster(region string, vpcId string, eksCluster EKSCluster) error 
 	createClusterInput := eks.CreateClusterInput{
 		Name: aws.String(clusterName),
 		ResourcesVpcConfig: &eks.VpcConfigRequest{
-			SecurityGroupIds: securityGroupIds,
+			SecurityGroupIds: aws.StringSlice(securityGroupIds),
 			SubnetIds:        aws.StringSlice(subnetIds),
 			// TODO make following configurable
 			EndpointPrivateAccess: aws.Bool(true),

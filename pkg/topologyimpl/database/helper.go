@@ -37,7 +37,7 @@ func CreateDatabase(databaseSpec DatabaseTopologySpec) (*rds.DBCluster, error) {
 	ec2Client := ec2.New(session)
 	securityGroupIds := make([]*string, 0, 10)
 	for _, entry := range databaseSpec.SecurityGroups {
-		securityGroupId, err := resource.CreateSecurityGroup(ec2Client, entry, databaseSpec.VpcId)
+		securityGroupId, err := resource.CreateSecurityGroup(ec2Client, databaseSpec.VpcId, entry)
 		if err != nil {
 			return nil, err
 		}

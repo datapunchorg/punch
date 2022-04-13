@@ -36,7 +36,21 @@ type SecurityGroupInboundRule struct {
 	IPRanges   []string `json:"ipRanges" yaml:"ipRanges"`
 }
 
-func CreateSecurityGroup(ec2Client *ec2.EC2, securityGroup SecurityGroup, vpcId string) (string, error) {
+func CreateSecurityGroups(region string, vpcId string, securityGroups []SecurityGroup) ([]string, error) {
+	session := awslib.CreateSession(region)
+	ec2Client := ec2.New(session)
+	securityGroupIds := make([]string, 0, 10)
+	for _, entry := range securityGroups {
+		securityGroupId, err := CreateSecurityGroup(ec2Client, vpcId, entry)
+		if err != nil {
+			return nil, err
+		}
+		securityGroupIds = append(securityGroupIds, securityGroupId)
+	}
+	return securityGroupIds, nil
+}
+
+func CreateSecurityGroup(ec2Client *ec2.EC2, vpcId string, securityGroup SecurityGroup) (string, error) {
 	securityGroupName := securityGroup.Name
 	createSecurityGroupResult, err := ec2Client.CreateSecurityGroup(&ec2.CreateSecurityGroupInput{
 		GroupName:   aws.String(securityGroupName),

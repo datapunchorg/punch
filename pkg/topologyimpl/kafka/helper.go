@@ -34,6 +34,10 @@ func CreateKafkaCluster(spec KafkaTopologySpec) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	securityGroupIds, err := resource.CreateSecurityGroups(spec.Region, spec.VpcId, spec.SecurityGroups)
+	if err != nil {
+		return "", fmt.Errorf("failed to create security groups in region %s vpc %s: %s", spec.Region, spec.VpcId, err.Error())
+	}
 	// TODO
 	// Specify exactly two subnets if you are using the US West (N. California) Region. For other Regions where Amazon MSK is available, you can specify either two or three subnets. The subnets that you specify must be in distinct Availability Zones. When you create a cluster, Amazon MSK distributes the broker nodes evenly across the subnets that you specify.
 	// Client subnets can't be in Availability Zone us-east-1e.
@@ -43,8 +47,14 @@ func CreateKafkaCluster(spec KafkaTopologySpec) (string, error) {
 			BrokerNodeGroupInfo: &kafka.BrokerNodeGroupInfo{
 				ClientSubnets: aws.StringSlice(subnetIds),
 				InstanceType: aws.String(DefaultInstanceType),
+				SecurityGroups: aws.StringSlice(securityGroupIds),
+				StorageInfo: &kafka.StorageInfo{
+					EbsStorageInfo: &kafka.EBSStorageInfo{
+						VolumeSize: aws.Int64(spec.BrokerStorageGB),
+					},
+				},
 			},
-			KafkaVersion: aws.String("2.8.1"),
+			KafkaVersion: &spec.KafkaVersion,
 			NumberOfBrokerNodes: aws.Int64(int64(len(subnetIds))),
 		},
 		/* Serverless: &kafka.ServerlessRequest{
