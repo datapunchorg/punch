@@ -66,6 +66,19 @@ func CreateKafkaCluster(spec KafkaTopologySpec) (kafka.ClusterInfo, error) {
 				},
 			},
 			KafkaVersion: &spec.KafkaVersion,
+			ClientAuthentication: &kafka.ClientAuthentication{
+				Sasl: &kafka.Sasl{
+					Iam: &kafka.Iam{
+						Enabled: aws.Bool(true),
+					},
+				},
+				Tls: &kafka.Tls{
+					Enabled: aws.Bool(false),
+				},
+				Unauthenticated: &kafka.Unauthenticated{
+					Enabled: aws.Bool(false),
+				},
+			},
 			NumberOfBrokerNodes: aws.Int64(int64(len(subnetIds))),
 		},
 		/* Serverless: &kafka.ServerlessRequest{
@@ -96,33 +109,25 @@ func CreateKafkaCluster(spec KafkaTopologySpec) (kafka.ClusterInfo, error) {
 	}
 
 	waitClusterReadyErr := common.RetryUntilTrue(func() (bool, error) {
-		listClustersOutput, err := svc.ListClusters(&kafka.ListClustersInput{
-			ClusterNameFilter: &clusterName,
-		})
+		clusterInfo, err := awslib.GetKafkaClusterInfo(spec.Region, spec.ClusterName)
 		if err != nil {
-			return false, fmt.Errorf("failed to list clusters: %s", err.Error())
+			return false, fmt.Errorf("failed to get info for Kafka cluster %s: %s", spec.ClusterName, err.Error())
 		}
-		if len(listClustersOutput.ClusterInfoList) == 0 {
-			return false, fmt.Errorf("got empty result when list clusters by name: %s", clusterName)
-		}
-		if len(listClustersOutput.ClusterInfoList) > 1 {
-			return false, fmt.Errorf("got multiple clusters when list clusters by name: %s", clusterName)
-		}
-		clusterInfo := listClustersOutput.ClusterInfoList[0]
 		if strings.EqualFold(*clusterInfo.State, "ACTIVE") {
-			log.Printf("Cluster %s is ready in state: %s", clusterName, *clusterInfo.State)
-			result = *clusterInfo
+			log.Printf("Kafka cluster %s is ready in state: %s", clusterName, *clusterInfo.State)
+			result = clusterInfo
 			return true, nil
 		}
+		log.Printf("Kafka cluster %s is not ready (current state: %s), waiting...", clusterName, *clusterInfo.State)
 		return false, nil
 	}, 60*time.Minute, 30*time.Second)
 
 	if waitClusterReadyErr != nil {
-		return kafka.ClusterInfo{}, fmt.Errorf("failed to wait ready for cluster %s: %s", clusterName, waitClusterReadyErr.Error())
+		return kafka.ClusterInfo{}, fmt.Errorf("failed to wait ready for Kafka cluster %s: %s", clusterName, waitClusterReadyErr.Error())
 	}
 
 	if result.ClusterArn == nil {
-		return kafka.ClusterInfo{}, fmt.Errorf("failed to get information for cluster %s", clusterName)
+		return kafka.ClusterInfo{}, fmt.Errorf("failed to get information for Kafka cluster %s", clusterName)
 	}
 
 	return result, nil
