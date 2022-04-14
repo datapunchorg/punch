@@ -21,23 +21,32 @@ import (
 	"github.com/aws/aws-sdk-go/service/kafka"
 )
 
-func GetKafkaClusterInfo(region string, clusterName string) (kafka.ClusterInfo, error) {
-	var result kafka.ClusterInfo
+func CheckKafkaCluster(region string, clusterName string) (*kafka.ClusterInfo, error) {
 	session := CreateSession(region)
-	// see https://github.com/aws/aws-sdk-go/blob/main/service/kafka/service.go
 	svc := kafka.New(session)
 	listClustersOutput, err := svc.ListClusters(&kafka.ListClustersInput{
 		ClusterNameFilter: &clusterName,
 	})
 	if err != nil {
-		return result, fmt.Errorf("failed to list clusters: %s", err.Error())
+		return nil, fmt.Errorf("failed to list clusters: %s", err.Error())
 	}
 	if len(listClustersOutput.ClusterInfoList) == 0 {
-		return result, fmt.Errorf("got empty result when list clusters by name: %s", clusterName)
+		return nil, nil
 	}
 	if len(listClustersOutput.ClusterInfoList) > 1 {
-		return result, fmt.Errorf("got multiple clusters when list clusters by name: %s", clusterName)
+		return nil, fmt.Errorf("got multiple clusters when list clusters by name: %s", clusterName)
 	}
-	result = *listClustersOutput.ClusterInfoList[0]
+	result := listClustersOutput.ClusterInfoList[0]
 	return result, nil
+}
+
+func GetKafkaClusterInfo(region string, clusterName string) (kafka.ClusterInfo, error) {
+	checkResult, err := CheckKafkaCluster(region, clusterName)
+	if err != nil {
+		return kafka.ClusterInfo{}, fmt.Errorf("failed to get Kafka cluster %s: %s", clusterName, err.Error())
+	}
+	if checkResult == nil {
+		return kafka.ClusterInfo{}, fmt.Errorf("did not get Kafka cluster %s: %s", clusterName, err.Error())
+	}
+	return *checkResult, nil
 }

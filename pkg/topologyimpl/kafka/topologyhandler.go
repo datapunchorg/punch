@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"gopkg.in/yaml.v3"
+	"log"
 	"regexp"
 	"text/template"
 )
@@ -97,7 +98,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		}
 		return framework.DeploymentStepOutput{
 			"kafkaClusterArn": cluster.ClusterArn,
-			"bootstrapBrokerStringTls": *bootstrap.BootstrapBrokerStringTls,
+			"bootstrapServerString": *bootstrap.BootstrapBrokerStringSaslIam,
 		}, nil
 	})
 	err := deployment.Run()
@@ -105,9 +106,13 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 }
 
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
+	kafkaTopology := topology.(*KafkaTopology)
 	deployment := framework.NewDeployment()
 	deployment.AddStep("deleteKafkaCluster", "Delete Kafka cluster", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
-		// TODO
+		err := DeleteKafkaCluster(kafkaTopology.Spec.Region, kafkaTopology.Spec.ClusterName)
+		if err != nil {
+			log.Printf("[WARN] Cannot delete Kafka cluster %s in region %s: %s", kafkaTopology.Spec.ClusterName, kafkaTopology.Spec.Region, err.Error())
+		}
 		return framework.NewDeploymentStepOutput(), nil
 	})
 	err := deployment.Run()

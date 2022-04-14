@@ -109,9 +109,9 @@ func CreateKafkaCluster(spec KafkaTopologySpec) (kafka.ClusterInfo, error) {
 	}
 
 	waitClusterReadyErr := common.RetryUntilTrue(func() (bool, error) {
-		clusterInfo, err := awslib.GetKafkaClusterInfo(spec.Region, spec.ClusterName)
+		clusterInfo, err := awslib.GetKafkaClusterInfo(spec.Region, clusterName)
 		if err != nil {
-			return false, fmt.Errorf("failed to get info for Kafka cluster %s: %s", spec.ClusterName, err.Error())
+			return false, fmt.Errorf("failed to get info for Kafka cluster %s: %s", clusterName, err.Error())
 		}
 		if strings.EqualFold(*clusterInfo.State, "ACTIVE") {
 			log.Printf("Kafka cluster %s is ready in state: %s", clusterName, *clusterInfo.State)
@@ -143,4 +143,28 @@ func GetBootstrapBrokerString(region string, clusterArn string) (kafka.GetBootst
 		return kafka.GetBootstrapBrokersOutput{}, fmt.Errorf("failed to get bootstrap borkers for cluster %s", clusterArn)
 	}
 	return *getBootstrapBrokersOutput, nil
+}
+
+func DeleteKafkaCluster(region string, clusterName string) error {
+	checkResult, err := awslib.CheckKafkaCluster(region, clusterName)
+	if err != nil {
+		return err
+	}
+	if checkResult == nil {
+		log.Printf("Kafka cluster %s not exist, do not delete it", clusterName)
+		return nil
+	}
+	clusterInfo, err := awslib.GetKafkaClusterInfo(region, clusterName)
+	if err != nil {
+		return err
+	}
+	session := awslib.CreateSession(region)
+	svc := kafka.New(session)
+	_, err = svc.DeleteCluster(&kafka.DeleteClusterInput{
+		ClusterArn: clusterInfo.ClusterArn,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to delete Kafka cluster %s: %s", clusterName, err.Error())
+	}
+	return nil
 }
