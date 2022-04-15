@@ -67,6 +67,9 @@ func CreateKafkaCluster(spec KafkaTopologySpec) (kafka.ClusterInfo, error) {
 			},
 			KafkaVersion: &spec.KafkaVersion,
 			ClientAuthentication: &kafka.ClientAuthentication{
+				// See following for IAM access control on MSK
+				// https://docs.aws.amazon.com/msk/latest/developerguide/iam-access-control.html
+				// https://github.com/aws/aws-msk-iam-auth
 				Sasl: &kafka.Sasl{
 					Iam: &kafka.Iam{
 						Enabled: aws.Bool(true),
@@ -166,5 +169,23 @@ func DeleteKafkaCluster(region string, clusterName string) error {
 	if err != nil {
 		return fmt.Errorf("failed to delete Kafka cluster %s: %s", clusterName, err.Error())
 	}
+
+	waitClusterDeleteErr := common.RetryUntilTrue(func() (bool, error) {
+		checkResult, err := awslib.CheckKafkaCluster(region, clusterName)
+		if err != nil {
+			return false, fmt.Errorf("failed to check Kafka cluster %s: %s", clusterName, err.Error())
+		}
+		if checkResult != nil {
+			log.Printf("Kafka cluster %s is not deleted (current state: %s), waiting...", clusterName, *checkResult.State)
+			return false, nil
+		}
+		log.Printf("Kafka cluster %s is deleted", clusterName)
+		return true, nil
+	}, 30*time.Minute, 30*time.Second)
+
+	if waitClusterDeleteErr != nil {
+		return fmt.Errorf("failed to wait for Kafka cluster %s to be deleted: %s", clusterName, waitClusterDeleteErr.Error())
+	}
+
 	return nil
 }
