@@ -19,6 +19,10 @@ package eks
 import (
 	"context"
 	"fmt"
+	"log"
+	"strings"
+	"time"
+
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/common"
@@ -27,9 +31,6 @@ import (
 	"github.com/datapunchorg/punch/pkg/resource"
 	v1 "k8s.io/api/core/v1"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"log"
-	"strings"
-	"time"
 )
 
 func CreateInstanceIamRole(topology EksTopologySpec) string {
@@ -143,8 +144,13 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 	defer kubeConfig.Cleanup()
 
 	arguments := []string{
-		"--set", fmt.Sprintf("service.enableHttp=%t", topology.NginxIngress.EnableHttp),
-		"--set", fmt.Sprintf("service.enableHttps=%t", topology.NginxIngress.EnableHttps),
+		"--set", fmt.Sprintf("controller.service.enableHttp=%t", topology.NginxIngress.EnableHttp),
+		"--set", fmt.Sprintf("controller.service.enableHttps=%t", topology.NginxIngress.EnableHttps),
+	}
+
+	if commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
+		arguments = append(arguments, "--set", "controller.service.type=NodePort")
+		arguments = append(arguments, "--set", "controller.service.nodePorts.https=32443")
 	}
 
 	kubelib.InstallHelm(commandEnvironment.Get(CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvNginxHelmChart), kubeConfig, arguments, helmInstallName, nginxNamespace)
