@@ -19,15 +19,16 @@ package sparkonk8s
 import (
 	"bytes"
 	"fmt"
-	"github.com/datapunchorg/punch/pkg/awslib"
-	"github.com/datapunchorg/punch/pkg/framework"
-	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
-	"gopkg.in/yaml.v3"
 	"io/fs"
 	"io/ioutil"
 	"log"
 	"os"
 	"text/template"
+
+	"github.com/datapunchorg/punch/pkg/awslib"
+	"github.com/datapunchorg/punch/pkg/framework"
+	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -144,30 +145,29 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 func (t *TopologyHandler) PrintUsageExample(topology framework.Topology, deploymentOutput framework.DeploymentOutput) {
 	specificTopology := topology.(*SparkTopology)
 
-	if _, ok := deploymentOutput.Output()["minikubeStart"]; ok {
-		printExampleCommandToRunSparkOnMinikube(*specificTopology)
-	} else {
-		var loadBalancerUrls []string
-		loadBalancerUrls = deploymentOutput.Output()["deployNginxIngressController"]["loadBalancerUrls"].([]string)
-		if len(loadBalancerUrls) > 0 {
-			printExampleCommandToRunSparkOnAws(loadBalancerUrls[0], *specificTopology)
+	var loadBalancerUrls []string
+	loadBalancerUrls = deploymentOutput.Output()["deployNginxIngressController"]["loadBalancerUrls"].([]string)
+	if len(loadBalancerUrls) > 0 {
+		url := loadBalancerUrls[0]
+		if _, ok := deploymentOutput.Output()["minikubeStart"]; ok {
+			printExampleCommandToRunSparkOnMinikube(url, *specificTopology)
 		} else {
-			log.Printf("Did not find load balancer url, cannot print usage example command")
+			printExampleCommandToRunSparkOnAws(url, *specificTopology)
 		}
+	} else {
+		log.Printf("Did not find load balancer url, cannot print usage example command")
 	}
 }
 
-func printExampleCommandToRunSparkOnMinikube(topology SparkTopology) {
+func printExampleCommandToRunSparkOnMinikube(url string, topology SparkTopology) {
 	userName := topology.Spec.ApiGateway.UserName
 	userPassword := topology.Spec.ApiGateway.UserPassword
-	url := "localhost"
 
 	str := `
 ------------------------------
 Example using sparkcli to run Java Spark application (IMPORTANT: this contains password, please not print out this if there is security concern):
 ------------------------------
-Step 1: Run "minikube tunnel" in another terminal to set up tunnel to minikube. Wait until "minikube tunnel" started.
-Step 2: Run: ` + sparkcliJavaExampleCommandFormat
+Run: ` + sparkcliJavaExampleCommandFormat
 	log.Printf(str, userName, userPassword, url)
 }
 
