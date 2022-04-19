@@ -1,0 +1,12 @@
+apiVersion: v2
+name: spark-history-server
+description: A Helm chart for Spark History Server
+version: 0.0.1
+appVersion: 0.0.1
+keywords:
+  - spark
+  - history server
+home: https://github.com/datapunchorg/punch
+maintainers:
+  - name: DataPunch Project
+    email: datapunch2021@gmail.com

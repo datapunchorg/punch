@@ -1,0 +1,17 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/datapunchorg/spark
+  tag: spark-3.2.1-1643336295
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+sparkLogDirectory: ''
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 2048Mi
+  requests:
+    cpu: 100m
+    memory: 2048Mi

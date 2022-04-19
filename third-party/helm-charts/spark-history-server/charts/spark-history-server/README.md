@@ -1,0 +1,1 @@
+A Helm chart for Spark History Server
