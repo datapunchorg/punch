@@ -30,12 +30,17 @@ const (
 	DefaultSparkOperatorNamespace       = "spark-operator-01"
 	DefaultSparkOperatorHelmInstallName = "spark-operator-01"
 	DefaultSparkApplicationNamespace    = "spark-01"
+	DefaultSparkHistoryServerHelmInstallName = "spark-history-server"
+	DefaultSparkHistoryServerImageRepository = "ghcr.io/datapunchorg/spark-on-k8s-operator"
+	DefaultSparkHistoryServerImageTag        = "spark-history-server-3.2-1650337377"
+	DefaultSparkHistoryServerNamespace       = "spark-history-server"
 
 	KindSparkTopology = "SparkOnK8s"
 
 	FieldMaskValue = "***"
 
 	CmdEnvSparkOperatorHelmChart = "sparkOperatorHelmChart"
+	CmdEnvHistoryServerHelmChart = "historyServerHelmChart"
 
 	DefaultVersion    = "datapunch.org/v1alpha1"
 	DefaultNamePrefix = "my"
@@ -52,6 +57,7 @@ type SparkTopologySpec struct {
 	EksSpec       eks.EksTopologySpec `json:"eksSpec" yaml:"eksSpec"`
 	SparkOperator SparkOperator       `json:"sparkOperator" yaml:"sparkOperator"`
 	ApiGateway    SparkApiGateway     `json:"apiGateway" yaml:"apiGateway"`
+	HistoryServer SparkHistoryServer       `json:"historyServer" yaml:"historyServer"`
 }
 
 type SparkApiGateway struct {
@@ -65,6 +71,13 @@ type SparkOperator struct {
 	ImageRepository           string `json:"imageRepository" yaml:"imageRepository"`
 	ImageTag                  string `json:"imageTag" yaml:"imageTag"`
 	SparkApplicationNamespace string `json:"sparkApplicationNamespace" yaml:"sparkApplicationNamespace"`
+}
+
+type SparkHistoryServer struct {
+	HelmInstallName           string `json:"helmInstallName" yaml:"helmInstallName"`
+	Namespace                 string `json:"namespace" yaml:"namespace"`
+	ImageRepository           string `json:"imageRepository" yaml:"imageRepository"`
+	ImageTag                  string `json:"imageTag" yaml:"imageTag"`
 }
 
 func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTopology {
@@ -90,6 +103,12 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 				ImageTag:                  DefaultSparkOperatorImageTag,
 				Namespace:                 DefaultSparkOperatorNamespace,
 				SparkApplicationNamespace: DefaultSparkApplicationNamespace,
+			},
+			HistoryServer: SparkHistoryServer{
+				HelmInstallName:           DefaultSparkHistoryServerHelmInstallName,
+				ImageRepository:           DefaultSparkHistoryServerImageRepository,
+				ImageTag:                  DefaultSparkHistoryServerImageTag,
+				Namespace:                 DefaultSparkHistoryServerNamespace,
 			},
 		},
 	}

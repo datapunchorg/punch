@@ -11,7 +11,7 @@ sparkLogDirectory: /opt/spark
 resources:
   limits:
     cpu: 100m
-    memory: 2048Mi
+    memory: 1024Mi
   requests:
     cpu: 100m
-    memory: 2048Mi
+    memory: 1024Mi

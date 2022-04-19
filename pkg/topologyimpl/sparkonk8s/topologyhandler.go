@@ -235,6 +235,8 @@ func createSparkTopologyTemplate() SparkTopology {
 
 	topology.Metadata.CommandEnvironment = eksTopology.Metadata.CommandEnvironment
 	topology.Metadata.CommandEnvironment[CmdEnvSparkOperatorHelmChart] = "{{ or .Env.sparkOperatorHelmChart `spark-operator-service/charts/spark-operator-chart` }}"
+	topology.Metadata.CommandEnvironment[CmdEnvHistoryServerHelmChart] = "{{ or .Env.historyServerHelmChart `spark-history-server/charts/spark-history-server-chart` }}"
+
 
 	topology.Metadata.Notes["apiUserPassword"] = "Please make sure to provide API gateway user password when deploying the topology, e.g. --set apiUserPassword=your-password"
 
@@ -260,6 +262,11 @@ func BuildInstallDeployment(topologySpec SparkTopologySpec, commandEnvironment f
 
 	deployment.AddStep("deploySparkOperator", "Deploy Spark Operator", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
 		DeploySparkOperator(commandEnvironment, topologySpec)
+		return framework.NewDeploymentStepOutput(), nil
+	})
+
+	deployment.AddStep("deploySparkHistoryServer", "Deploy Spark History Server", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
+		DeployHistoryServer(commandEnvironment, topologySpec)
 		return framework.NewDeploymentStepOutput(), nil
 	})
 
