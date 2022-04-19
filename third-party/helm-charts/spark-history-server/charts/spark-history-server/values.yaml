@@ -1,12 +1,12 @@
 replicaCount: 1
 
 image:
-  repository: ghcr.io/datapunchorg/spark
-  tag: spark-3.2.1-1643336295
+  repository: ghcr.io/datapunchorg/spark-on-k8s-operator
+  tag: spark-history-server-3.2-1650337377
   pullPolicy: IfNotPresent
   pullSecrets: []
 
-sparkLogDirectory: ''
+sparkLogDirectory: /opt/spark
 
 resources:
   limits:

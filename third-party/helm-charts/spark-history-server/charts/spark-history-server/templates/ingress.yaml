@@ -17,5 +17,6 @@ spec:
               name: spark-history-server
               port:
                 number: 80
-          path: /api/v1
+          #/api/v1
+          path: /
           pathType: Prefix

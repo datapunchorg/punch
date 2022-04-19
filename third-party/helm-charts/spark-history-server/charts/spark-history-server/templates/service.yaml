@@ -10,6 +10,6 @@ spec:
     - name: http
       protocol: TCP
       port: 80
-      targetPort: 80
+      targetPort: 18080
   selector:
     app: spark-history-server
