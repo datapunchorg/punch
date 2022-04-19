@@ -19,14 +19,15 @@ package kubelib
 import (
 	"context"
 	"fmt"
-	"github.com/datapunchorg/punch/pkg/common"
-	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 	"log"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/datapunchorg/punch/pkg/common"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 )
 
 type KubeConfig struct {
@@ -119,10 +120,21 @@ func GetServiceLoadBalancerUrls(clientset *kubernetes.Clientset, namespace strin
 
 	var ingressHostNames []string
 
-	for _, ingress := range service.Status.LoadBalancer.Ingress {
-		if ingress.Hostname != "" {
-			ingressHostNames = append(ingressHostNames, ingress.Hostname)
+	switch service.Spec.Type {
+	case v1.ServiceTypeNodePort:
+		for _, port := range service.Spec.Ports {
+			if port.AppProtocol != nil && *port.AppProtocol == "https" {
+				ingressHostNames = append(ingressHostNames, fmt.Sprintf("localhost:%v", port.NodePort))
+			}
 		}
+	case v1.ServiceTypeLoadBalancer:
+		for _, ingress := range service.Status.LoadBalancer.Ingress {
+			if ingress.Hostname != "" {
+				ingressHostNames = append(ingressHostNames, ingress.Hostname)
+			}
+		}
+	default:
+		return nil, fmt.Errorf("invalid service spec type: %v", service.Spec.Type)
 	}
 
 	return ingressHostNames, nil

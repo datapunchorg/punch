@@ -72,19 +72,19 @@ You could also generate a topology template file, manually modify that file, and
 ```
 
 "punch uninstall" will delete the EKS cluster and related load balancer. It will not delete the IMA role/policy,
-since the IAM role/policy may be still used by other AWS resources. You could manually delete them from AWS web UI. 
+since the IAM role/policy may be still used by other AWS resources. You could manually delete them from AWS web UI.
 In the future, we may add option in "punch uninstall" command to delete those IAM role/policy in a safe way.
 
 ## How to run Spark application after installing SparkOnK8s
 
-"punch install" in previous section will print out example commands to run Spark application. 
+"punch install" in previous section will print out example commands to run Spark application.
 Please check the output from "punch install" command. Also see following section for how to use `sparkcli` command
 line tool.
 
 ## What is sparkcli command, and how to use it
 
-sparkcli is a command line tool to submit Spark application and check status/log. 
-It is packaged into the punch `dist.zip` file if you build punch by `make release`. You could also use 
+sparkcli is a command line tool to submit Spark application and check status/log.
+It is packaged into the punch `dist.zip` file if you build punch by `make release`. You could also use
 [Homebrew](https://brew.sh) to install it on Mac:
 
 ```
@@ -92,23 +92,15 @@ brew tap datapunchorg/sparkcli
 brew install sparkcli
 ```
 
-If SparkOnK8s is installed on minikube, you will need to establish a tunnel in a separate shell window before running
-`sparkcli`:
+you should find ELB domain name from `punch install` command output
+
+If SparkOnK8s is installed on minikube, set load balancer domain name as below:
 
 ```
-minikube tunnel
+export LB_NAME=localhost:32443
 ```
 
-`minikube tunnel` may ask your computer account password since it needs privilege to expose network ports. Please 
-wait until `minikube tunnel` starts successfully.
-
-Then you can set the load balancer domain name as below:
-
-```
-export LB_NAME=localhost
-```
-
-If SparkOnK8s is installed on AWS, you should find ELB domain name from `punch install` command output, then set as below:
+If SparkOnK8s is installed on AWS, then set as below:
 ```
 export LB_NAME=xxx.us-west-1.elb.amazonaws.com
 ```
@@ -127,11 +119,11 @@ After upper steps, now you could follow below examples to run sparkcli:
 
 ### How to run Spark with Apache Hive
 
-You need to set up your own Hive metastore server, and use it for your Spark application. 
-[Here](https://techjogging.com/standalone-hive-metastore-presto-docker.html) is an example 
+You need to set up your own Hive metastore server, and use it for your Spark application.
+[Here](https://techjogging.com/standalone-hive-metastore-presto-docker.html) is an example
 to set up Hive for Presto. It will be similar for Spark.
 
-If you do not want to set up Hive metastore server, we recommend using [Apache Iceberg](https://iceberg.apache.org) 
+If you do not want to set up Hive metastore server, we recommend using [Apache Iceberg](https://iceberg.apache.org)
 to store your metadata and use it in your Spark application.
 
 ### How to run Spark with Apache Iceberg
