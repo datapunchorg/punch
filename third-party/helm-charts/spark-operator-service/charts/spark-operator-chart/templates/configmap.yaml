@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "spark-operator.fullname" . }}-api-gateway-config
+data:
+  apiGatewayConfig.yml: |
+    submissionConfig:
+      sparkConf:
+        spark.eventLog.enabled: {{ .Values.apiGateway.sparkEventLogEnabled }}
+        spark.eventLog.dir: {{ .Values.apiGateway.sparkEventLogDir }}

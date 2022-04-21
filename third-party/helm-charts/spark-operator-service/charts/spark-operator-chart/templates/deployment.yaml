@@ -94,17 +94,25 @@ spec:
         - -api-gateway-user-password={{ .Values.apiGateway.userPassword }}
         - -api-gateway-s3-region={{ .Values.apiGateway.s3Region }}
         - -api-gateway-s3-bucket={{ .Values.apiGateway.s3Bucket }}
+        - -api-gateway-config=/etc/api-gateway-config/apiGatewayConfig.yml
         resources:
           {{- toYaml .Values.resources | nindent 10 }}
-      {{- if .Values.webhook.enable }}
         volumeMounts:
+      {{- if .Values.webhook.enable }}
           - name: webhook-certs
             mountPath: /etc/webhook-certs
+      {{- end }}
+          - name: api-gateway-config
+            mountPath: /etc/api-gateway-config
       volumes:
+      {{- if .Values.webhook.enable }}
         - name: webhook-certs
           secret:
             secretName: {{ include "spark-operator.fullname" . }}-webhook-certs
       {{- end }}
+        - name: api-gateway-config
+          configMap:
+            name: {{ include "spark-operator.fullname" . }}-api-gateway-config
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

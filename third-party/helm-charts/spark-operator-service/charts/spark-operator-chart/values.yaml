@@ -176,3 +176,5 @@ apiGateway:
   userPassword: ""
   s3Region: us-west-1
   s3Bucket: todo-change-to-your-bucket-name
+  sparkEventLogEnabled: "false"
+  sparkEventLogDir: /tmp/eventLog
