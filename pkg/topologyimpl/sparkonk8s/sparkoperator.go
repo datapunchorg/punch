@@ -277,7 +277,11 @@ func CreateApiGatewayIngress(clientset *kubernetes.Clientset, namespace string, 
 			ObjectMeta: v12.ObjectMeta{
 				Name:        ingressName,
 				Namespace:   namespace,
-				Annotations: map[string]string{"nginx.ingress.kubernetes.io/proxy-body-size": "1g"},
+				Annotations: map[string]string{
+					"nginx.ingress.kubernetes.io/ssl-redirect": "false",
+					"nginx.ingress.kubernetes.io/force-ssl-redirect": "false",
+					"nginx.ingress.kubernetes.io/proxy-body-size": "1g",
+				},
 			},
 			Spec: v13.IngressSpec{
 				IngressClassName: aws.String("nginx"),
