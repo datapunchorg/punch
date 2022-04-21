@@ -63,6 +63,7 @@ type SparkTopologySpec struct {
 type SparkApiGateway struct {
 	UserName     string `json:"userName" yaml:"userName"`
 	UserPassword string `json:"userPassword" yaml:"userPassword"`
+	SparkEventLogDir string `json:"sparkEventLogDir" yaml:"sparkEventLogDir"`
 }
 
 type SparkOperator struct {
@@ -96,6 +97,7 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 			EksSpec: eks.CreateDefaultEksTopology(namePrefix, s3BucketName).Spec,
 			ApiGateway: SparkApiGateway{
 				UserName: DefaultApiUserName,
+				SparkEventLogDir: fmt.Sprintf("s3a://%s/punch/%s/sparkEventLog", s3BucketName, namePrefix),
 			},
 			SparkOperator: SparkOperator{
 				HelmInstallName:           DefaultSparkOperatorHelmInstallName,

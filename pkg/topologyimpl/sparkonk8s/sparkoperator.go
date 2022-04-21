@@ -183,6 +183,13 @@ func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, t
 		// "--set", "webhook.enable=true",
 	}
 
+	if !commandEnvironment.GetBoolOrElse(eks.CmdEnvWithMinikube, false) {
+		arguments = append(arguments, "--set")
+		arguments = append(arguments, "apiGateway.sparkEventLogEnabled=true")
+		arguments = append(arguments, "--set")
+		arguments = append(arguments, "apiGateway.sparkEventLogDir=" + topology.ApiGateway.SparkEventLogDir)
+	}
+
 	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvSparkOperatorHelmChart), kubeConfig, arguments, installName, operatorNamespace)
 }
 
