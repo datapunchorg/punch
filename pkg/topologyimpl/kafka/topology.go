@@ -21,7 +21,6 @@ import (
 	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/resource"
-	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -104,12 +103,4 @@ func (t *KafkaTopology) GetKind() string {
 
 func (t *KafkaTopology) GetSpec() framework.TopologySpecPointer {
 	return &t.Spec
-}
-
-func (t *KafkaTopology) ToString() string {
-	topologyBytes, err := yaml.Marshal(t)
-	if err != nil {
-		return fmt.Sprintf("(Failed to serialize topology: %s)", err.Error())
-	}
-	return string(topologyBytes)
 }

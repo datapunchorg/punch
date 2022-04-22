@@ -37,11 +37,9 @@ type TopologyBase struct {
 type Topology interface {
 	GetKind() string
 	GetSpec() TopologySpecPointer
-	// TODO remove ToString and make password mask generic function, instead of doing password mask inside ToString
-	ToString() string
 }
 
-// TODO
+// TODO find a better way to indicate GetSpec() returning a pointer?
 type TopologySpecPointer interface{}
 
 type TopologyMetadata struct {

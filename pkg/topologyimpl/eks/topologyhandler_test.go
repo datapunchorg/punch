@@ -29,7 +29,7 @@ func TestGenerateTopology(t *testing.T) {
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "Eks", topology.GetKind())
 
-	log.Printf("-----\n%s\n-----\n", topology.ToString())
+	log.Printf("-----\n%s\n-----\n", framework.TopologyString(topology))
 
 	specificTopology := topology.(*EksTopology)
 	assert.Equal(t, "{{ or .Values.namePrefix `my` }}", specificTopology.Spec.NamePrefix)
@@ -40,7 +40,7 @@ func TestParseTopology(t *testing.T) {
 	topology, err := handler.Generate()
 	specificTopology := topology.(*EksTopology)
 	specificTopology.Spec.NamePrefix = "foo"
-	yamlContent := topology.ToString()
+	yamlContent := framework.TopologyString(topology)
 
 	topology, err = handler.Parse([]byte(yamlContent))
 	assert.Equal(t, nil, err)

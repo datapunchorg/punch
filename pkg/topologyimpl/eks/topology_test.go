@@ -34,7 +34,7 @@ func TestTemplate(t *testing.T) {
 	topology.Metadata.CommandEnvironment["helmExecutable"] = "{{ or .Env.helmExecutable `helm` }}"
 	topology.Spec.Eks.ClusterName = "{{ .Values.eksCluster.name }}"
 
-	tmpl, err := template.New("").Parse(topology.ToString())
+	tmpl, err := template.New("").Parse(framework.TopologyString(&topology))
 	assert.Equal(t, nil, err)
 
 	data := framework.CreateTemplateDataWithRegion(&d)
@@ -65,7 +65,7 @@ func TestTemplateWithAlternativeValue(t *testing.T) {
 	topology.Metadata.CommandEnvironment["kubeConfig"] = "{{ or .Env.kubeConfig `` }}"
 	topology.Metadata.CommandEnvironment["helmExecutable"] = "{{ or .Env.helmExecutable `helm` }}"
 
-	tmpl, err := template.New("").Parse(topology.ToString())
+	tmpl, err := template.New("").Parse(framework.TopologyString(&topology))
 	assert.Equal(t, nil, err)
 
 	data := framework.CreateTemplateDataWithRegion(&d)
@@ -88,7 +88,7 @@ func TestTemplateWithUnresolvedValue(t *testing.T) {
 	d := framework.CreateTemplateData(nil, nil)
 
 	topology := CreateDefaultEksTopology("my", "{{ .Values.s3BucketName }}")
-	tmpl, err := template.New("").Parse(topology.ToString())
+	tmpl, err := template.New("").Parse(framework.TopologyString(&topology))
 	assert.Equal(t, nil, err)
 
 	data := framework.CreateTemplateDataWithRegion(&d)

@@ -126,10 +126,6 @@ func (t *SparkTopology) GetSpec() framework.TopologySpecPointer {
 	return &t.Spec
 }
 
-func (t *SparkTopology) ToString() string {
-	return t.String()
-}
-
 func (t *SparkTopology) String() string {
 	topologyBytes, err := yaml.Marshal(t)
 	if err != nil {

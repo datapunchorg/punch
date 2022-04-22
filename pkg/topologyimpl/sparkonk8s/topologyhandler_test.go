@@ -29,7 +29,7 @@ func TestGenerateTopology(t *testing.T) {
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "SparkOnK8s", topology.GetKind())
 
-	log.Printf("-----\n%s\n-----\n", topology.ToString())
+	log.Printf("-----\n%s\n-----\n", framework.TopologyString(topology))
 
 	sparkTopology := topology.(*SparkTopology)
 	assert.Equal(t, "{{ or .Values.namePrefix `my` }}", sparkTopology.Spec.EksSpec.NamePrefix)
@@ -40,7 +40,7 @@ func TestParseTopology(t *testing.T) {
 	topology, err := handler.Generate()
 	sparkTopology := topology.(*SparkTopology)
 	sparkTopology.Spec.EksSpec.NamePrefix = "foo"
-	yamlContent := topology.ToString()
+	yamlContent := framework.TopologyString(topology)
 
 	topology, err = handler.Parse([]byte(yamlContent))
 	assert.Equal(t, nil, err)
@@ -56,11 +56,9 @@ func TestResolveTopology(t *testing.T) {
 		"nginxHelmChart":         "../../../third-party/helm-charts/ingress-nginx/charts/ingress-nginx",
 		"sparkOperatorHelmChart": "../../../third-party/helm-charts/spark-operator-service/charts/spark-operator-chart",
 	}
-	values := map[string]string{
-		"apiUserPassword": "dummy-password",
-	}
-	templateData := framework.CreateTemplateData(env, values)
-	resolvedTopology, err := handler.Resolve(topology, &templateData)
+	topology.(*SparkTopology).Metadata.CommandEnvironment = env
+	topology.(*SparkTopology).Spec.ApiGateway.UserPassword = "aaa"
+	resolvedTopology, err := handler.Resolve(topology)
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "SparkOnK8s", resolvedTopology.GetKind())
 }
@@ -68,8 +66,13 @@ func TestResolveTopology(t *testing.T) {
 func TestResolveTopology_NoPassword(t *testing.T) {
 	handler := &TopologyHandler{}
 	topology, err := handler.Generate()
-	templateData := framework.CreateTemplateData(nil, nil)
-	resolvedTopology, err := handler.Resolve(topology, &templateData)
+	env := map[string]string{
+		"nginxHelmChart":         "../../../third-party/helm-charts/ingress-nginx/charts/ingress-nginx",
+		"sparkOperatorHelmChart": "../../../third-party/helm-charts/spark-operator-service/charts/spark-operator-chart",
+	}
+	topology.(*SparkTopology).Metadata.CommandEnvironment = env
+	topology.(*SparkTopology).Spec.ApiGateway.UserPassword = ""
+	resolvedTopology, err := handler.Resolve(topology)
 	assert.NotEqual(t, nil, err)
 	assert.Equal(t, nil, resolvedTopology)
 }

@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/resource"
-	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -195,12 +194,4 @@ func (t *EksTopology) GetKind() string {
 
 func (t *EksTopology) GetSpec() framework.TopologySpecPointer {
 	return &t.Spec
-}
-
-func (t *EksTopology) ToString() string {
-	topologyBytes, err := yaml.Marshal(t)
-	if err != nil {
-		return fmt.Sprintf("(Failed to serialize topology: %s)", err.Error())
-	}
-	return string(topologyBytes)
 }
