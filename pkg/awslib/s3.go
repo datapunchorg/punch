@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"io"
 	"log"
 )
 
@@ -58,5 +60,35 @@ func CreateS3Bucket(region string, bucketName string) error {
 		}
 	}
 
+	return nil
+}
+
+func UploadDataToS3Url(region string, url string, data io.Reader) error {
+	bucket, key, err := GetS3BucketAndKeyFromUrl(url)
+	if err != nil {
+		return err
+	}
+	return UploadDataToS3(region, bucket, key, data)
+}
+
+func UploadDataToS3(region string, bucket string, key string, data io.Reader) error {
+	session, err := CreateSessionOrError(region)
+	if err != nil {
+		return err
+	}
+
+	// See http://docs.aws.amazon.com/sdk-for-go/api/service/s3/s3manager/#NewUploader
+	uploader := s3manager.NewUploader(session)
+
+	_, err = uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String(bucket),
+		Key: aws.String(key),
+		Body: data,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to upload %s to S3 bucket %s: %s", key, bucket, err.Error())
+	}
+
+	log.Printf("Uploaded %s to S3 bucket %s", key, bucket)
 	return nil
 }

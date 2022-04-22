@@ -1,0 +1,54 @@
+/*
+Copyright 2022 DataPunch Project
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package awslib
+
+import (
+	"github.com/stretchr/testify/assert"
+	"testing"
+)
+
+func TestGetS3BucketAndKeyFromUrl(t *testing.T) {
+	_, _, err := GetS3BucketAndKeyFromUrl("")
+	assert.NotNil(t, err)
+
+	_, _, err = GetS3BucketAndKeyFromUrl("abc")
+	assert.NotNil(t, err)
+
+	_, _, err = GetS3BucketAndKeyFromUrl("s3://")
+	assert.NotNil(t, err)
+
+	_, _, err = GetS3BucketAndKeyFromUrl("s3://host1")
+	assert.NotNil(t, err)
+
+	_, _, err = GetS3BucketAndKeyFromUrl("s3://host1/")
+	assert.NotNil(t, err)
+
+	bucket, key, err := GetS3BucketAndKeyFromUrl("s3://host1/key1")
+	assert.Nil(t, err)
+	assert.Equal(t, "host1", bucket)
+	assert.Equal(t, "key1", key)
+
+	bucket, key, err = GetS3BucketAndKeyFromUrl("s3://host1/key1/key2")
+	assert.Nil(t, err)
+	assert.Equal(t, "host1", bucket)
+	assert.Equal(t, "key1/key2", key)
+
+	bucket, key, err = GetS3BucketAndKeyFromUrl("s3://host1/key1/key2/")
+	assert.Nil(t, err)
+	assert.Equal(t, "host1", bucket)
+	assert.Equal(t, "key1/key2/", key)
+}

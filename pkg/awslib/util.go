@@ -17,10 +17,12 @@ limitations under the License.
 package awslib
 
 import (
+	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/client"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
+	"net/url"
 	"strings"
 )
 
@@ -33,6 +35,17 @@ func CreateSession(region string) *session.Session {
 				Region: aws.String(region),
 			}))
 	return session
+}
+
+func CreateSessionOrError(region string) (*session.Session, error) {
+	session, err := session.NewSession(
+		&aws.Config{
+			Region: aws.String(region),
+		})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create AWS session for region %s: %s", region, err.Error())
+	}
+	return session, nil
 }
 
 func CreateDefaultSession() *session.Session {
@@ -61,4 +74,23 @@ func AlreadyExistsMessage(msg string) bool {
 func SecurityGroupNotFoundMessage(msg string) bool {
 	lower := strings.ToLower(msg)
 	return strings.Contains(lower, "invalidgroup.notfound")
+}
+
+func GetS3BucketAndKeyFromUrl(str string) (string, string, error) {
+	u, err := url.Parse(str)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to parse S3 url %s: %s", str, err.Error())
+	}
+	bucket := u.Host
+	if bucket == "" {
+		return "", "", fmt.Errorf("invalid S3 url %s", str)
+	}
+	key := u.Path
+	if key == "" || key == "/" {
+		return "", "", fmt.Errorf("invalid S3 url %s", str)
+	}
+	if strings.HasPrefix(key, "/") {
+		key = key[1:]
+	}
+	return bucket, key, nil
 }

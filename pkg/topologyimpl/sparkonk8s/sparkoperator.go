@@ -37,10 +37,26 @@ import (
 	"time"
 )
 
+// TODO remove log.Fatalf
+
 func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, topology SparkTopologySpec) {
 	region := topology.EksSpec.Region
 	clusterName := topology.EksSpec.Eks.ClusterName
 	operatorNamespace := topology.SparkOperator.Namespace
+
+	eventLogDir := topology.ApiGateway.SparkEventLogDir
+	if strings.HasPrefix(strings.ToLower(eventLogDir), "s3") {
+		dummyFileUrl := eventLogDir
+		if !strings.HasSuffix(dummyFileUrl, "/") {
+			dummyFileUrl += "/"
+		}
+		dummyFileUrl += "dummy.txt"
+		log.Printf("Uploading dummy file %s to Spark event log directory %s to make sure the directry exits (Spark application and history server will fail if the directory does not exist)", dummyFileUrl, eventLogDir)
+		err := awslib.UploadDataToS3Url(topology.EksSpec.Region, dummyFileUrl, strings.NewReader(""))
+		if err != nil {
+			log.Fatalf("Failed to create dummy file %s in Spark event log directory %s to make sure the directry exits (Spark application and history server will fail if the directory does not exist): %s", dummyFileUrl, eventLogDir, err.Error())
+		}
+	}
 
 	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(eks.CmdEnvKubeConfig), clusterName)
 	if err != nil {
