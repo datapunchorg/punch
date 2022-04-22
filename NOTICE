@@ -19,5 +19,9 @@ This product includes software developed at
 Kubernetes AutoScaler (https://github.com/kubernetes/autoscaler).
 Licensed under the Apache License 2.0.
 
+This product includes software developed at
+Gopatch (https://github.com/Nifty255/gopatch).
+Licensed under the MIT License.
+
 II. License Summary
 - Apache License 2.0
