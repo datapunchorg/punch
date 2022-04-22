@@ -31,14 +31,13 @@ type TopologyBase struct {
 
 type Topology interface {
 	GetKind() string
-	GetSpec() TopologySpec
+	GetSpec() TopologySpecPointer
 	// TODO remove ToString and make password mask generic function, instead of doing password mask inside ToString
 	ToString() string
 }
 
 // TODO
-type TopologySpec interface {
-}
+type TopologySpecPointer interface{}
 
 type TopologyMetadata struct {
 	Name               string            `json:"name"`

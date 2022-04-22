@@ -32,7 +32,6 @@ var provisionCmd = &cobra.Command{
 	Long:  `Provision resources in the topology.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		topology := getTopologyFromArguments(args)
-		log.Printf("----- Input Topology -----\n%s", MarshalTopology(topology))
 
 		kind := topology.GetKind()
 		handler := getTopologyHandlerOrFatal(kind)

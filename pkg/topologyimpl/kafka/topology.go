@@ -102,8 +102,8 @@ func (t *KafkaTopology) GetKind() string {
 	return t.Kind
 }
 
-func (t *KafkaTopology) GetSpec() framework.TopologySpec {
-	return t.Spec
+func (t *KafkaTopology) GetSpec() framework.TopologySpecPointer {
+	return &t.Spec
 }
 
 func (t *KafkaTopology) ToString() string {

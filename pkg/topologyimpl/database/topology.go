@@ -95,8 +95,8 @@ func (t *DatabaseTopology) GetKind() string {
 	return t.Kind
 }
 
-func (t *DatabaseTopology) GetSpec() framework.TopologySpec {
-	return t.Spec
+func (t *DatabaseTopology) GetSpec() framework.TopologySpecPointer {
+	return &t.Spec
 }
 
 func (t *DatabaseTopology) ToString() string {

@@ -122,8 +122,8 @@ func (t *SparkTopology) GetKind() string {
 	return t.Kind
 }
 
-func (t *SparkTopology) GetSpec() framework.TopologySpec {
-	return t.Spec
+func (t *SparkTopology) GetSpec() framework.TopologySpecPointer {
+	return &t.Spec
 }
 
 func (t *SparkTopology) ToString() string {
