@@ -30,6 +30,7 @@ var FileName string
 
 var CommandEnv []string
 var TemplateValues []string
+var PatchValues []string
 
 var DryRun bool
 

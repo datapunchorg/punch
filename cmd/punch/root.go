@@ -49,6 +49,8 @@ func AddKeyValueCommandFlags(command *cobra.Command) {
 		"Command environment, e.g. key1=value1")
 	command.Flags().StringSliceVarP(&TemplateValues, "set", "", []string{},
 		"Template value, e.g. key1=value1")
+	command.Flags().StringSliceVarP(&PatchValues, "patch", "", []string{},
+		"Patching value on spec fields, e.g. field1=value1")
 }
 
 func AddDryRunCommandFlag(command *cobra.Command) {
