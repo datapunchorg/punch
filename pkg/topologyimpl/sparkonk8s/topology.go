@@ -47,10 +47,8 @@ const (
 )
 
 type SparkTopology struct {
-	ApiVersion string                     `json:"apiVersion" yaml:"apiVersion"`
-	Kind       string                     `json:"kind" yaml:"kind"`
-	Metadata   framework.TopologyMetadata `json:"metadata"`
-	Spec       SparkTopologySpec          `json:"spec"`
+	framework.TopologyBase               `json:",inline" yaml:",inline"`
+	Spec       SparkTopologySpec          `json:"spec" yaml:"spec"`
 }
 
 type SparkTopologySpec struct {
@@ -84,14 +82,16 @@ type SparkHistoryServer struct {
 func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTopology {
 	topologyName := fmt.Sprintf("%s-spark-k8s", namePrefix)
 	topology := SparkTopology{
-		ApiVersion: DefaultVersion,
-		Kind:       KindSparkTopology,
-		Metadata: framework.TopologyMetadata{
-			Name: topologyName,
-			CommandEnvironment: map[string]string{
-				eks.CmdEnvHelmExecutable: eks.DefaultHelmExecutable,
+		TopologyBase: framework.TopologyBase{
+			ApiVersion: DefaultVersion,
+			Kind:       KindSparkTopology,
+			Metadata: framework.TopologyMetadata{
+				Name: topologyName,
+				CommandEnvironment: map[string]string{
+					eks.CmdEnvHelmExecutable: eks.DefaultHelmExecutable,
+				},
+				Notes: map[string]string{},
 			},
-			Notes: map[string]string{},
 		},
 		Spec: SparkTopologySpec{
 			EksSpec: eks.CreateDefaultEksTopology(namePrefix, s3BucketName).Spec,

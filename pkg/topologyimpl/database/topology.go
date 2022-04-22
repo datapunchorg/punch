@@ -36,10 +36,8 @@ const (
 )
 
 type DatabaseTopology struct {
-	ApiVersion string                     `json:"apiVersion" yaml:"apiVersion"`
-	Kind       string                     `json:"kind" yaml:"kind"`
-	Metadata   framework.TopologyMetadata `json:"metadata"`
-	Spec       DatabaseTopologySpec       `json:"spec"`
+	framework.TopologyBase               `json:",inline" yaml:",inline"`
+	Spec       DatabaseTopologySpec      `json:"spec"`
 }
 
 type DatabaseTopologySpec struct {
@@ -58,12 +56,14 @@ func CreateDefaultDatabaseTopology(namePrefix string) DatabaseTopology {
 	topologyName := fmt.Sprintf("%s-db-01", namePrefix)
 	securityGroupName := fmt.Sprintf("%s-sg-01", namePrefix)
 	topology := DatabaseTopology{
-		ApiVersion: DefaultVersion,
-		Kind:       KindDatabaseTopology,
-		Metadata: framework.TopologyMetadata{
-			Name:               topologyName,
-			CommandEnvironment: map[string]string{},
-			Notes:              map[string]string{},
+		TopologyBase: framework.TopologyBase{
+			ApiVersion: DefaultVersion,
+			Kind: KindDatabaseTopology,
+			Metadata: framework.TopologyMetadata{
+				Name:               topologyName,
+				CommandEnvironment: map[string]string{},
+				Notes:              map[string]string{},
+			},
 		},
 		Spec: DatabaseTopologySpec{
 			NamePrefix:         namePrefix,

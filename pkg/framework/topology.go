@@ -23,6 +23,12 @@ const (
 	DefaultEC2AssumeRolePolicyDocument = `{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":["ec2.amazonaws.com"]},"Action":["sts:AssumeRole"]}]}`
 )
 
+type TopologyBase struct {
+	ApiVersion string                     `json:"apiVersion" yaml:"apiVersion"`
+	Kind       string                     `json:"kind" yaml:"kind"`
+	Metadata   TopologyMetadata 		  `json:"metadata"`
+}
+
 type Topology interface {
 	GetKind() string
 	GetSpec() TopologySpec

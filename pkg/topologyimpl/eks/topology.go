@@ -48,9 +48,7 @@ const (
 )
 
 type EksTopology struct {
-	ApiVersion string                     `json:"apiVersion" yaml:"apiVersion"`
-	Kind       string                     `json:"kind" yaml:"kind"`
-	Metadata   framework.TopologyMetadata `json:"metadata"`
+	framework.TopologyBase               `json:",inline" yaml:",inline"`
 	Spec       EksTopologySpec            `json:"spec"`
 }
 
@@ -81,14 +79,16 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 	securityGroupName := fmt.Sprintf("%s-eks-sg-01", namePrefix)
 	nodeGroupName := fmt.Sprintf("%s-ng-01", k8sClusterName)
 	topology := EksTopology{
-		ApiVersion: DefaultVersion,
-		Kind:       KindEksTopology,
-		Metadata: framework.TopologyMetadata{
-			Name: topologyName,
-			CommandEnvironment: map[string]string{
-				CmdEnvHelmExecutable: DefaultHelmExecutable,
+		TopologyBase: framework.TopologyBase{
+			ApiVersion: DefaultVersion,
+			Kind:       KindEksTopology,
+			Metadata: framework.TopologyMetadata{
+				Name: topologyName,
+				CommandEnvironment: map[string]string{
+					CmdEnvHelmExecutable: DefaultHelmExecutable,
+				},
+				Notes: map[string]string{},
 			},
-			Notes: map[string]string{},
 		},
 		Spec: EksTopologySpec{
 			NamePrefix:   namePrefix,

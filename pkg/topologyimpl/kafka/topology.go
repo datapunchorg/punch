@@ -25,11 +25,8 @@ import (
 )
 
 const (
-	DefaultUserName = "user1"
 
 	KindKafkaTopology = "Kafka"
-
-	FieldMaskValue = "***"
 
 	DefaultVersion    = "datapunch.org/v1alpha1"
 	DefaultRegion     = "us-west-1"
@@ -38,9 +35,7 @@ const (
 )
 
 type KafkaTopology struct {
-	ApiVersion string                     `json:"apiVersion" yaml:"apiVersion"`
-	Kind       string                     `json:"kind" yaml:"kind"`
-	Metadata framework.TopologyMetadata `json:"metadata"`
+	framework.TopologyBase               `json:",inline" yaml:",inline"`
 	Spec     KafkaTopologySpec          `json:"spec"`
 }
 
@@ -68,12 +63,14 @@ func CreateDefaultKafkaTopology(namePrefix string) KafkaTopology {
 		subnetIds = []string{fmt.Sprintf("INVALID: %s", err.Error())}
 	}
 	topology := KafkaTopology{
-		ApiVersion: DefaultVersion,
-		Kind:       KindKafkaTopology,
-		Metadata: framework.TopologyMetadata{
-			Name:               topologyName,
-			CommandEnvironment: map[string]string{},
-			Notes:              map[string]string{},
+		TopologyBase: framework.TopologyBase{
+			ApiVersion: DefaultVersion,
+			Kind:       KindKafkaTopology,
+			Metadata: framework.TopologyMetadata{
+				Name:               topologyName,
+				CommandEnvironment: map[string]string{},
+				Notes:              map[string]string{},
+			},
 		},
 		Spec: KafkaTopologySpec{
 			NamePrefix:         namePrefix,
