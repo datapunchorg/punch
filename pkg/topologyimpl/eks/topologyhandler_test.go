@@ -55,9 +55,8 @@ func TestResolveTopology(t *testing.T) {
 	env := map[string]string{
 		"nginxHelmChart": "../../../third-party/helm-charts/ingress-nginx/charts/ingress-nginx",
 	}
-	values := map[string]string{}
-	templateData := framework.CreateTemplateData(env, values)
-	resolvedTopology, err := handler.Resolve(topology, &templateData)
+	topology.(*EksTopology).Metadata.CommandEnvironment = env
+	resolvedTopology, err := handler.Resolve(topology)
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "Eks", resolvedTopology.GetKind())
 }
