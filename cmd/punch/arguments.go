@@ -17,11 +17,13 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"log"
 	"strings"
+	"text/template"
 )
 
 var Output string
@@ -53,7 +55,7 @@ func createKeyValueMap(keyValuePairs []string) map[string]string {
 
 func getTopologyFromArguments(args []string) framework.Topology {
 	fileName := FileName
-	var topology framework.Topology
+	var inputTopology []byte
 	if fileName == "" {
 		if len(args) == 0 {
 			log.Fatalf("Please specify an argument to identify the kind of topology, or specify -f to provide a topology file")
@@ -64,18 +66,25 @@ func getTopologyFromArguments(args []string) framework.Topology {
 		if err != nil {
 			log.Fatalf("Failed to generate topology: %s", err.Error())
 		}
-		topology = generatedTopology
+		topologyBytes, err := yaml.Marshal(generatedTopology)
+		if err != nil {
+			log.Fatalf("Failed to marshal topology: %s", err.Error())
+		}
+		inputTopology = topologyBytes
 	} else {
 		fileContent, err := ioutil.ReadFile(fileName)
 		if err != nil {
 			log.Fatalf("Failed to read topology file %s: %s", fileName, err.Error())
 		}
-		kind := getKind(fileContent)
-		handler := getTopologyHandlerOrFatal(kind)
-		topology, err = handler.Parse(fileContent)
-		if err != nil {
-			log.Fatalf("Failed to parse topology file %s: %s", fileName, err.Error())
-		}
+		inputTopology = fileContent
+	}
+	transformedTopology := transformTopologyTemplate(string(inputTopology))
+	transformedTopologyBytes := []byte(transformedTopology)
+	kind := getKind(transformedTopologyBytes)
+	handler := getTopologyHandlerOrFatal(kind)
+	topology, err := handler.Parse(transformedTopologyBytes)
+	if err != nil {
+		log.Fatalf("Failed to parse topology file %s: %s", fileName, err.Error())
 	}
 	return topology
 }
@@ -88,4 +97,24 @@ func getKind(yamlContent []byte) string {
 	s := structWithKind{}
 	yaml.Unmarshal(yamlContent, &s)
 	return s.Kind
+}
+
+func transformTopologyTemplate(content string) string {
+	tmpl, err := template.New("").Parse(content) // .Option("missingkey=error")?
+	if err != nil {
+		log.Fatalf("Failed to parse topology template, error: %s, template: %s", err.Error(), content)
+	}
+
+	commandEnvironment := createKeyValueMap(CommandEnv)
+	templateValues := createKeyValueMap(TemplateValues)
+	templateData := framework.CreateTemplateData(commandEnvironment, templateValues)
+	templateDataWithRegion := framework.CreateTemplateDataWithRegion(&templateData)
+
+	buffer := bytes.Buffer{}
+	err = tmpl.Execute(&buffer, &templateDataWithRegion)
+	if err != nil {
+		log.Fatalf("Failed to execute topology template: %s", err.Error())
+	}
+	transformedContent := buffer.String()
+	return transformedContent
 }
