@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"github.com/datapunchorg/punch/pkg/framework"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/database"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/kafka"
@@ -37,15 +36,10 @@ var deleteCmd = &cobra.Command{
 		kind := topology.GetKind()
 		handler := getTopologyHandlerOrFatal(kind)
 
-		commandEnvironment := createKeyValueMap(CommandEnv)
-		templateValues := createKeyValueMap(TemplateValues)
-		templateData := framework.CreateTemplateData(commandEnvironment, templateValues)
-		resolvedTopology, err := handler.Resolve(topology, &templateData)
+		resolvedTopology, err := handler.Resolve(topology)
 		if err != nil {
 			log.Fatalf("Failed to resolve topology: %s", err.Error())
 		}
-
-		log.Printf("----- Resolved Topology -----\n%s", resolvedTopology.ToString())
 
 		if DryRun {
 			log.Println("Dry run, exit now")

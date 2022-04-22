@@ -17,13 +17,11 @@ limitations under the License.
 package kafka
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"gopkg.in/yaml.v3"
 	"log"
 	"regexp"
-	"text/template"
 )
 
 var nonAlphanumericRegexp *regexp.Regexp
@@ -56,32 +54,8 @@ func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) 
 	return &result, nil
 }
 
-func (t *TopologyHandler) Resolve(topology framework.Topology, data framework.TemplateData) (framework.Topology, error) {
-	topologyBytes, err := yaml.Marshal(topology)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal topology: %s", err.Error())
-	}
-	yamlContent := string(topologyBytes)
-
-	tmpl, err := template.New("").Parse(yamlContent) // .Option("missingkey=error")?
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse topology template (%s): %s", err.Error(), yamlContent)
-	}
-
-	templateData := framework.CreateTemplateDataWithRegion(data)
-
-	buffer := bytes.Buffer{}
-	err = tmpl.Execute(&buffer, &templateData)
-	if err != nil {
-		return nil, fmt.Errorf("failed to execute topology template: %s", err.Error())
-	}
-	resolvedContent := buffer.String()
-	resolvedTopology, err := t.Parse([]byte(resolvedContent))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse resolved topology (%s): %s", err.Error(), resolvedContent)
-	}
-
-	return resolvedTopology, nil
+func (t *TopologyHandler) Resolve(topology framework.Topology) (framework.Topology, error) {
+	return topology, nil
 }
 
 func (t *TopologyHandler) Install(topology framework.Topology) (framework.DeploymentOutput, error) {

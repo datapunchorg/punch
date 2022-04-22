@@ -17,18 +17,15 @@ limitations under the License.
 package eks
 
 import (
-	"bytes"
 	"fmt"
-	"log"
-	"os"
-	"strings"
-	"text/template"
-
 	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/kubelib"
 	"github.com/datapunchorg/punch/pkg/resource"
 	"gopkg.in/yaml.v3"
+	"log"
+	"os"
+	"strings"
 )
 
 func init() {
@@ -52,34 +49,10 @@ func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) 
 	return &result, nil
 }
 
-func (t *TopologyHandler) Resolve(topology framework.Topology, data framework.TemplateData) (framework.Topology, error) {
-	topologyBytes, err := yaml.Marshal(topology)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal topology: %s", err.Error())
-	}
-	yamlContent := string(topologyBytes)
+func (t *TopologyHandler) Resolve(topology framework.Topology) (framework.Topology, error) {
+	resolvedSpecificTopology := topology.(*EksTopology)
 
-	tmpl, err := template.New("").Parse(yamlContent) // .Option("missingkey=error")?
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse topology template (%s): %s", err.Error(), yamlContent)
-	}
-
-	templateData := framework.CreateTemplateDataWithRegion(data)
-
-	buffer := bytes.Buffer{}
-	err = tmpl.Execute(&buffer, &templateData)
-	if err != nil {
-		return nil, fmt.Errorf("failed to execute topology template: %s", err.Error())
-	}
-	resolvedContent := buffer.String()
-	resolvedTopology, err := t.Parse([]byte(resolvedContent))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse resolved topology (%s): %s", err.Error(), resolvedContent)
-	}
-
-	resolvedSpecificTopology := resolvedTopology.(*EksTopology)
-
-	err = checkCmdEnvFolderExists(resolvedSpecificTopology.Metadata, CmdEnvNginxHelmChart)
+	err := checkCmdEnvFolderExists(resolvedSpecificTopology.Metadata, CmdEnvNginxHelmChart)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +71,7 @@ func (t *TopologyHandler) Resolve(topology framework.Topology, data framework.Te
 		}
 	}
 
-	return resolvedTopology, nil
+	return topology, nil
 }
 
 func (t *TopologyHandler) Install(topology framework.Topology) (framework.DeploymentOutput, error) {

@@ -55,7 +55,7 @@ func createKeyValueMap(keyValuePairs []string) map[string]string {
 
 func getTopologyFromArguments(args []string) framework.Topology {
 	fileName := FileName
-	var inputTopology []byte
+	var inputTopology string
 	if fileName == "" {
 		if len(args) == 0 {
 			log.Fatalf("Please specify an argument to identify the kind of topology, or specify -f to provide a topology file")
@@ -70,15 +70,21 @@ func getTopologyFromArguments(args []string) framework.Topology {
 		if err != nil {
 			log.Fatalf("Failed to marshal topology: %s", err.Error())
 		}
-		inputTopology = topologyBytes
+		inputTopology = string(topologyBytes)
 	} else {
 		fileContent, err := ioutil.ReadFile(fileName)
 		if err != nil {
 			log.Fatalf("Failed to read topology file %s: %s", fileName, err.Error())
 		}
-		inputTopology = fileContent
+		inputTopology = string(fileContent)
 	}
-	transformedTopology := transformTopologyTemplate(string(inputTopology))
+
+	log.Printf("----- Input Topology -----\n%s", inputTopology)
+
+	transformedTopology := transformTopologyTemplate(inputTopology)
+
+	log.Printf("----- Transformed Topology -----\n%s", transformedTopology)
+
 	transformedTopologyBytes := []byte(transformedTopology)
 	kind := getKind(transformedTopologyBytes)
 	handler := getTopologyHandlerOrFatal(kind)
