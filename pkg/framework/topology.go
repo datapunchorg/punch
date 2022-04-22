@@ -16,6 +16,11 @@ limitations under the License.
 
 package framework
 
+import (
+	"fmt"
+	"gopkg.in/yaml.v3"
+)
+
 const (
 	PunchTopologyTagName = "punch-topology"
 
@@ -43,4 +48,17 @@ type TopologyMetadata struct {
 	Name               string            `json:"name"`
 	CommandEnvironment map[string]string `json:"commandEnvironment" yaml:"commandEnvironment"`
 	Notes              map[string]string `json:"notes" yaml:"notes"`
+}
+
+func TopologyString(topology Topology) string {
+	s, ok := topology.(fmt.Stringer)
+	if ok {
+		return s.String()
+	} else {
+		topologyBytes, err := yaml.Marshal(topology)
+		if err != nil {
+			return fmt.Sprintf("(Failed to serialize topology: %s)", err.Error())
+		}
+		return string(topologyBytes)
+	}
 }

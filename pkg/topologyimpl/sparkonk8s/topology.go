@@ -127,6 +127,10 @@ func (t *SparkTopology) GetSpec() framework.TopologySpecPointer {
 }
 
 func (t *SparkTopology) ToString() string {
+	return t.String()
+}
+
+func (t *SparkTopology) String() string {
 	topologyBytes, err := yaml.Marshal(t)
 	if err != nil {
 		return fmt.Sprintf("(Failed to serialize topology: %s)", err.Error())

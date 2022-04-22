@@ -100,6 +100,10 @@ func (t *DatabaseTopology) GetSpec() framework.TopologySpecPointer {
 }
 
 func (t *DatabaseTopology) ToString() string {
+	return t.String()
+}
+
+func (t *DatabaseTopology) String() string {
 	topologyBytes, err := yaml.Marshal(t)
 	if err != nil {
 		return fmt.Sprintf("(Failed to serialize topology: %s)", err.Error())

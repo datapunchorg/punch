@@ -19,6 +19,7 @@ package main
 import (
 	"bytes"
 	"github.com/datapunchorg/punch/pkg/framework"
+	"github.com/datapunchorg/punch/pkg/gopatch"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"log"
@@ -83,8 +84,6 @@ func getTopologyFromArguments(args []string) framework.Topology {
 
 	transformedTopology := transformTopologyTemplate(inputTopology)
 
-	log.Printf("----- Transformed Topology -----\n%s", transformedTopology)
-
 	transformedTopologyBytes := []byte(transformedTopology)
 	kind := getKind(transformedTopologyBytes)
 	handler := getTopologyHandlerOrFatal(kind)
@@ -92,6 +91,24 @@ func getTopologyFromArguments(args []string) framework.Topology {
 	if err != nil {
 		log.Fatalf("Failed to parse topology file %s: %s", fileName, err.Error())
 	}
+
+	log.Printf("----- Transformed Topology -----\n%s", framework.TopologyString(topology))
+
+	specPointer := topology.GetSpec()
+
+	if len(PatchValues) > 0 {
+		patchValues := createKeyValueMap(PatchValues)
+		var patchValuesGeneric map[string]interface{}
+		for key, value := range patchValues {
+			patchValuesGeneric[key] = value
+		}
+		_, err = gopatch.Default().Patch(specPointer, patchValuesGeneric)
+		if err != nil {
+			log.Fatalf("Failed to patch topology spec: %s", err.Error())
+		}
+		log.Printf("----- Patched Topology -----\n%s", framework.TopologyString(topology))
+	}
+
 	return topology
 }
 
