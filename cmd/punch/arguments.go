@@ -19,7 +19,6 @@ package main
 import (
 	"bytes"
 	"github.com/datapunchorg/punch/pkg/framework"
-	"github.com/datapunchorg/punch/pkg/yamlpatch"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"log"
@@ -85,34 +84,17 @@ func getTopologyFromArguments(args []string) framework.Topology {
 	transformedTopology := transformTopologyTemplate(inputTopology)
 	transformedTopologyBytes := []byte(transformedTopology)
 
-	if len(PatchValues) > 0 {
-		// TODO the patching here will reformat YAML, need to fix that
-		patchValues := createKeyValueMap(PatchValues)
-		ops := make([]yamlpatch.Operation, 0, len(patchValues))
-		for key, value := range patchValues {
-			var anyValue interface{} = value
-			node := yamlpatch.NewNode(&anyValue)
-			op := yamlpatch.Operation{
-				Op: yamlpatch.OpReplace,
-				Path: yamlpatch.OpPath(key),
-				Value: node,
-			}
-			ops = append(ops, op)
-		}
-		patch := yamlpatch.Patch(ops)
-		patchedTopologyBytes, err := patch.Apply(transformedTopologyBytes)
-		if err != nil {
-			log.Fatalf("Failed to patch topology spec: %s", err.Error())
-		}
-
-		transformedTopologyBytes = patchedTopologyBytes
-	}
-
 	kind := getKind(transformedTopologyBytes)
 	handler := getTopologyHandlerOrFatal(kind)
 	topology, err := handler.Parse(transformedTopologyBytes)
 	if err != nil {
 		log.Fatalf("Failed to parse topology file %s: %s", fileName, err.Error())
+	}
+
+	if len(PatchValues) > 0 {
+		// TODO implement patching
+		patchMap := createKeyValueMap(PatchValues)
+		log.Printf("TODO implement patching: %v", patchMap)
 	}
 
 	log.Printf("----- Transformed Topology -----\n%s", framework.TopologyString(topology))
