@@ -17,6 +17,7 @@ limitations under the License.
 package common
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
@@ -27,4 +28,29 @@ func TestRetryUntilTrue(t *testing.T) {
 	},
 		0*time.Millisecond,
 		0*time.Millisecond)
+}
+
+type struct1 struct {
+	Id string
+	Enabled bool
+	Count int
+}
+
+func TestPatchStructFieldByStringValue(t *testing.T) {
+	s1 := struct1{}
+	var pointer interface{} = &s1
+	err := PatchStructFieldByStringValue(pointer, "Id123", "new_value")
+	assert.NotNil(t, err)
+	err = PatchStructFieldByStringValue(pointer, "Id", "new_value")
+	assert.Nil(t, err)
+	assert.Equal(t, "new_value", s1.Id)
+	err = PatchStructFieldByStringValue(pointer, "Enabled", "true")
+	assert.Nil(t, err)
+	assert.Equal(t, true, s1.Enabled)
+	err = PatchStructFieldByStringValue(pointer, "Enabled", "false")
+	assert.Nil(t, err)
+	assert.Equal(t, false, s1.Enabled)
+	err = PatchStructFieldByStringValue(pointer, "Count", "100")
+	assert.Nil(t, err)
+	assert.Equal(t, 100, s1.Count)
 }
