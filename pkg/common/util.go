@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -43,28 +44,15 @@ func RetryUntilTrue(run func() (bool, error), maxWait time.Duration, sleepTime t
 	return fmt.Errorf("timed out after running %d seconds while max wait time is %d seconds", int(currentTime.Sub(startTime).Seconds()), int(maxWait.Seconds()))
 }
 
+func PatchStructPathByStringValue(target interface{}, path string, value string) error {
+	parts := strings.Split(path, ".")
+	return patchStructPathArrayByStringValue(target, parts, value)
+}
+
 func PatchStructFieldByStringValue(target interface{}, field string, value string) error {
-	valueOfTarget := reflect.ValueOf(target).Elem()
-	typeOfTarget := valueOfTarget.Type()
-	if valueOfTarget.Kind() != reflect.Struct {
-		return fmt.Errorf("target value is not a pointer to struct")
-	}
-	var fieldV reflect.Value
-	var found = false
-	for i := 0; i < typeOfTarget.NumField(); i++ {
-		fieldT := typeOfTarget.Field(i)
-		fieldName := fieldT.Name
-		if fieldName == field {
-			fieldV = valueOfTarget.Field(i)
-			found = true
-			break
-		}
-	}
-	if !found {
-		return fmt.Errorf("field %s does not exist on target struct", field)
-	}
-	if !fieldV.CanSet() {
-		return fmt.Errorf("field %s cannot set on target struct", field)
+	fieldV, err := getSettableField(target, field)
+	if err != nil {
+		return err
 	}
 	switch fieldV.Kind() {
 	case reflect.String:
@@ -89,4 +77,44 @@ func PatchStructFieldByStringValue(target interface{}, field string, value strin
 		fieldV.SetBool(boolV)
 	}
 	return nil
+}
+
+func getSettableField(target interface{}, field string) (reflect.Value, error) {
+	valueOfTarget := reflect.ValueOf(target).Elem()
+	typeOfTarget := valueOfTarget.Type()
+	if valueOfTarget.Kind() != reflect.Struct {
+		return reflect.Value{}, fmt.Errorf("target value is not a pointer to struct")
+	}
+	var fieldV reflect.Value
+	var found = false
+	for i := 0; i < typeOfTarget.NumField(); i++ {
+		fieldT := typeOfTarget.Field(i)
+		fieldName := fieldT.Name
+		if strings.EqualFold(fieldName, field) {
+			fieldV = valueOfTarget.Field(i)
+			found = true
+			break
+		}
+	}
+	if !found {
+		return reflect.Value{}, fmt.Errorf("field %s does not exist on target struct", field)
+	}
+	if !fieldV.CanSet() {
+		return reflect.Value{}, fmt.Errorf("field %s cannot set on target struct", field)
+	}
+	return fieldV, nil
+}
+
+func patchStructPathArrayByStringValue(target interface{}, path []string, value string) error {
+	if len(path) == 0 {
+		return fmt.Errorf("invalid path (zero length)")
+	} else if len(path) == 1 {
+		return PatchStructFieldByStringValue(target, path[0], value)
+	}
+	fieldV, err := getSettableField(target, path[0])
+	if err != nil {
+		return err
+	}
+	p := fieldV.Addr().Interface()
+	return patchStructPathArrayByStringValue(p, path[1:], value)
 }

@@ -36,6 +36,11 @@ type struct1 struct {
 	Count int
 }
 
+type struct2 struct {
+	field1 string
+	S1 struct1
+}
+
 func TestPatchStructFieldByStringValue(t *testing.T) {
 	s1 := struct1{}
 	var pointer interface{} = &s1
@@ -53,4 +58,38 @@ func TestPatchStructFieldByStringValue(t *testing.T) {
 	err = PatchStructFieldByStringValue(pointer, "Count", "100")
 	assert.Nil(t, err)
 	assert.Equal(t, 100, s1.Count)
+}
+
+func TestPatchStructPathByStringValue(t *testing.T) {
+	s1 := struct1{}
+	var pointer interface{} = &s1
+	err := PatchStructPathByStringValue(pointer, "Id123", "new_value")
+	assert.NotNil(t, err)
+	err = PatchStructPathByStringValue(pointer, "Id", "new_value")
+	assert.Nil(t, err)
+	assert.Equal(t, "new_value", s1.Id)
+	err = PatchStructPathByStringValue(pointer, "Enabled", "true")
+	assert.Nil(t, err)
+	assert.Equal(t, true, s1.Enabled)
+	err = PatchStructPathByStringValue(pointer, "Enabled", "false")
+	assert.Nil(t, err)
+	assert.Equal(t, false, s1.Enabled)
+	err = PatchStructPathByStringValue(pointer, "Count", "100")
+	assert.Nil(t, err)
+	assert.Equal(t, 100, s1.Count)
+
+	s2 := struct2{}
+	pointer = &s2
+	err = PatchStructPathByStringValue(pointer, "s1.Id", "new_value")
+	assert.Nil(t, err)
+	assert.Equal(t, "new_value", s2.S1.Id)
+	err = PatchStructPathByStringValue(pointer, "S1.enabled", "true")
+	assert.Nil(t, err)
+	assert.Equal(t, true, s2.S1.Enabled)
+	err = PatchStructPathByStringValue(pointer, "S1.Enabled", "false")
+	assert.Nil(t, err)
+	assert.Equal(t, false, s2.S1.Enabled)
+	err = PatchStructPathByStringValue(pointer, "S1.Count", "100")
+	assert.Nil(t, err)
+	assert.Equal(t, 100, s2.S1.Count)
 }
