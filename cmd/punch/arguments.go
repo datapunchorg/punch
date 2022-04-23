@@ -86,6 +86,7 @@ func getTopologyFromArguments(args []string) framework.Topology {
 	transformedTopologyBytes := []byte(transformedTopology)
 
 	if len(PatchValues) > 0 {
+		// TODO the patching here will reformat YAML, need to fix that
 		patchValues := createKeyValueMap(PatchValues)
 		ops := make([]yamlpatch.Operation, 0, len(patchValues))
 		for key, value := range patchValues {
