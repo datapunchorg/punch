@@ -54,7 +54,7 @@ func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) 
 	return &result, nil
 }
 
-func (t *TopologyHandler) Validate(topology framework.Topology) (framework.Topology, error) {
+func (t *TopologyHandler) Validate(topology framework.Topology, install bool) (framework.Topology, error) {
 	return topology, nil
 }
 
