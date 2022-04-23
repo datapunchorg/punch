@@ -18,6 +18,7 @@ package main
 
 import (
 	"bytes"
+	"github.com/datapunchorg/punch/pkg/common"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
@@ -92,9 +93,14 @@ func getTopologyFromArguments(args []string) framework.Topology {
 	}
 
 	if len(PatchValues) > 0 {
-		// TODO implement patching
+		spec := topology.GetSpec()
 		patchMap := createKeyValueMap(PatchValues)
-		log.Printf("TODO implement patching: %v", patchMap)
+		for path, value := range patchMap {
+			err := common.PatchStructPathByStringValue(spec, path, value)
+			if err != nil {
+				log.Fatalf("Failed to patch spec with path %s", path)
+			}
+		}
 	}
 
 	log.Printf("----- Transformed Topology -----\n%s", framework.TopologyString(topology))
