@@ -35,7 +35,7 @@ var deleteCmd = &cobra.Command{
 		kind := topology.GetKind()
 		handler := getTopologyHandlerOrFatal(kind)
 
-		resolvedTopology, err := handler.Resolve(topology)
+		resolvedTopology, err := handler.Validate(topology)
 		if err != nil {
 			log.Fatalf("Failed to resolve topology: %s", err.Error())
 		}

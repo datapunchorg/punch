@@ -23,7 +23,7 @@ var DefaultTopologyHandlerManager = TopologyHandlerManager{
 type TopologyHandler interface {
 	Generate() (Topology, error)
 	Parse(yamlContent []byte) (Topology, error)
-	Resolve(topology Topology) (Topology, error)
+	Validate(topology Topology) (Topology, error)
 	Install(topology Topology) (DeploymentOutput, error)
 	Uninstall(topology Topology) (DeploymentOutput, error)
 }

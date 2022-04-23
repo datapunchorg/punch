@@ -53,7 +53,7 @@ func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) 
 	return &result, nil
 }
 
-func (t *TopologyHandler) Resolve(topology framework.Topology) (framework.Topology, error) {
+func (t *TopologyHandler) Validate(topology framework.Topology) (framework.Topology, error) {
 	resolvedDatabaseTopology := topology.(*DatabaseTopology)
 	if resolvedDatabaseTopology.Spec.MasterUserPassword == "" || resolvedDatabaseTopology.Spec.MasterUserPassword == framework.TemplateNoValue {
 		return nil, fmt.Errorf("spec.masterUserPassword is emmpty, please provide the value for the password")

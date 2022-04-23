@@ -49,7 +49,7 @@ func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) 
 	return &result, nil
 }
 
-func (t *TopologyHandler) Resolve(topology framework.Topology) (framework.Topology, error) {
+func (t *TopologyHandler) Validate(topology framework.Topology) (framework.Topology, error) {
 	resolvedSpecificTopology := topology.(*EksTopology)
 
 	err := checkCmdEnvFolderExists(resolvedSpecificTopology.Metadata, CmdEnvNginxHelmChart)
