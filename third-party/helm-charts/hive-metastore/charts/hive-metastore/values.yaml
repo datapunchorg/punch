@@ -1,0 +1,55 @@
+---
+## You can override the default chart name (i.e., .Charts.name) when desired using the following parameter.
+## This is the only way to have more than one deployment of this
+nameOverride: null
+
+## Number of Hive Metastore instances.
+## Following the documentation, given Hive Metastore is stateless we could have more than one instance.
+## https://cwiki.apache.org/confluence/display/Hive/AdminManual+Metastore+Administration
+replicaCount: 1
+
+## Default Hive image and tag. Please build image locally before applying this.
+image:
+  name: ghcr.io/datapunchorg/helm-hive-metastore
+  tag: main-1650418448
+  pullPolicy: IfNotPresent
+
+
+env:
+  HIVE_DB_EXTERNAL: "true"
+  HIVE_DB_HOST: "postgres-postgresql.default.svc.cluster.local:5432"
+  HIVE_DB_NAME: metastore_db
+  HIVE_DB_USER: postgres
+  HIVE_DB_PASS: xxx
+  HIVE_CONF_PARAMS: hive.metastore.event.db.notification.api.auth:false;hadoop.proxyuser.hive.hosts:HS2_HOST;hadoop.proxyuser.hive.groups:*;datanucleus.autoStartMechanism:SchemaTable
+
+metastoreSite:
+  connectionURL: jdbc:postgresql://postgres-postgresql.default.svc.cluster.local:5432/metastore_db
+  connectionUserName: postgres
+  connectionPassword: xxx
+  metastoreUris: thrift://xxx:9083
+  metastoreWarehouseDir: file:///tmp/
+
+resources:
+  limits:
+    cpu: 1
+    memory: 1Gi
+  requests:
+    cpu: 1
+    memory: 1Gi
+
+service:
+  type: ClusterIP
+  ports:
+    - name: thrift
+      port: 9083
+      targetPort: 9083
+      protocol: TCP
+
+## Auto-scaling (hpa) configuration
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 2
+  targetCPUUtilizationPercentage: 90
+  targetMemoryUtilizationPercentage: 90
