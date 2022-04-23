@@ -41,7 +41,6 @@ spec:
               port: 9083
           resources:
             {{- toYaml .Values.resources | trim  | nindent 12 }}
-      {{- if eq .Values.env.HIVE_DB_EXTERNAL "true" }}
           volumeMounts:
           - name: hive-conf-templates
             mountPath: /opt/hive-metastore/conf/templates
@@ -49,4 +48,3 @@ spec:
       - name: hive-conf-templates
         configMap:
           name: {{ template "hive-metastore.name" . }}-conf-templates
-      {{- end }}

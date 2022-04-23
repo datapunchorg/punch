@@ -1,4 +1,3 @@
-{{- if eq .Values.env.HIVE_DB_EXTERNAL "true" }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
