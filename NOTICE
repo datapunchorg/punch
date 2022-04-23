@@ -23,5 +23,9 @@ This product includes software developed at
 Gopatch (https://github.com/Nifty255/gopatch).
 Licensed under the MIT License.
 
+This product includes software developed at
+yaml-patch (https://github.com/krishicks/yaml-patch).
+Licensed under the Apache License 2.0.
+
 II. License Summary
 - Apache License 2.0
