@@ -58,7 +58,7 @@ func TestResolveTopology(t *testing.T) {
 	}
 	topology.(*SparkTopology).Metadata.CommandEnvironment = env
 	topology.(*SparkTopology).Spec.ApiGateway.UserPassword = "aaa"
-	resolvedTopology, err := handler.Validate(topology, true)
+	resolvedTopology, err := handler.Validate(topology, framework.PhaseBeforeInstall)
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "SparkOnK8s", resolvedTopology.GetKind())
 }
@@ -72,7 +72,7 @@ func TestResolveTopology_NoPassword(t *testing.T) {
 	}
 	topology.(*SparkTopology).Metadata.CommandEnvironment = env
 	topology.(*SparkTopology).Spec.ApiGateway.UserPassword = ""
-	resolvedTopology, err := handler.Validate(topology, true)
+	resolvedTopology, err := handler.Validate(topology, framework.PhaseBeforeInstall)
 	assert.NotEqual(t, nil, err)
 	assert.Equal(t, nil, resolvedTopology)
 }

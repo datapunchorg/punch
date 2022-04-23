@@ -20,10 +20,13 @@ var DefaultTopologyHandlerManager = TopologyHandlerManager{
 	handlers: map[string]TopologyHandler{},
 }
 
+var PhaseBeforeInstall = "BeforeInstall"
+var PhaseBeforeUninstall = "BeforeUninstall"
+
 type TopologyHandler interface {
 	Generate() (Topology, error)
 	Parse(yamlContent []byte) (Topology, error)
-	Validate(topology Topology, install bool) (Topology, error)
+	Validate(topology Topology, phase string) (Topology, error)
 	Install(topology Topology) (DeploymentOutput, error)
 	Uninstall(topology Topology) (DeploymentOutput, error)
 }

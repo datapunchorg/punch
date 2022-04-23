@@ -21,6 +21,7 @@ import (
 	"github.com/datapunchorg/punch/pkg/framework"
 	"gopkg.in/yaml.v3"
 	"regexp"
+	"strings"
 )
 
 var nonAlphanumericRegexp *regexp.Regexp
@@ -53,10 +54,10 @@ func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) 
 	return &result, nil
 }
 
-func (t *TopologyHandler) Validate(topology framework.Topology, install bool) (framework.Topology, error) {
+func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (framework.Topology, error) {
 	resolvedDatabaseTopology := topology.(*DatabaseTopology)
 
-	if install {
+	if strings.EqualFold(phase, framework.PhaseBeforeInstall) {
 		if resolvedDatabaseTopology.Spec.MasterUserPassword == "" || resolvedDatabaseTopology.Spec.MasterUserPassword == framework.TemplateNoValue {
 			return nil, fmt.Errorf("spec.masterUserPassword is emmpty, please provide the value for the password")
 		}

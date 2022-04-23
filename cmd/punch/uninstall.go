@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"github.com/datapunchorg/punch/pkg/framework"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/database"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/kafka"
@@ -35,7 +36,7 @@ var deleteCmd = &cobra.Command{
 		kind := topology.GetKind()
 		handler := getTopologyHandlerOrFatal(kind)
 
-		resolvedTopology, err := handler.Validate(topology, false)
+		resolvedTopology, err := handler.Validate(topology, framework.PhaseBeforeUninstall)
 		if err != nil {
 			log.Fatalf("Failed to resolve topology: %s", err.Error())
 		}
