@@ -40,8 +40,13 @@ func (p Patch) Apply(doc []byte) ([]byte, error) {
 			return nil, fmt.Errorf("failed to decode doc: %s\n\n%s", string(doc), err)
 		}
 
+		m := make(map[interface{}]interface{})
+		for k, v := range iface.(map[string]interface{}) {
+			m[k] = v
+		}
+
 		var c Container
-		c = NewNode(&iface).Container()
+		c = NewNodeFromMap(m).Container()
 
 		for _, op := range p {
 			pathfinder := NewPathFinder(c)

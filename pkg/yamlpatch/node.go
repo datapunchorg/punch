@@ -92,6 +92,14 @@ func (n *Node) Container() Container {
 			v := rt[k]
 			c[k] = NewNode(&v)
 		}
+	case map[string]interface{}:
+		c := make(nodeMap, len(rt))
+		n.container = &c
+
+		for k := range rt {
+			v := rt[k]
+			c[k] = NewNode(&v)
+		}
 	}
 
 	return n.container
