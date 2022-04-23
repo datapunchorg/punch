@@ -26,7 +26,7 @@
 1. Run punch command:
 
 ```
-./punch uninstall SparkOnK8s --env withMinikube=true --set apiUserPassword=password1
+./punch uninstall SparkOnK8s --env withMinikube=true
 ```
 
 ## Run punch on AWS
@@ -68,7 +68,7 @@ You could also generate a topology template file, manually modify that file, and
 1. Run punch command:
 
 ```
-./punch uninstall SparkOnK8s --set apiUserPassword=password1
+./punch uninstall SparkOnK8s
 ```
 
 "punch uninstall" will delete the EKS cluster and related load balancer. It will not delete the IMA role/policy,
@@ -92,7 +92,7 @@ brew tap datapunchorg/sparkcli
 brew install sparkcli
 ```
 
-you should find ELB domain name from `punch install` command output
+To use `sparkcli`, you need to have a Spark API Gateway which is installed by `punch`. 
 
 If SparkOnK8s is installed on minikube, set load balancer domain name as below:
 
@@ -100,12 +100,12 @@ If SparkOnK8s is installed on minikube, set load balancer domain name as below:
 export LB_NAME=localhost:32443
 ```
 
-If SparkOnK8s is installed on AWS, then set as below:
+If SparkOnK8s is installed on AWS, set it as below (replace the value with real load balancer url from `punch install` command output):
 ```
 export LB_NAME=xxx.us-west-1.elb.amazonaws.com
 ```
 
-After upper steps, now you could follow below examples to run sparkcli:
+After upper steps, now you could follow below examples to run `sparkcli`:
 
 ```
 ./sparkcli --user user1 --password password1 --insecure --url https://$LB_NAME/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --image ghcr.io/datapunchorg/spark:spark-3.2.1-1643336295 --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar

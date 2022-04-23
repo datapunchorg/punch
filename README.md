@@ -43,14 +43,13 @@ brew install sparkcli
 
 ## TODO
 
-1. Handle bool when do patching by --patch
-2. Attach tag (e.g. punch-topology=xxx) to AWS resources created by punch
-3. Mask password value in helm output (e.g. --set apiGateway.userPassword=xxx)
-4. Allow set values by file like --values values.yaml
-5. Return HTTP 404 when sparkcli getting a non-existing application
-6. Get application error message from Spark Operator
-7. Set up convenient tool to benchmark Spark TPC-DS
-8. Create public demo (tech news, mailing list)
+1. Attach tag (e.g. punch-topology=xxx) to AWS resources created by punch
+2. Mask password value in helm output (e.g. --set apiGateway.userPassword=xxx)
+3. Allow set values by file like --values values.yaml
+4. Return HTTP 404 when sparkcli getting a non-existing application
+5. Get application error message from Spark Operator
+6. Set up convenient tool to benchmark Spark TPC-DS
+7. Create public demo (tech news, mailing list)
 
 ## Supported By
 

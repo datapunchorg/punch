@@ -38,7 +38,7 @@ Run `make release` in the root of this project, it will generate `dist` folder w
 
 Or download a pre-built zip file and unzip it:
 ```
-curl -L -o dist.zip https://github.com/datapunchorg/punch-distribution/releases/download/v0.1.0/dist.zip
+curl -L -o dist.zip https://github.com/datapunchorg/punch-distribution/releases/download/v0.2.0/dist.zip
 unzip dist.zip
 ```
 
@@ -62,7 +62,7 @@ Please check the console output. Also see following section for how to run Spark
 Then Run `sparkcli`:
 
 ```
-./sparkcli --user user1 --password password1 --url http://localhost/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --image ghcr.io/datapunchorg/spark:spark-3.2.1-1643336295 --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar
+./sparkcli --user user1 --password password1 --insecure --url https://localhost:32443/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --image ghcr.io/datapunchorg/spark:spark-3.2.1-1643336295 --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar
 ```
 
 ### Uninstall SparkOnK8s on Minikube
@@ -70,5 +70,5 @@ Then Run `sparkcli`:
 Run punch command:
 
 ```
-./punch uninstall SparkOnK8s --env withMinikube=true --set apiUserPassword=password1
+./punch uninstall SparkOnK8s --env withMinikube=true
 ```
