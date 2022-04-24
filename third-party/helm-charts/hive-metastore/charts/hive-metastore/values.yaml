@@ -12,7 +12,6 @@ replicaCount: 1
 image:
   name: ghcr.io/datapunchorg/helm-hive-metastore
   tag: main-1650750672
-  pullPolicy: IfNotPresent
 
 metastoreSite:
   connectionURL: jdbc:postgresql://postgres-postgresql.default.svc.cluster.local:5432/metastore_db
