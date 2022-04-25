@@ -13,16 +13,16 @@ spec:
         - -h
         - {{ .Values.postgresServerHost }}
         - -p
-        - '5432'
+        - '{{ .Values.postgresServerPort }}'
         - -U
-        - postgres
+        - {{ .Values.postgresUserName }}
         - -d
         - postgres
         - -c
-        - 'create database metastore_db;'
+        - 'create database {{ .Values.metastoreDatabaseName }};'
       env:
       - name: PGPASSWORD
-        value: {{ .Values.metastoreSite.connectionPassword }}
+        value: {{ .Values.postgresUserPassword }}
   containers:
     - name: hive-metastore-init-db
       image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
