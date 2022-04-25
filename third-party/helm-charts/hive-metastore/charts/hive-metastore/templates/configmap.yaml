@@ -1,15 +1,13 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "hive-metastore.name" . }}-conf-templates
-  labels:
-    {{- include "hive-metastore.labels" $ | trim | nindent 4 }}
+  name: hive-matastore-conf-templates
 data:
   metastore-site.xml: |-
     <configuration>
       <property>
       <name>javax.jdo.option.ConnectionURL</name>
-      <value>{{ .Values.metastoreSite.connectionURL }}</value>
+      <value>jdbc:postgresql://{{ .Values.postgresServerHost }}:{{ .Values.postgresServerPort }}/{{ .Values.metastoreDatabaseName }}</value>
       </property>
       <property>
       <name>javax.jdo.option.ConnectionDriverName</name>
@@ -17,11 +15,11 @@ data:
       </property>
       <property>
       <name>javax.jdo.option.ConnectionUserName</name>
-      <value>{{ .Values.metastoreSite.connectionUserName }}</value>
+      <value>{{ .Values.postgresUserName }}</value>
       </property>
       <property>
       <name> javax.jdo.option.ConnectionPassword</name>
-      <value>{{ .Values.metastoreSite.connectionPassword }}</value>
+      <value>{{ .Values.postgresUserPassword }}</value>
       </property>
       <property>
       <name>metastore.expression.proxy</name>

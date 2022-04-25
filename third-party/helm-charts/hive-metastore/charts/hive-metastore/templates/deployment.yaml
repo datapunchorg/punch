@@ -21,7 +21,9 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
           imagePullPolicy: IfNotPresent
-          command: ["/opt/hive-metastore/bin/entrypoint.sh"]
+          #command: ["/opt/hive-metastore/bin/entrypoint.sh"]
+          command: ["sleep"]
+          args: ["6000"]
           env:
           {{- range $key, $value := .Values.env }}
           - name: {{ $key }}
@@ -42,9 +44,9 @@ spec:
           resources:
             {{- toYaml .Values.resources | trim  | nindent 12 }}
           volumeMounts:
-          - name: hive-conf-templates
+          - name: hive-matastore-conf-templates
             mountPath: /opt/hive-metastore/conf/templates
       volumes:
-      - name: hive-conf-templates
+      - name: hive-matastore-conf-templates
         configMap:
-          name: {{ template "hive-metastore.name" . }}-conf-templates
+          name: hive-matastore-conf-templates

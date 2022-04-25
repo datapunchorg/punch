@@ -13,10 +13,13 @@ image:
   name: ghcr.io/datapunchorg/helm-hive-metastore
   tag: main-1650750672
 
+postgresServerHost: postgres-postgresql.default.svc.cluster.local
+postgresServerPort: 5432
+postgresUserName: postgres
+postgresUserPassword: xxx
+metastoreDatabaseName: metastore_db
+
 metastoreSite:
-  connectionURL: jdbc:postgresql://postgres-postgresql.default.svc.cluster.local:5432/metastore_db
-  connectionUserName: postgres
-  connectionPassword: xxx
   metastoreUris: thrift://xxx:9083
   metastoreWarehouseDir: file:///tmp/
 
