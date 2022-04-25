@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hive-metastore-init-db
+
+spec:
+  initContainers:
+    - name: hive-metastore-create-db
+      image: docker.io/bitnami/postgresql:14.2.0-debian-10-r69
+      imagePullPolicy: IfNotPresent
+      command: [ 'psql' ]
+      args:
+        - -h
+        - {{ .Values.postgresServerHost }}
+        - -p
+        - '5432'
+        - -U
+        - postgres
+        - -d
+        - postgres
+        - -c
+        - 'create database metastore_db;'
+      env:
+      - name: PGPASSWORD
+        value: {{ .Values.metastoreSite.connectionPassword }}
+  containers:
+    - name: hive-metastore-init-db
+      image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+      imagePullPolicy: IfNotPresent
+      #command: [ 'sleep' ]
+      #args: [ '6000' ]
+      command: [ '/opt/hive-metastore/bin/schematool' ]
+      args: [ '-dbType', 'postgres', '-initSchema' ]
+      env:
+      volumeMounts:
+        - name: hive-matastore-init-db-conf-templates
+          mountPath: /opt/apache-hive-metastore-3.0.0-bin/conf
+
+  restartPolicy: Never
+  terminationGracePeriodSeconds: 0
+
+  volumes:
+    - name: hive-matastore-init-db-conf-templates
+      configMap:
+        name: hive-matastore-init-db-conf-templates
