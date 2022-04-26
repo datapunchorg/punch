@@ -65,6 +65,7 @@ release: build
 	cp -R third-party/helm-charts/spark-operator-service dist/spark-operator-service/
 	cp -R third-party/helm-charts/cluster-autoscaler dist/cluster-autoscaler/
 	cp -R third-party/helm-charts/spark-history-server dist/spark-history-server/
+	cp -R third-party/helm-charts/hive-metastore dist/hive-metastore/
 	cp hack/pyspark-example.py dist/
 	cp hack/pyspark-iceberg-example.py dist/
 	curl -L -o dist/sparkcli.tar.gz https://github.com/datapunchorg/spark-on-k8s-operator/releases/download/v0.1.0/sparkcli.tar.gz

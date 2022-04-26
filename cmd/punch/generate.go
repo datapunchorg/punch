@@ -19,9 +19,10 @@ package main
 import (
 	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
-	_ "github.com/datapunchorg/punch/pkg/topologyimpl/database"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/eks"
+	_ "github.com/datapunchorg/punch/pkg/topologyimpl/hivemetastore"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/kafka"
+	_ "github.com/datapunchorg/punch/pkg/topologyimpl/rdsdatabase"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/sparkonk8s"
 	"github.com/spf13/cobra"
 	"io/ioutil"
