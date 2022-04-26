@@ -40,8 +40,8 @@ import (
 // TODO remove log.Fatalf
 
 func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, topology SparkTopologySpec) {
-	region := topology.EksSpec.Region
-	clusterName := topology.EksSpec.Eks.ClusterName
+	region := topology.Eks.Region
+	clusterName := topology.Eks.Eks.ClusterName
 	operatorNamespace := topology.SparkOperator.Namespace
 
 	eventLogDir := topology.ApiGateway.SparkEventLogDir
@@ -52,7 +52,7 @@ func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, topolo
 		}
 		dummyFileUrl += "dummy.txt"
 		log.Printf("Uploading dummy file %s to Spark event log directory %s to make sure the directry exits (Spark application and history server will fail if the directory does not exist)", dummyFileUrl, eventLogDir)
-		err := awslib.UploadDataToS3Url(topology.EksSpec.Region, dummyFileUrl, strings.NewReader(""))
+		err := awslib.UploadDataToS3Url(topology.Eks.Region, dummyFileUrl, strings.NewReader(""))
 		if err != nil {
 			log.Fatalf("Failed to create dummy file %s in Spark event log directory %s to make sure the directry exits (Spark application and history server will fail if the directory does not exist): %s", dummyFileUrl, eventLogDir, err.Error())
 		}
@@ -175,7 +175,7 @@ func CreateApiGatewayService(clientset *kubernetes.Clientset, namespace string, 
 func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, topology SparkTopologySpec) {
 	// helm install my-release spark-operator/spark-operator --namespace spark-operator --create-namespace --set sparkJobNamespace=default
 
-	kubeConfig, err := awslib.CreateKubeConfig(topology.EksSpec.Region, commandEnvironment.Get(eks.CmdEnvKubeConfig), topology.EksSpec.Eks.ClusterName)
+	kubeConfig, err := awslib.CreateKubeConfig(topology.Eks.Region, commandEnvironment.Get(eks.CmdEnvKubeConfig), topology.Eks.Eks.ClusterName)
 	if err != nil {
 		log.Fatalf("Failed to get kube config: %s", err)
 	}
@@ -194,8 +194,8 @@ func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, t
 		"--set", "serviceAccounts.spark.name=spark",
 		"--set", "apiGateway.userName=" + topology.ApiGateway.UserName,
 		"--set", "apiGateway.userPassword=" + topology.ApiGateway.UserPassword,
-		"--set", "apiGateway.s3Region=" + topology.EksSpec.Region,
-		"--set", "apiGateway.s3Bucket=" + topology.EksSpec.S3BucketName,
+		"--set", "apiGateway.s3Region=" + topology.Eks.Region,
+		"--set", "apiGateway.s3Bucket=" + topology.Eks.S3BucketName,
 		// "--set", "webhook.enable=true",
 	}
 

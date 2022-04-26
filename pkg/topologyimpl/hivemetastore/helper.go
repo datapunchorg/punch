@@ -16,5 +16,46 @@ limitations under the License.
 
 package hivemetastore
 
-func TODO() () {
+import (
+	"fmt"
+	"github.com/datapunchorg/punch/pkg/awslib"
+	"github.com/datapunchorg/punch/pkg/framework"
+	"github.com/datapunchorg/punch/pkg/kubelib"
+	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
+	"log"
+)
+
+func InitDatabase(commandEnvironment framework.CommandEnvironment, spec HiveMetastoreTopologySpec) () {
+	kubeConfig, err := awslib.CreateKubeConfig(spec.Eks.Region, commandEnvironment.Get(eks.CmdEnvKubeConfig), topology.EksSpec.Eks.ClusterName)
+	if err != nil {
+		log.Fatalf("Failed to get kube config: %s", err)
+	}
+
+	defer kubeConfig.Cleanup()
+
+	installName := topology.SparkOperator.HelmInstallName
+	operatorNamespace := topology.SparkOperator.Namespace
+	sparkApplicationNamespace := topology.SparkOperator.SparkApplicationNamespace
+
+	arguments := []string{
+		"--set", fmt.Sprintf("sparkJobNamespace=%s", sparkApplicationNamespace),
+		"--set", fmt.Sprintf("image.repository=%s", topology.SparkOperator.ImageRepository),
+		"--set", fmt.Sprintf("image.tag=%s", topology.SparkOperator.ImageTag),
+		"--set", "serviceAccounts.spark.create=true",
+		"--set", "serviceAccounts.spark.name=spark",
+		"--set", "apiGateway.userName=" + topology.ApiGateway.UserName,
+		"--set", "apiGateway.userPassword=" + topology.ApiGateway.UserPassword,
+		"--set", "apiGateway.s3Region=" + topology.EksSpec.Region,
+		"--set", "apiGateway.s3Bucket=" + topology.EksSpec.S3BucketName,
+		// "--set", "webhook.enable=true",
+	}
+
+	if !commandEnvironment.GetBoolOrElse(eks.CmdEnvWithMinikube, false) {
+		arguments = append(arguments, "--set")
+		arguments = append(arguments, "apiGateway.sparkEventLogEnabled=true")
+		arguments = append(arguments, "--set")
+		arguments = append(arguments, "apiGateway.sparkEventLogDir=" + topology.ApiGateway.SparkEventLogDir)
+	}
+
+	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvSparkOperatorHelmChart), kubeConfig, arguments, installName, operatorNamespace)
 }
