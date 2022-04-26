@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hive-matastore-conf
+data:
+  metastore-site.xml: |-
+    <configuration>
+      <property>
+      <name>javax.jdo.option.ConnectionURL</name>
+      <value>{{ .Values.dbConnectionPrefix }}://{{ .Values.dbServerHost }}:{{ .Values.dbServerPort }}/{{ .Values.metastoreDatabaseName }}</value>
+      </property>
+      <property>
+      <name>javax.jdo.option.ConnectionDriverName</name>
+      <value>{{ .Values.dbDriverName }}</value>
+      </property>
+      <property>
+      <name>javax.jdo.option.ConnectionUserName</name>
+      <value>{{ .Values.dbUserName }}</value>
+      </property>
+      <property>
+      <name> javax.jdo.option.ConnectionPassword</name>
+      <value>{{ .Values.dbUserPassword }}</value>
+      </property>
+      <property>
+      <name>metastore.expression.proxy</name>
+      <value>org.apache.hadoop.hive.metastore.DefaultPartitionExpressionProxy</value>
+      </property>
+      <property>
+      <name>metastore.task.threads.always</name>
+      <value>org.apache.hadoop.hive.metastore.events.EventCleanerTask,org.apache.hadoop.hive.metastore.MaterializationsCacheCleanerTask</value>
+      </property>
+      <property>
+      <name>datanucleus.autoCreateSchema</name>
+      <value>false</value>
+      </property>
+      <property>
+      <name>hive.metastore.uris</name>
+      <value>{{ .Values.metastoreSite.metastoreUris }}</value>
+      </property>
+      <property>
+      <name>hive.metastore.warehouse.dir</name>
+      <value>{{ .Values.metastoreSite.metastoreWarehouseDir }}</value>
+      </property>
+      <property>
+      <name>hive.metastore.event.db.notification.api.authfalse</name>
+      <value>false</value>
+      </property>
+      <property>
+      <name>hadoop.proxyuser.hive.hostsHS2_HOST</name>
+      <value>HS2_HOST</value>
+      </property>
+      <property>
+      <name>hadoop.proxyuser.hive.groups*</name>
+      <value>*</value>
+      </property>
+      <property>
+      <name>datanucleus.autoStartMechanismSchemaTable</name>
+      <value>SchemaTable</value>
+      </property>
+    </configuration>
+  metastore-log4j2.properties: |-
+    status = INFO
+    name = MetastoreLog4j2
+    packages = org.apache.hadoop.hive.metastore
+    # list of properties
+    property.metastore.log.level = INFO
+    property.metastore.root.logger = DRFA
+    property.metastore.log.dir = ${sys:java.io.tmpdir}/${sys:user.name}
+    property.metastore.log.file = metastore.log
+    property.hive.perflogger.log.level = INFO
+    # list of all appenders
+    appenders = console, DRFA
+    # console appender
+    appender.console.type = Console
+    appender.console.name = console
+    appender.console.target = SYSTEM_ERR
+    appender.console.layout.type = PatternLayout
+    appender.console.layout.pattern = %d{ISO8601} %5p [%t] %c{2}: %m%n
+    # daily rolling file appender
+    appender.DRFA.type = RollingRandomAccessFile
+    appender.DRFA.name = DRFA
+    appender.DRFA.fileName = ${sys:metastore.log.dir}/${sys:metastore.log.file}
+    # Use %pid in the filePattern to append <process-id>@<host-name> to the filename if you want separate log files for different CLI session
+    appender.DRFA.filePattern = ${sys:metastore.log.dir}/${sys:metastore.log.file}.%d{yyyy-MM-dd}
+    appender.DRFA.layout.type = PatternLayout
+    appender.DRFA.layout.pattern = %d{ISO8601} %5p [%t] %c{2}: %m%n
+    appender.DRFA.policies.type = Policies
+    appender.DRFA.policies.time.type = TimeBasedTriggeringPolicy
+    appender.DRFA.policies.time.interval = 1
+    appender.DRFA.policies.time.modulate = true
+    appender.DRFA.strategy.type = DefaultRolloverStrategy
+    appender.DRFA.strategy.max = 30
+    # list of all loggers
+    loggers = DataNucleus, Datastore, JPOX, PerfLogger
+    logger.DataNucleus.name = DataNucleus
+    logger.DataNucleus.level = ERROR
+    logger.Datastore.name = Datastore
+    logger.Datastore.level = ERROR
+    logger.JPOX.name = JPOX
+    logger.JPOX.level = ERROR
+    logger.PerfLogger.name = org.apache.hadoop.hive.ql.log.PerfLogger
+    logger.PerfLogger.level = ${sys:hive.perflogger.log.level}
+    # root logger
+    rootLogger.level = ${sys:metastore.log.level}
+    rootLogger.appenderRefs = root
+    rootLogger.appenderRef.root.ref = ${sys:metastore.root.logger}

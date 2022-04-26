@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hive-matastore-init-mysql-conf
+data:
+  metastore-site.xml: |-
+    <configuration>
+      <property>
+      <name>javax.jdo.option.ConnectionURL</name>
+      <value>jdbc:mysql://{{ .Values.dbServerHost }}:{{ .Values.dbServerPort }}/{{ .Values.metastoreDatabaseName }}?createDatabaseIfNotExist=true</value>
+      </property>
+      <property>
+      <name>javax.jdo.option.ConnectionDriverName</name>
+      <value>com.mysql.cj.jdbc.Driver</value>
+      </property>
+      <property>
+      <name>javax.jdo.option.ConnectionUserName</name>
+      <value>{{ .Values.dbUserName }}</value>
+      </property>
+      <property>
+      <name> javax.jdo.option.ConnectionPassword</name>
+      <value>{{ .Values.dbUserPassword }}</value>
+      </property>
+      <property>
+      <name>metastore.expression.proxy</name>
+      <value>org.apache.hadoop.hive.metastore.DefaultPartitionExpressionProxy</value>
+      </property>
+      <property>
+      <name>metastore.task.threads.always</name>
+      <value>org.apache.hadoop.hive.metastore.events.EventCleanerTask,org.apache.hadoop.hive.metastore.MaterializationsCacheCleanerTask</value>
+      </property>
+      <property>
+      <name>datanucleus.autoCreateSchema</name>
+      <value>false</value>
+      </property>
+      <property>
+      <name>hive.metastore.uris</name>
+      <value>{{ .Values.metastoreSite.metastoreUris }}</value>
+      </property>
+      <property>
+      <name>hive.metastore.warehouse.dir</name>
+      <value>{{ .Values.metastoreSite.metastoreWarehouseDir }}</value>
+      </property>
+      <property>
+      <name>hive.metastore.event.db.notification.api.authfalse</name>
+      <value>false</value>
+      </property>
+      <property>
+      <name>hadoop.proxyuser.hive.hostsHS2_HOST</name>
+      <value>HS2_HOST</value>
+      </property>
+      <property>
+      <name>hadoop.proxyuser.hive.groups*</name>
+      <value>*</value>
+      </property>
+      <property>
+      <name>datanucleus.autoStartMechanismSchemaTable</name>
+      <value>SchemaTable</value>
+      </property>
+    </configuration>

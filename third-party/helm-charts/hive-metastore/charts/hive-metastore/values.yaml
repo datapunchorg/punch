@@ -1,0 +1,43 @@
+---
+
+replicaCount: 1
+
+image:
+  name: ghcr.io/datapunchorg/helm-hive-metastore
+  tag: main-1650942144
+
+dbConnectionPrefix: jdbc:postgresql
+dbDriverName: org.postgresql.Driver
+dbServerHost: postgres-postgresql.default.svc.cluster.local
+dbServerPort: 5432
+dbUserName: postgres
+dbUserPassword: xxx
+metastoreDatabaseName: metastore_db
+
+metastoreSite:
+  metastoreUris: thrift://xxx:9083
+  metastoreWarehouseDir: file:///tmp/
+
+resources:
+  limits:
+    cpu: 1
+    memory: 1Gi
+  requests:
+    cpu: 1
+    memory: 1Gi
+
+service:
+  type: ClusterIP
+  ports:
+    - name: thrift
+      port: 9083
+      targetPort: 9083
+      protocol: TCP
+
+## Auto-scaling (hpa) configuration
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 2
+  targetCPUUtilizationPercentage: 90
+  targetMemoryUtilizationPercentage: 90
