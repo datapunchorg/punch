@@ -59,11 +59,11 @@ data:
       </property>
     </configuration>
   metastore-log4j2.properties: |-
-    status = DEBUG
+    status = INFO
     name = MetastoreLog4j2
     packages = org.apache.hadoop.hive.metastore
     # list of properties
-    property.metastore.log.level = DEBUG
+    property.metastore.log.level = INFO
     property.metastore.root.logger = DRFA
     property.metastore.log.dir = ${sys:java.io.tmpdir}/${sys:user.name}
     property.metastore.log.file = metastore.log

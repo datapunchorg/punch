@@ -1,7 +1,5 @@
 ---
 
-nameOverride: null
-
 replicaCount: 1
 
 image:
