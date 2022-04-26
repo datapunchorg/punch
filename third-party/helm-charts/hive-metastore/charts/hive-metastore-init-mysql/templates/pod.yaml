@@ -29,17 +29,17 @@ spec:
       imagePullPolicy: IfNotPresent
       #command: [ 'sleep' ]
       #args: [ '6000' ]
-      command: [ '/opt/hive-metastore/bin/schematool' ]
+      command: [ '/opt/apache-hive-metastore-3.0.0-bin/bin/schematool' ]
       args: [ '-initSchema', '-dbType', 'mysql', '-verbose']
       env:
       volumeMounts:
-        - name: hive-matastore-init-db-conf
+        - name: hive-matastore-init-mysql-conf
           mountPath: /opt/apache-hive-metastore-3.0.0-bin/conf
 
   restartPolicy: Never
   terminationGracePeriodSeconds: 0
 
   volumes:
-    - name: hive-matastore-init-db-conf
+    - name: hive-matastore-init-mysql-conf
       configMap:
-        name: hive-matastore-init-db-conf
+        name: hive-matastore-init-mysql-conf
