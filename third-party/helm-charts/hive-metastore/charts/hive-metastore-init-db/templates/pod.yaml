@@ -30,7 +30,7 @@ spec:
       #command: [ 'sleep' ]
       #args: [ '6000' ]
       command: [ '/opt/hive-metastore/bin/schematool' ]
-      args: [ '-dbType', 'postgres', '-initSchema' ]
+      args: [ '-initSchema', '-dbType', 'postgres', '-verbose']
       env:
       volumeMounts:
         - name: hive-matastore-init-db-conf-templates

@@ -6,6 +6,10 @@ data:
   metastore-site.xml: |-
     <configuration>
       <property>
+      <name>hive.root.logger</name>
+      <value>DEBUG,console</value>
+      </property>
+      <property>
       <name>javax.jdo.option.ConnectionURL</name>
       <value>jdbc:postgresql://{{ .Values.postgresServerHost }}:{{ .Values.postgresServerPort }}/{{ .Values.metastoreDatabaseName }}</value>
       </property>
@@ -34,8 +38,6 @@ data:
       <value>false</value>
       </property>
       <property>
-      <name>hive.metastore.uris</name>
-      <value>{{ .Values.metastoreSite.metastoreUris }}</value>
       </property>
       <property>
       <name>hive.metastore.warehouse.dir</name>
@@ -58,3 +60,49 @@ data:
       <value>SchemaTable</value>
       </property>
     </configuration>
+  metastore-log4j2.properties: |-
+    status = DEBUG
+    name = MetastoreLog4j2
+    packages = org.apache.hadoop.hive.metastore
+    # list of properties
+    property.metastore.log.level = DEBUG
+    property.metastore.root.logger = DRFA
+    property.metastore.log.dir = ${sys:java.io.tmpdir}/${sys:user.name}
+    property.metastore.log.file = metastore.log
+    property.hive.perflogger.log.level = INFO
+    # list of all appenders
+    appenders = console, DRFA
+    # console appender
+    appender.console.type = Console
+    appender.console.name = console
+    appender.console.target = SYSTEM_ERR
+    appender.console.layout.type = PatternLayout
+    appender.console.layout.pattern = %d{ISO8601} %5p [%t] %c{2}: %m%n
+    # daily rolling file appender
+    appender.DRFA.type = RollingRandomAccessFile
+    appender.DRFA.name = DRFA
+    appender.DRFA.fileName = ${sys:metastore.log.dir}/${sys:metastore.log.file}
+    # Use %pid in the filePattern to append <process-id>@<host-name> to the filename if you want separate log files for different CLI session
+    appender.DRFA.filePattern = ${sys:metastore.log.dir}/${sys:metastore.log.file}.%d{yyyy-MM-dd}
+    appender.DRFA.layout.type = PatternLayout
+    appender.DRFA.layout.pattern = %d{ISO8601} %5p [%t] %c{2}: %m%n
+    appender.DRFA.policies.type = Policies
+    appender.DRFA.policies.time.type = TimeBasedTriggeringPolicy
+    appender.DRFA.policies.time.interval = 1
+    appender.DRFA.policies.time.modulate = true
+    appender.DRFA.strategy.type = DefaultRolloverStrategy
+    appender.DRFA.strategy.max = 30
+    # list of all loggers
+    loggers = DataNucleus, Datastore, JPOX, PerfLogger
+    logger.DataNucleus.name = DataNucleus
+    logger.DataNucleus.level = ERROR
+    logger.Datastore.name = Datastore
+    logger.Datastore.level = ERROR
+    logger.JPOX.name = JPOX
+    logger.JPOX.level = ERROR
+    logger.PerfLogger.name = org.apache.hadoop.hive.ql.log.PerfLogger
+    logger.PerfLogger.level = ${sys:hive.perflogger.log.level}
+    # root logger
+    rootLogger.level = ${sys:metastore.log.level}
+    rootLogger.appenderRefs = root
+    rootLogger.appenderRef.root.ref = ${sys:metastore.root.logger}
