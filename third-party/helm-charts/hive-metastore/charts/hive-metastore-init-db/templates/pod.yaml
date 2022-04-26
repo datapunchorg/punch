@@ -4,25 +4,6 @@ metadata:
   name: hive-metastore-init-db
 
 spec:
-  initContainers:
-    - name: hive-metastore-create-db
-      image: docker.io/bitnami/postgresql:14.2.0-debian-10-r69
-      imagePullPolicy: IfNotPresent
-      command: [ 'psql' ]
-      args:
-        - -h
-        - {{ .Values.postgresServerHost }}
-        - -p
-        - '{{ .Values.postgresServerPort }}'
-        - -U
-        - {{ .Values.postgresUserName }}
-        - -d
-        - postgres
-        - -c
-        - 'create database {{ .Values.metastoreDatabaseName }};'
-      env:
-      - name: PGPASSWORD
-        value: {{ .Values.postgresUserPassword }}
   containers:
     - name: hive-metastore-init-db
       image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
@@ -30,7 +11,7 @@ spec:
       #command: [ 'sleep' ]
       #args: [ '6000' ]
       command: [ '/opt/hive-metastore/bin/schematool' ]
-      args: [ '-initSchema', '-dbType', 'postgres', '-verbose']
+      args: [ '-initSchema', '-dbType', 'mysql', '-verbose']
       env:
       volumeMounts:
         - name: hive-matastore-init-db-conf-templates

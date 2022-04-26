@@ -7,19 +7,19 @@ data:
     <configuration>
       <property>
       <name>javax.jdo.option.ConnectionURL</name>
-      <value>jdbc:postgresql://{{ .Values.postgresServerHost }}:{{ .Values.postgresServerPort }}/{{ .Values.metastoreDatabaseName }}</value>
+      <value>jdbc:mysql://{{ .Values.dbServerHost }}:{{ .Values.dbServerPort }}/{{ .Values.metastoreDatabaseName }}?createDatabaseIfNotExist=true</value>
       </property>
       <property>
       <name>javax.jdo.option.ConnectionDriverName</name>
-      <value>org.postgresql.Driver</value>
+      <value>com.mysql.cj.jdbc.Driver</value>
       </property>
       <property>
       <name>javax.jdo.option.ConnectionUserName</name>
-      <value>{{ .Values.postgresUserName }}</value>
+      <value>{{ .Values.dbUserName }}</value>
       </property>
       <property>
       <name> javax.jdo.option.ConnectionPassword</name>
-      <value>{{ .Values.postgresUserPassword }}</value>
+      <value>{{ .Values.dbUserPassword }}</value>
       </property>
       <property>
       <name>metastore.expression.proxy</name>
