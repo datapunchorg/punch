@@ -26,7 +26,7 @@ import (
 )
 
 func InitDatabase(commandEnvironment framework.CommandEnvironment, spec HiveMetastoreTopologySpec) () {
-	kubeConfig, err := awslib.CreateKubeConfig(spec.Eks.Region, commandEnvironment.Get(eks.CmdEnvKubeConfig), spec.Eks.Eks.ClusterName)
+	kubeConfig, err := awslib.CreateKubeConfig(spec.EksSpec.Region, commandEnvironment.Get(eks.CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
 	if err != nil {
 		log.Fatalf("Failed to get kube config: %s", err)
 	}

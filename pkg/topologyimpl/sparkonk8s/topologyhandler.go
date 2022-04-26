@@ -74,14 +74,14 @@ func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (f
 		return nil, err
 	}
 
-	if resolvedSpecificTopology.Spec.Eks.AutoScaling.EnableClusterAutoscaler {
+	if resolvedSpecificTopology.Spec.EksSpec.AutoScaling.EnableClusterAutoscaler {
 		err = checkCmdEnvFolderExists(resolvedSpecificTopology.Metadata, eks.CmdEnvClusterAutoscalerHelmChart)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	if resolvedSpecificTopology.Spec.Eks.AutoScaling.EnableClusterAutoscaler {
+	if resolvedSpecificTopology.Spec.EksSpec.AutoScaling.EnableClusterAutoscaler {
 		err = awslib.CheckEksCtlCmd("eksctl")
 		if err != nil {
 			return nil, err
@@ -207,7 +207,7 @@ func createSparkTopologyTemplate() SparkTopology {
 
 	eksTopology := eks.CreateEksTopologyTemplate()
 
-	topology.Spec.Eks = eksTopology.Spec
+	topology.Spec.EksSpec = eksTopology.Spec
 	topology.Spec.ApiGateway.UserPassword = "{{ .Values.apiUserPassword }}"
 
 	topology.Metadata.CommandEnvironment = eksTopology.Metadata.CommandEnvironment
@@ -232,7 +232,7 @@ func checkCmdEnvFolderExists(metadata framework.TopologyMetadata, cmdEnvKey stri
 }
 
 func BuildInstallDeployment(topologySpec SparkTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
-	deployment, err := eks.BuildInstallDeployment(topologySpec.Eks, commandEnvironment)
+	deployment, err := eks.BuildInstallDeployment(topologySpec.EksSpec, commandEnvironment)
 	if err != nil {
 		return nil, err
 	}
@@ -251,6 +251,6 @@ func BuildInstallDeployment(topologySpec SparkTopologySpec, commandEnvironment f
 }
 
 func BuildUninstallDeployment(topologySpec SparkTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
-	deployment, err := eks.BuildUninstallDeployment(topologySpec.Eks, commandEnvironment)
+	deployment, err := eks.BuildUninstallDeployment(topologySpec.EksSpec, commandEnvironment)
 	return deployment, err
 }

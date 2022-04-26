@@ -27,8 +27,8 @@ import (
 )
 
 func DeployHistoryServer(commandEnvironment framework.CommandEnvironment, topology SparkTopologySpec) error {
-	region := topology.Eks.Region
-	clusterName := topology.Eks.Eks.ClusterName
+	region := topology.EksSpec.Region
+	clusterName := topology.EksSpec.Eks.ClusterName
 	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(eks.CmdEnvKubeConfig), clusterName)
 	if err != nil {
 		return fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
@@ -54,7 +54,7 @@ func DeployHistoryServer(commandEnvironment framework.CommandEnvironment, topolo
 func InstallHistoryServerHelm(commandEnvironment framework.CommandEnvironment, topology SparkTopologySpec) error {
 	// helm install spark-history-server third-party/helm-charts/spark-history-server/charts/spark-history-server --namespace spark-history-server --create-namespace
 
-	kubeConfig, err := awslib.CreateKubeConfig(topology.Eks.Region, commandEnvironment.Get(eks.CmdEnvKubeConfig), topology.Eks.Eks.ClusterName)
+	kubeConfig, err := awslib.CreateKubeConfig(topology.EksSpec.Region, commandEnvironment.Get(eks.CmdEnvKubeConfig), topology.EksSpec.Eks.ClusterName)
 	if err != nil {
 		log.Fatalf("Failed to get kube config: %s", err)
 	}

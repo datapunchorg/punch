@@ -41,7 +41,7 @@ type HiveMetastoreTopology struct {
 }
 
 type HiveMetastoreTopologySpec struct {
-	Eks               eks.EksTopologySpec   `json:"eks" yaml:"eks"`
+	EksSpec               eks.EksTopologySpec   `json:"eksSpec" yaml:"eksSpec"`
 	HelmInstallName  string `json:"helmInstallName" yaml:"helmInstallName"`
     Namespace        string `json:"namespace" yaml:"namespace"`
 	ImageRepository  string `json:"imageRepository" yaml:"imageRepository"`
@@ -64,7 +64,7 @@ func CreateDefaultHiveMetastoreTopology(namePrefix string, s3BucketName string) 
 			},
 		},
 		Spec: HiveMetastoreTopologySpec{
-			Eks:                eks.CreateDefaultEksTopology(namePrefix, s3BucketName).Spec,
+			EksSpec:                eks.CreateDefaultEksTopology(namePrefix, s3BucketName).Spec,
 			HelmInstallName: "hive-metastore-01",
 			Namespace: "hive-01",
 			ImageRepository: "ghcr.io/datapunchorg/helm-hive-metastore",

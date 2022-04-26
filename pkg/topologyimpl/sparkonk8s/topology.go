@@ -52,7 +52,7 @@ type SparkTopology struct {
 }
 
 type SparkTopologySpec struct {
-	Eks           eks.EksTopologySpec `json:"eksSpec" yaml:"eksSpec"`
+	EksSpec           eks.EksTopologySpec `json:"eksSpec" yaml:"eksSpec"`
 	SparkOperator SparkOperator       `json:"sparkOperator" yaml:"sparkOperator"`
 	ApiGateway    SparkApiGateway     `json:"apiGateway" yaml:"apiGateway"`
 	HistoryServer SparkHistoryServer       `json:"historyServer" yaml:"historyServer"`
@@ -94,7 +94,7 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 			},
 		},
 		Spec: SparkTopologySpec{
-			Eks: eks.CreateDefaultEksTopology(namePrefix, s3BucketName).Spec,
+			EksSpec: eks.CreateDefaultEksTopology(namePrefix, s3BucketName).Spec,
 			ApiGateway: SparkApiGateway{
 				UserName: DefaultApiUserName,
 				SparkEventLogDir: fmt.Sprintf("s3a://%s/punch/%s/sparkEventLog", s3BucketName, namePrefix),
@@ -114,7 +114,7 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 			},
 		},
 	}
-	eks.UpdateEksTopologyByS3BucketName(&topology.Spec.Eks, s3BucketName)
+	eks.UpdateEksTopologyByS3BucketName(&topology.Spec.EksSpec, s3BucketName)
 	return topology
 }
 
