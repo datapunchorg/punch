@@ -19,6 +19,7 @@ package hivemetastore
 import (
 	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
+	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	"gopkg.in/yaml.v3"
 	"regexp"
 	"strings"
@@ -41,12 +42,13 @@ type TopologyHandler struct {
 
 func (t *TopologyHandler) Generate() (framework.Topology, error) {
 	namePrefix := "{{ or .Values.namePrefix `my` }}"
-	topology := CreateDefaultHiveMetastoreTopology(namePrefix)
+	s3BucketName := "{{ or .Values.s3BucketName .DefaultS3BucketName }}"
+	topology := CreateDefaultHiveMetastoreTopology(namePrefix, s3BucketName)
 	return &topology, nil
 }
 
 func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) {
-	result := CreateDefaultHiveMetastoreTopology(DefaultNamePrefix)
+	result := CreateDefaultHiveMetastoreTopology(DefaultNamePrefix, eks.ToBeReplacedS3BucketName)
 	err := yaml.Unmarshal(yamlContent, &result)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse YAML (%s): \n%s", err.Error(), string(yamlContent))

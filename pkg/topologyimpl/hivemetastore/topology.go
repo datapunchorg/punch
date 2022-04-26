@@ -19,6 +19,7 @@ package hivemetastore
 import (
 	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
+	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	"gopkg.in/yaml.v3"
 )
 
@@ -28,8 +29,10 @@ const (
 	FieldMaskValue = "***"
 
 	DefaultVersion    = "datapunch.org/v1alpha1"
-	DefaultRegion     = "us-west-1"
 	DefaultNamePrefix = "my"
+
+	HiveMetastoreInitHelmChart = "hiveMetastoreInitHelmChart"
+	HiveMetastoreHelmChart = "hiveMetastoreHelmChart"
 )
 
 type HiveMetastoreTopology struct {
@@ -38,14 +41,17 @@ type HiveMetastoreTopology struct {
 }
 
 type HiveMetastoreTopologySpec struct {
-	NamePrefix        string   `json:"namePrefix" yaml:"namePrefix"`
-	Region            string   `json:"region" yaml:"region"`
+	Eks               eks.EksTopologySpec   `json:"eks" yaml:"eks"`
+	HelmInstallName  string `json:"helmInstallName" yaml:"helmInstallName"`
+    Namespace        string `json:"namespace" yaml:"namespace"`
+	ImageRepository  string `json:"imageRepository" yaml:"imageRepository"`
+	ImageTag string `json:"imageTag" yaml:"imageTag"`
 	DbConnectionString             string   `json:"dbConnectionString" yaml:"dbConnectionString"`
 	DbUserName string `json:"dbUserName" yaml:"dbUserName"`
 	DbUserPassword string `json:"dbUserPassword" yaml:"dbUserPassword"`
 }
 
-func CreateDefaultHiveMetastoreTopology(namePrefix string) HiveMetastoreTopology {
+func CreateDefaultHiveMetastoreTopology(namePrefix string, s3BucketName string) HiveMetastoreTopology {
 	topologyName := fmt.Sprintf("%s-db-01", namePrefix)
 	topology := HiveMetastoreTopology{
 		TopologyBase: framework.TopologyBase{
@@ -58,8 +64,11 @@ func CreateDefaultHiveMetastoreTopology(namePrefix string) HiveMetastoreTopology
 			},
 		},
 		Spec: HiveMetastoreTopologySpec{
-			NamePrefix:         namePrefix,
-			Region:             DefaultRegion,
+			Eks:                eks.CreateDefaultEksTopology(namePrefix, s3BucketName).Spec,
+			HelmInstallName: "hive-metastore-01",
+			Namespace: "hive-01",
+			ImageRepository: "ghcr.io/datapunchorg/helm-hive-metastore",
+			ImageTag: "main-1650942144",
 			DbConnectionString: "{{ or .Values.dbConnectionString 'TODO_REQUIRED_FIELD' }}",
 			DbUserName:      "{{ or .Values.dbUserName 'TODO_REQUIRED_FIELD' }}",
 			DbUserPassword: "{{ or .Values.dbUserPassword 'TODO_REQUIRED_FIELD' }}",
