@@ -6,9 +6,11 @@ image:
   name: ghcr.io/datapunchorg/helm-hive-metastore
   tag: main-1650942144
 
-dbServerHost: mysql.default.svc.cluster.local
-dbServerPort: 3306
-dbUserName: root
+dbConnectionPrefix: jdbc:postgresql
+dbDriverName: org.postgresql.Driver
+dbServerHost: postgres-postgresql.default.svc.cluster.local
+dbServerPort: 5432
+dbUserName: postgres
 dbUserPassword: xxx
 metastoreDatabaseName: metastore_db
 
