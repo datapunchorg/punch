@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: hive-matastore-init-db-conf-templates
+  name: hive-matastore-init-db-conf
 data:
   metastore-site.xml: |-
     <configuration>

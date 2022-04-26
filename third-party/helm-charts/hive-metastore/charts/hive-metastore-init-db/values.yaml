@@ -5,7 +5,7 @@ image:
 dbServerHost: mysql.default.svc.cluster.local
 dbServerPort: 3306
 dbUserName: root
-dbUserPassword: 
+dbUserPassword: xxx
 metastoreDatabaseName: metastore_db
 
 metastoreSite:

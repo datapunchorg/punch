@@ -1,29 +1,25 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: hive-matastore-conf-templates
+  name: hive-matastore-conf
 data:
   metastore-site.xml: |-
     <configuration>
       <property>
-      <name>hive.root.logger</name>
-      <value>DEBUG,console</value>
-      </property>
-      <property>
       <name>javax.jdo.option.ConnectionURL</name>
-      <value>jdbc:postgresql://{{ .Values.postgresServerHost }}:{{ .Values.postgresServerPort }}/{{ .Values.metastoreDatabaseName }}</value>
+      <value>jdbc:mysql://{{ .Values.dbServerHost }}:{{ .Values.dbServerPort }}/{{ .Values.metastoreDatabaseName }}?createDatabaseIfNotExist=true</value>
       </property>
       <property>
       <name>javax.jdo.option.ConnectionDriverName</name>
-      <value>org.postgresql.Driver</value>
+      <value>com.mysql.cj.jdbc.Driver</value>
       </property>
       <property>
       <name>javax.jdo.option.ConnectionUserName</name>
-      <value>{{ .Values.postgresUserName }}</value>
+      <value>{{ .Values.dbUserName }}</value>
       </property>
       <property>
       <name> javax.jdo.option.ConnectionPassword</name>
-      <value>{{ .Values.postgresUserPassword }}</value>
+      <value>{{ .Values.dbUserPassword }}</value>
       </property>
       <property>
       <name>metastore.expression.proxy</name>
@@ -38,6 +34,8 @@ data:
       <value>false</value>
       </property>
       <property>
+      <name>hive.metastore.uris</name>
+      <value>{{ .Values.metastoreSite.metastoreUris }}</value>
       </property>
       <property>
       <name>hive.metastore.warehouse.dir</name>
