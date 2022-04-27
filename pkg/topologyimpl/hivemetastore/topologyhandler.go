@@ -81,11 +81,15 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 	}
 	if !specificTopology.Spec.Database.UseExternalDb {
 		deployment.AddStep("createHiveMetastoreDatabase", "Create Hive Metastore database", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
-			CreatePostgresqlDatabase(commandEnvironment, specificTopology.Spec)
-			return framework.DeploymentStepOutput{"TODO": specificTopology.Metadata.Name}, nil
+			databaseInfo, err := CreatePostgresqlDatabase(commandEnvironment, specificTopology.Spec)
+			if err != nil {
+				return framework.NewDeploymentStepOutput(), err
+			}
+			return framework.DeploymentStepOutput{"databaseInfo": databaseInfo}, nil
 		})
 	}
 	deployment.AddStep("initHiveMetastoreDatabase", "Init Hive Metastore database", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
+		// InitDatabase(commandEnvironment, specificTopology.Spec)
 		return framework.DeploymentStepOutput{"TODO": specificTopology.Metadata.Name}, nil
 	})
 	err = deployment.Run()
