@@ -32,6 +32,9 @@ const (
 	DefaultNamePrefix = "my"
 
 	CmdEnvHelmExecutable             = "helmExecutable"
+	CmdEnvWithMinikube               = "withMinikube"
+	CmdEnvKubeConfig                 = "kubeConfig"
+	PostgresqlHelmChart = "postgresqlHelmChart"
 	HiveMetastoreInitHelmChart = "hiveMetastoreInitHelmChart"
 	HiveMetastoreHelmChart = "hiveMetastoreHelmChart"
 
@@ -45,7 +48,6 @@ type HiveMetastoreTopology struct {
 
 type HiveMetastoreTopologySpec struct {
 	EksSpec               eks.EksTopologySpec   `json:"eksSpec" yaml:"eksSpec"`
-	HelmInstallName  string `json:"helmInstallName" yaml:"helmInstallName"`
     Namespace        string `json:"namespace" yaml:"namespace"`
 	ImageRepository  string `json:"imageRepository" yaml:"imageRepository"`
 	ImageTag string `json:"imageTag" yaml:"imageTag"`
@@ -61,6 +63,9 @@ type HiveMetastoreDatabaseSpec struct {
 
 func CreateDefaultHiveMetastoreTopology(namePrefix string, s3BucketName string) HiveMetastoreTopology {
 	topologyName := fmt.Sprintf("%s-db-01", namePrefix)
+
+	eksTopology := eks.CreateDefaultEksTopology(namePrefix, s3BucketName)
+
 	topology := HiveMetastoreTopology{
 		TopologyBase: framework.TopologyBase{
 			ApiVersion: DefaultVersion,
@@ -69,26 +74,33 @@ func CreateDefaultHiveMetastoreTopology(namePrefix string, s3BucketName string) 
 				Name:               topologyName,
 				CommandEnvironment: map[string]string{
 					CmdEnvHelmExecutable: DefaultHelmExecutable,
-					HiveMetastoreInitHelmChart: "{{ or .Env.nginxHelmChart `hive-metastore/charts/hive-metastore-init-postgresql` }}",
-					HiveMetastoreHelmChart: "{{ or .Env.nginxHelmChart `hive-metastore/charts/hive-metastore` }}",
+					PostgresqlHelmChart: "{{ or .Env.nginxHelmChart `helm-charts/postgresql/charts/postgresql` }}",
+					HiveMetastoreInitHelmChart: "{{ or .Env.nginxHelmChart `helm-charts/hive-metastore/charts/hive-metastore-init-postgresql` }}",
+					HiveMetastoreHelmChart: "{{ or .Env.nginxHelmChart `helm-charts/hive-metastore/charts/hive-metastore` }}",
 				},
 				Notes:              map[string]string{},
 			},
 		},
 		Spec: HiveMetastoreTopologySpec{
-			EksSpec:                eks.CreateDefaultEksTopology(namePrefix, s3BucketName).Spec,
-			HelmInstallName: "hive-metastore-01",
+			EksSpec:                eksTopology.Spec,
 			Namespace: "hive-01",
 			ImageRepository: "ghcr.io/datapunchorg/helm-hive-metastore",
 			ImageTag: "main-1650942144",
 			Database: HiveMetastoreDatabaseSpec{
-				UseExternalDb:    true,
+				UseExternalDb:    false,
 				ConnectionString: "",
 				UserName:       "",
 				UserPassword:   "",
 			},
 		},
 	}
+
+	for k, v := range eksTopology.Metadata.CommandEnvironment {
+		if _, ok := topology.Metadata.CommandEnvironment[k]; !ok {
+			topology.Metadata.CommandEnvironment[k] = v
+		}
+	}
+
 	return topology
 }
 

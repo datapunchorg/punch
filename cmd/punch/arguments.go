@@ -98,7 +98,7 @@ func getTopologyFromArguments(args []string) framework.Topology {
 		for path, value := range patchMap {
 			err := common.PatchStructPathByStringValue(spec, path, value)
 			if err != nil {
-				log.Fatalf("Failed to patch spec with path %s", path)
+				log.Fatalf("Failed to patch spec with path %s: %s", path, err.Error())
 			}
 		}
 	}

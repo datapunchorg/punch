@@ -25,6 +25,22 @@ import (
 	"log"
 )
 
+func CreatePostgresqlDatabase(commandEnvironment framework.CommandEnvironment, spec HiveMetastoreTopologySpec) () {
+	kubeConfig, err := awslib.CreateKubeConfig(spec.EksSpec.Region, commandEnvironment.Get(eks.CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
+	if err != nil {
+		log.Fatalf("Failed to get kube config: %s", err)
+	}
+
+	defer kubeConfig.Cleanup()
+
+	installName := "postgresql"
+	namespace := spec.Namespace
+
+	arguments := []string{}
+
+	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), commandEnvironment.Get(PostgresqlHelmChart), kubeConfig, arguments, installName, namespace)
+}
+
 func InitDatabase(commandEnvironment framework.CommandEnvironment, spec HiveMetastoreTopologySpec) () {
 	kubeConfig, err := awslib.CreateKubeConfig(spec.EksSpec.Region, commandEnvironment.Get(eks.CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
 	if err != nil {
@@ -33,7 +49,7 @@ func InitDatabase(commandEnvironment framework.CommandEnvironment, spec HiveMeta
 
 	defer kubeConfig.Cleanup()
 
-	installName := spec.HelmInstallName
+	installName := "hive-metastore-init-db"
 	namespace := spec.Namespace
 
 	arguments := []string{

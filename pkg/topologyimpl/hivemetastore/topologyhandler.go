@@ -19,6 +19,7 @@ package hivemetastore
 import (
 	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
+	"github.com/datapunchorg/punch/pkg/kubelib"
 	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	"gopkg.in/yaml.v3"
 	"regexp"
@@ -57,11 +58,13 @@ func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) 
 }
 
 func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (framework.Topology, error) {
-	resolvedDatabaseTopology := topology.(*HiveMetastoreTopology)
+	specificTopology := topology.(*HiveMetastoreTopology)
 
 	if strings.EqualFold(phase, framework.PhaseBeforeInstall) {
-		if resolvedDatabaseTopology.Spec.Database.UserPassword == "" || resolvedDatabaseTopology.Spec.Database.UserPassword == framework.TemplateNoValue {
-			return nil, fmt.Errorf("spec.dbUserPassword is emmpty, please provide the value for the password")
+		if specificTopology.Spec.Database.UseExternalDb {
+			if specificTopology.Spec.Database.UserPassword == "" || specificTopology.Spec.Database.UserPassword == framework.TemplateNoValue {
+				return nil, fmt.Errorf("spec.dbUserPassword is emmpty, please provide the value for the password")
+			}
 		}
 	}
 
@@ -69,16 +72,34 @@ func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (f
 }
 
 func (t *TopologyHandler) Install(topology framework.Topology) (framework.DeploymentOutput, error) {
-	databaseTopology := topology.(*HiveMetastoreTopology)
-	deployment := framework.NewDeployment()
+	specificTopology := topology.(*HiveMetastoreTopology)
+	commandEnvironment := framework.CreateCommandEnvironment(specificTopology.Metadata.CommandEnvironment)
+	if commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
+		commandEnvironment.Set(CmdEnvKubeConfig, kubelib.GetKubeConfigPath())
+	}
+	deployment, err := eks.BuildInstallDeployment(specificTopology.Spec.EksSpec, commandEnvironment)
+	if err != nil {
+		return nil, err
+	}
+	if !specificTopology.Spec.Database.UseExternalDb {
+		deployment.AddStep("createHiveMetastoreDatabase", "Create Hive Metastore database", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
+			CreatePostgresqlDatabase(commandEnvironment, specificTopology.Spec)
+			return framework.DeploymentStepOutput{"TODO": specificTopology.Metadata.Name}, nil
+		})
+	}
 	deployment.AddStep("initHiveMetastoreDatabase", "Init Hive Metastore database", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
-		return framework.DeploymentStepOutput{"TODO": databaseTopology.Metadata.Name}, nil
+		return framework.DeploymentStepOutput{"TODO": specificTopology.Metadata.Name}, nil
 	})
-	err := deployment.Run()
+	err = deployment.Run()
 	return deployment.GetOutput(), err
 }
 
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
-	deployment := framework.NewDeployment()
+	specificTopology := topology.(*HiveMetastoreTopology)
+	commandEnvironment := framework.CreateCommandEnvironment(specificTopology.Metadata.CommandEnvironment)
+	deployment, err := eks.BuildUninstallDeployment(specificTopology.Spec.EksSpec, commandEnvironment)
+	if err != nil {
+		return nil, err
+	}
 	return deployment.GetOutput(), nil
 }
