@@ -211,8 +211,8 @@ func createSparkTopologyTemplate() SparkTopology {
 	topology.Spec.ApiGateway.UserPassword = "{{ .Values.apiUserPassword }}"
 
 	topology.Metadata.CommandEnvironment = eksTopology.Metadata.CommandEnvironment
-	topology.Metadata.CommandEnvironment[CmdEnvSparkOperatorHelmChart] = "{{ or .Env.sparkOperatorHelmChart `spark-operator-service/charts/spark-operator-chart` }}"
-	topology.Metadata.CommandEnvironment[CmdEnvHistoryServerHelmChart] = "{{ or .Env.historyServerHelmChart `spark-history-server/charts/spark-history-server-chart` }}"
+	topology.Metadata.CommandEnvironment[CmdEnvSparkOperatorHelmChart] = "{{ or .Env.sparkOperatorHelmChart `helm-charts/spark-operator-service/charts/spark-operator-chart` }}"
+	topology.Metadata.CommandEnvironment[CmdEnvHistoryServerHelmChart] = "{{ or .Env.historyServerHelmChart `helm-charts/spark-history-server/charts/spark-history-server-chart` }}"
 
 
 	topology.Metadata.Notes["apiUserPassword"] = "Please make sure to provide API gateway user password when deploying the topology, e.g. --set apiUserPassword=your-password"

@@ -61,12 +61,8 @@ test:
 release: build
 	@echo "generating release ..."
 	mkdir -p dist
-	cp -R third-party/helm-charts/ingress-nginx dist/ingress-nginx/
-	cp -R third-party/helm-charts/spark-operator-service dist/spark-operator-service/
-	cp -R third-party/helm-charts/cluster-autoscaler dist/cluster-autoscaler/
-	cp -R third-party/helm-charts/spark-history-server dist/spark-history-server/
-	cp -R third-party/helm-charts/hive-metastore dist/hive-metastore/
-	cp -R third-party/helm-charts/postgresql dist/postgresql/
+	mkdir -p dist/helm-charts
+	cp -R third-party/helm-charts/* dist/helm-charts/
 	cp hack/pyspark-example.py dist/
 	cp hack/pyspark-iceberg-example.py dist/
 	curl -L -o dist/sparkcli.tar.gz https://github.com/datapunchorg/spark-on-k8s-operator/releases/download/v0.1.0/sparkcli.tar.gz
