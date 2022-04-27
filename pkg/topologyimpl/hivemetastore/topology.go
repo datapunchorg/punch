@@ -31,8 +31,11 @@ const (
 	DefaultVersion    = "datapunch.org/v1alpha1"
 	DefaultNamePrefix = "my"
 
+	CmdEnvHelmExecutable             = "helmExecutable"
 	HiveMetastoreInitHelmChart = "hiveMetastoreInitHelmChart"
 	HiveMetastoreHelmChart = "hiveMetastoreHelmChart"
+
+	DefaultHelmExecutable = "helm"
 )
 
 type HiveMetastoreTopology struct {
@@ -46,9 +49,14 @@ type HiveMetastoreTopologySpec struct {
     Namespace        string `json:"namespace" yaml:"namespace"`
 	ImageRepository  string `json:"imageRepository" yaml:"imageRepository"`
 	ImageTag string `json:"imageTag" yaml:"imageTag"`
-	DbConnectionString             string   `json:"dbConnectionString" yaml:"dbConnectionString"`
-	DbUserName string `json:"dbUserName" yaml:"dbUserName"`
-	DbUserPassword string `json:"dbUserPassword" yaml:"dbUserPassword"`
+	Database  HiveMetastoreDatabaseSpec `json:"database" yaml:"database"`
+}
+
+type HiveMetastoreDatabaseSpec struct {
+	UseExternalDb    bool   `json:"useExternalDb" yaml:"useExternalDb"`
+	ConnectionString string `json:"connectionString" yaml:"connectionString"`
+	UserName       string `json:"userName" yaml:"userName"`
+	UserPassword string `json:"userPassword" yaml:"userPassword"`
 }
 
 func CreateDefaultHiveMetastoreTopology(namePrefix string, s3BucketName string) HiveMetastoreTopology {
@@ -59,7 +67,11 @@ func CreateDefaultHiveMetastoreTopology(namePrefix string, s3BucketName string) 
 			Kind: KindHiveMetastoreTopology,
 			Metadata: framework.TopologyMetadata{
 				Name:               topologyName,
-				CommandEnvironment: map[string]string{},
+				CommandEnvironment: map[string]string{
+					CmdEnvHelmExecutable: DefaultHelmExecutable,
+					HiveMetastoreInitHelmChart: "{{ or .Env.nginxHelmChart `hive-metastore/charts/hive-metastore-init-postgresql` }}",
+					HiveMetastoreHelmChart: "{{ or .Env.nginxHelmChart `hive-metastore/charts/hive-metastore` }}",
+				},
 				Notes:              map[string]string{},
 			},
 		},
@@ -69,9 +81,12 @@ func CreateDefaultHiveMetastoreTopology(namePrefix string, s3BucketName string) 
 			Namespace: "hive-01",
 			ImageRepository: "ghcr.io/datapunchorg/helm-hive-metastore",
 			ImageTag: "main-1650942144",
-			DbConnectionString: "{{ or .Values.dbConnectionString 'TODO_REQUIRED_FIELD' }}",
-			DbUserName:      "{{ or .Values.dbUserName 'TODO_REQUIRED_FIELD' }}",
-			DbUserPassword: "{{ or .Values.dbUserPassword 'TODO_REQUIRED_FIELD' }}",
+			Database: HiveMetastoreDatabaseSpec{
+				UseExternalDb:    true,
+				ConnectionString: "",
+				UserName:       "",
+				UserPassword:   "",
+			},
 		},
 	}
 	return topology
@@ -95,8 +110,8 @@ func (t *HiveMetastoreTopology) String() string {
 	if err != nil {
 		return fmt.Sprintf("(Failed to deserialize topology in ToYamlString(): %s)", err.Error())
 	}
-	if copy.Spec.DbUserPassword != "" {
-		copy.Spec.DbUserPassword = FieldMaskValue
+	if copy.Spec.Database.UserPassword != "" {
+		copy.Spec.Database.UserPassword = FieldMaskValue
 	}
 	topologyBytes, err = yaml.Marshal(copy)
 	if err != nil {

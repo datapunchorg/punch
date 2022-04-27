@@ -60,7 +60,7 @@ func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (f
 	resolvedDatabaseTopology := topology.(*HiveMetastoreTopology)
 
 	if strings.EqualFold(phase, framework.PhaseBeforeInstall) {
-		if resolvedDatabaseTopology.Spec.DbUserPassword == "" || resolvedDatabaseTopology.Spec.DbUserPassword == framework.TemplateNoValue {
+		if resolvedDatabaseTopology.Spec.Database.UserPassword == "" || resolvedDatabaseTopology.Spec.Database.UserPassword == framework.TemplateNoValue {
 			return nil, fmt.Errorf("spec.dbUserPassword is emmpty, please provide the value for the password")
 		}
 	}
