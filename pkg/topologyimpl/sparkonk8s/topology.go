@@ -79,6 +79,27 @@ type SparkHistoryServer struct {
 	ImageTag                  string `json:"imageTag" yaml:"imageTag"`
 }
 
+func GenerateSparkTopology() SparkTopology {
+	namePrefix := "{{ or .Values.namePrefix `my` }}"
+	s3BucketName := "{{ or .Values.s3BucketName .DefaultS3BucketName }}"
+
+	topology := CreateDefaultSparkTopology(namePrefix, s3BucketName)
+
+	eksTopology := eks.GenerateEksTopology()
+
+	topology.Spec.EksSpec = eksTopology.Spec
+	topology.Spec.ApiGateway.UserPassword = "{{ .Values.apiUserPassword }}"
+
+	topology.Metadata.CommandEnvironment = eksTopology.Metadata.CommandEnvironment
+	topology.Metadata.CommandEnvironment[CmdEnvSparkOperatorHelmChart] = "{{ or .Env.sparkOperatorHelmChart `helm-charts/spark-operator-service/charts/spark-operator-chart` }}"
+	topology.Metadata.CommandEnvironment[CmdEnvHistoryServerHelmChart] = "{{ or .Env.historyServerHelmChart `helm-charts/spark-history-server/charts/spark-history-server-chart` }}"
+
+
+	topology.Metadata.Notes["apiUserPassword"] = "Please make sure to provide API gateway user password when deploying the topology, e.g. --set apiUserPassword=your-password"
+
+	return topology
+}
+
 func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTopology {
 	topologyName := fmt.Sprintf("%s-spark-k8s", namePrefix)
 	topology := SparkTopology{

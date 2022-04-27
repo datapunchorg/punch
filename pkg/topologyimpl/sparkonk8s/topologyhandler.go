@@ -42,7 +42,7 @@ type TopologyHandler struct {
 }
 
 func (t *TopologyHandler) Generate() (framework.Topology, error) {
-	topology := createSparkTopologyTemplate()
+	topology := GenerateSparkTopology()
 	return &topology, nil
 }
 
@@ -197,27 +197,6 @@ Another example using sparkcli to run Python Spark application from local file (
 ------------------------------
 ` + sparkcliPythonExampleCommandFormat
 	log.Printf(anotherStr, userName, userPassword, url, file.Name())
-}
-
-func createSparkTopologyTemplate() SparkTopology {
-	namePrefix := "{{ or .Values.namePrefix `my` }}"
-	s3BucketName := "{{ or .Values.s3BucketName .DefaultS3BucketName }}"
-
-	topology := CreateDefaultSparkTopology(namePrefix, s3BucketName)
-
-	eksTopology := eks.CreateEksTopologyTemplate()
-
-	topology.Spec.EksSpec = eksTopology.Spec
-	topology.Spec.ApiGateway.UserPassword = "{{ .Values.apiUserPassword }}"
-
-	topology.Metadata.CommandEnvironment = eksTopology.Metadata.CommandEnvironment
-	topology.Metadata.CommandEnvironment[CmdEnvSparkOperatorHelmChart] = "{{ or .Env.sparkOperatorHelmChart `helm-charts/spark-operator-service/charts/spark-operator-chart` }}"
-	topology.Metadata.CommandEnvironment[CmdEnvHistoryServerHelmChart] = "{{ or .Env.historyServerHelmChart `helm-charts/spark-history-server/charts/spark-history-server-chart` }}"
-
-
-	topology.Metadata.Notes["apiUserPassword"] = "Please make sure to provide API gateway user password when deploying the topology, e.g. --set apiUserPassword=your-password"
-
-	return topology
 }
 
 func checkCmdEnvFolderExists(metadata framework.TopologyMetadata, cmdEnvKey string) error {

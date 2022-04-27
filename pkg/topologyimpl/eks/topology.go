@@ -70,6 +70,26 @@ type NginxIngress struct {
 	EnableHttps     bool   `json:"enableHttps" yaml:"enableHttps"`
 }
 
+func GenerateEksTopology() EksTopology {
+	namePrefix := "{{ or .Values.namePrefix `my` }}"
+	s3BucketName := "{{ or .Values.s3BucketName .DefaultS3BucketName }}"
+
+	topology := CreateDefaultEksTopology(namePrefix, s3BucketName)
+
+	topology.Spec.Region = "{{ or .Values.region `us-west-1` }}"
+	topology.Spec.VpcId = "{{ or .Values.vpcId .DefaultVpcId }}"
+
+	topology.Metadata.CommandEnvironment[CmdEnvHelmExecutable] = "{{ or .Env.helmExecutable `helm` }}"
+	topology.Metadata.CommandEnvironment[CmdEnvWithMinikube] = "{{ or .Env.withMinikube `false` }}"
+	topology.Metadata.CommandEnvironment[CmdEnvNginxHelmChart] = "{{ or .Env.nginxHelmChart `helm-charts/ingress-nginx/charts/ingress-nginx` }}"
+	topology.Metadata.CommandEnvironment[CmdEnvClusterAutoscalerHelmChart] = "{{ or .Env.clusterAutoscalerHelmChart `helm-charts/cluster-autoscaler/charts/cluster-autoscaler` }}"
+	topology.Metadata.CommandEnvironment[CmdEnvKubeConfig] = "{{ or .Env.kubeConfig `` }}"
+
+	topology.Metadata.Notes["apiUserPassword"] = "Please make sure to provide API gateway user password when deploying the topology, e.g. --set apiUserPassword=your-password"
+
+	return topology
+}
+
 func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopology {
 	topologyName := fmt.Sprintf("%s-Eks-k8s", namePrefix)
 	k8sClusterName := fmt.Sprintf("%s-k8s-01", namePrefix)
