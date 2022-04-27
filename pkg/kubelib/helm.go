@@ -30,7 +30,17 @@ func CheckHelmOrFatal(helmExeLocation string) {
 	log.Printf("helm version: %s", string(helmOut))
 }
 
-// TODO return error
+func RunHelm(helmExeLocation string, arguments []string) {
+	helmCmd := exec.Command(helmExeLocation, arguments...)
+	log.Printf("Running helm: %s", helmCmd.String())
+	helmOut, err := helmCmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Failed to run helm\n%s\n%s", err.Error(), string(helmOut))
+	} else {
+		log.Printf("Finished running helm\n%s", string(helmOut))
+	}
+}
+
 func InstallHelm(helmExeLocation string, helmChartLocation string, kubeConfig KubeConfig, extraArguments []string, installName string, namespace string) {
 	arguments := []string{"install", installName, helmChartLocation,
 		"--namespace", namespace, "--create-namespace"}

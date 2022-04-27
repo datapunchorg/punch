@@ -34,7 +34,6 @@ const (
 	CmdEnvHelmExecutable             = "helmExecutable"
 	CmdEnvWithMinikube               = "withMinikube"
 	CmdEnvKubeConfig                 = "kubeConfig"
-	PostgresqlHelmChart = "postgresqlHelmChart"
 	HiveMetastoreInitHelmChart = "hiveMetastoreInitHelmChart"
 	HiveMetastoreHelmChart = "hiveMetastoreHelmChart"
 
@@ -61,6 +60,18 @@ type HiveMetastoreDatabaseSpec struct {
 	UserPassword string `json:"userPassword" yaml:"userPassword"`
 }
 
+func GenerateHiveMetastoreTopology() HiveMetastoreTopology {
+	namePrefix := "{{ or .Values.namePrefix `my` }}"
+	s3BucketName := "{{ or .Values.s3BucketName .DefaultS3BucketName }}"
+
+	topology := CreateDefaultHiveMetastoreTopology(namePrefix, s3BucketName)
+
+	eksTopology := eks.GenerateEksTopology()
+	topology.Spec.EksSpec = eksTopology.Spec
+
+	return topology
+}
+
 func CreateDefaultHiveMetastoreTopology(namePrefix string, s3BucketName string) HiveMetastoreTopology {
 	topologyName := fmt.Sprintf("%s-db-01", namePrefix)
 
@@ -74,7 +85,7 @@ func CreateDefaultHiveMetastoreTopology(namePrefix string, s3BucketName string) 
 				Name:               topologyName,
 				CommandEnvironment: map[string]string{
 					CmdEnvHelmExecutable: DefaultHelmExecutable,
-					PostgresqlHelmChart: "{{ or .Env.nginxHelmChart `helm-charts/postgresql/charts/postgresql` }}",
+				    CmdEnvWithMinikube: "{{ or .Env.withMinikube `false` }}",
 					HiveMetastoreInitHelmChart: "{{ or .Env.nginxHelmChart `helm-charts/hive-metastore/charts/hive-metastore-init-postgresql` }}",
 					HiveMetastoreHelmChart: "{{ or .Env.nginxHelmChart `helm-charts/hive-metastore/charts/hive-metastore` }}",
 				},
@@ -100,6 +111,8 @@ func CreateDefaultHiveMetastoreTopology(namePrefix string, s3BucketName string) 
 			topology.Metadata.CommandEnvironment[k] = v
 		}
 	}
+
+	eks.UpdateEksTopologyByS3BucketName(&topology.Spec.EksSpec, s3BucketName)
 
 	return topology
 }

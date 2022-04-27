@@ -94,7 +94,6 @@ func GenerateSparkTopology() SparkTopology {
 	topology.Metadata.CommandEnvironment[CmdEnvSparkOperatorHelmChart] = "{{ or .Env.sparkOperatorHelmChart `helm-charts/spark-operator-service/charts/spark-operator-chart` }}"
 	topology.Metadata.CommandEnvironment[CmdEnvHistoryServerHelmChart] = "{{ or .Env.historyServerHelmChart `helm-charts/spark-history-server/charts/spark-history-server-chart` }}"
 
-
 	topology.Metadata.Notes["apiUserPassword"] = "Please make sure to provide API gateway user password when deploying the topology, e.g. --set apiUserPassword=your-password"
 
 	return topology
@@ -102,6 +101,7 @@ func GenerateSparkTopology() SparkTopology {
 
 func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTopology {
 	topologyName := fmt.Sprintf("%s-spark-k8s", namePrefix)
+	eksTopology := eks.CreateDefaultEksTopology(namePrefix, s3BucketName)
 	topology := SparkTopology{
 		TopologyBase: framework.TopologyBase{
 			ApiVersion: DefaultVersion,
@@ -115,7 +115,7 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 			},
 		},
 		Spec: SparkTopologySpec{
-			EksSpec: eks.CreateDefaultEksTopology(namePrefix, s3BucketName).Spec,
+			EksSpec: eksTopology.Spec,
 			ApiGateway: SparkApiGateway{
 				UserName: DefaultApiUserName,
 				SparkEventLogDir: fmt.Sprintf("s3a://%s/punch/%s/sparkEventLog", s3BucketName, namePrefix),
@@ -135,6 +135,13 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 			},
 		},
 	}
+
+	for k, v := range eksTopology.Metadata.CommandEnvironment {
+		if _, ok := topology.Metadata.CommandEnvironment[k]; !ok {
+			topology.Metadata.CommandEnvironment[k] = v
+		}
+	}
+
 	eks.UpdateEksTopologyByS3BucketName(&topology.Spec.EksSpec, s3BucketName)
 	return topology
 }

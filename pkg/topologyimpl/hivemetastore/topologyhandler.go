@@ -42,9 +42,7 @@ type TopologyHandler struct {
 }
 
 func (t *TopologyHandler) Generate() (framework.Topology, error) {
-	namePrefix := "{{ or .Values.namePrefix `my` }}"
-	s3BucketName := "{{ or .Values.s3BucketName .DefaultS3BucketName }}"
-	topology := CreateDefaultHiveMetastoreTopology(namePrefix, s3BucketName)
+	topology := GenerateHiveMetastoreTopology()
 	return &topology, nil
 }
 

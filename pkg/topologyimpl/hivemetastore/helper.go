@@ -36,9 +36,12 @@ func CreatePostgresqlDatabase(commandEnvironment framework.CommandEnvironment, s
 	installName := "postgresql"
 	namespace := spec.Namespace
 
-	arguments := []string{}
+	kubelib.RunHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable),[]string{"repo", "add", "bitnami", "https://charts.bitnami.com/bitnami"})
 
-	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), commandEnvironment.Get(PostgresqlHelmChart), kubeConfig, arguments, installName, namespace)
+	kubelib.RunHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable),[]string{"search", "repo", "postgres"})
+
+	arguments := []string{}
+	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), "bitnami/postgresql", kubeConfig, arguments, installName, namespace)
 }
 
 func InitDatabase(commandEnvironment framework.CommandEnvironment, spec HiveMetastoreTopologySpec) () {
