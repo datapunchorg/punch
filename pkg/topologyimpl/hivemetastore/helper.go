@@ -26,7 +26,6 @@ import (
 	"gopkg.in/yaml.v3"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"log"
 )
 
 type DatabaseInfo struct {
@@ -95,10 +94,10 @@ func CreatePostgresqlDatabase(commandEnvironment framework.CommandEnvironment, s
 	}, nil
 }
 
-func InitDatabase(commandEnvironment framework.CommandEnvironment, spec HiveMetastoreTopologySpec) () {
+func InitDatabase(commandEnvironment framework.CommandEnvironment, spec HiveMetastoreTopologySpec, databaseInfo DatabaseInfo) error {
 	kubeConfig, err := awslib.CreateKubeConfig(spec.EksSpec.Region, commandEnvironment.Get(eks.CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
 	if err != nil {
-		log.Fatalf("Failed to get kube config: %s", err)
+		return fmt.Errorf("Failed to get kube config: %s", err)
 	}
 
 	defer kubeConfig.Cleanup()
@@ -109,7 +108,13 @@ func InitDatabase(commandEnvironment framework.CommandEnvironment, spec HiveMeta
 	arguments := []string{
 		"--set", fmt.Sprintf("image.name=%s", spec.ImageRepository),
 		"--set", fmt.Sprintf("image.tag=%s", spec.ImageTag),
+		"--set", fmt.Sprintf("dbServerHost=%s", databaseInfo.Host),
+		"--set", fmt.Sprintf("dbServerPort=%d", databaseInfo.Port),
+		"--set", fmt.Sprintf("dbUserName=%s", databaseInfo.UserName),
+		"--set", fmt.Sprintf("dbUserPassword=%s", databaseInfo.UserPassword),
 	}
 
 	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), commandEnvironment.Get(HiveMetastoreInitHelmChart), kubeConfig, arguments, installName, namespace)
+
+	return nil
 }
