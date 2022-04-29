@@ -59,7 +59,6 @@ func CreatePostgresqlDatabase(commandEnvironment framework.CommandEnvironment, s
 	namespace := spec.Namespace
 
 	kubelib.RunHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable),[]string{"repo", "add", "bitnami", "https://charts.bitnami.com/bitnami"})
-
 	kubelib.RunHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable),[]string{"search", "repo", "postgres"})
 
 	arguments := []string{}
@@ -85,6 +84,17 @@ func CreatePostgresqlDatabase(commandEnvironment framework.CommandEnvironment, s
 	if !ok {
 		return DatabaseInfo{}, fmt.Errorf("failed to find postgres password from secret %s in namespace %s: %s", secretName, namespace, err.Error())
 	}
+
+	installName = "hive-metastore-postgresql-create-db"
+	arguments = []string{
+		"--set",
+		fmt.Sprintf("dbServerHost=postgresql.%s.svc.cluster.local", namespace),
+		"--set",
+		fmt.Sprintf("dbUserPassword=%s", password),
+	}
+	hiveMetastoreCreateDatabaseHelmChart := commandEnvironment.Get(CmdEnvHiveMetastoreCreateDatabaseHelmChart)
+	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), hiveMetastoreCreateDatabaseHelmChart, kubeConfig, arguments, installName, namespace)
+
 	return DatabaseInfo{
 		Host: fmt.Sprintf("postgres-postgresql.%s.svc.cluster.local", namespace),
 		Port: 5432,
@@ -114,7 +124,7 @@ func InitDatabase(commandEnvironment framework.CommandEnvironment, spec HiveMeta
 		"--set", fmt.Sprintf("dbUserPassword=%s", databaseInfo.UserPassword),
 	}
 
-	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), commandEnvironment.Get(HiveMetastoreInitHelmChart), kubeConfig, arguments, installName, namespace)
+	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvHiveMetastoreInitHelmChart), kubeConfig, arguments, installName, namespace)
 
 	return nil
 }

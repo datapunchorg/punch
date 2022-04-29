@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hive-metastore-postgresql-create-db
+
+spec:
+  containers:
+    - name: psql
+      image: {{ .Values.image }}
+      imagePullPolicy: IfNotPresent
+      command: [ 'psql' ]
+      args:
+        - -h
+        - {{ .Values.dbServerHost }}
+        - -p
+        - '{{ .Values.dbServerPort }}'
+        - -U
+        - {{ .Values.dbUserName }}
+        - -d
+        - postgres
+        - -c
+        - 'create database {{ .Values.metastoreDatabaseName }};'
+      env:
+        - name: PGPASSWORD
+          value: {{ .Values.dbUserPassword }}
+
+  restartPolicy: Never
+  terminationGracePeriodSeconds: 0

@@ -1,0 +1,7 @@
+image: docker.io/bitnami/postgresql:14.2.0-debian-10-r69
+
+dbServerHost: postgresql.hive-01.svc.cluster.local
+dbServerPort: 5432
+dbUserName: postgres
+dbUserPassword: xxx
+metastoreDatabaseName: metastore_db
