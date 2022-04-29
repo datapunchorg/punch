@@ -6,9 +6,9 @@ dbServerHost: postgresql.hive-01.svc.cluster.local
 dbServerPort: 5432
 dbUserName: postgres
 dbUserPassword: xxx
+jdbcDriverName: org.postgresql.Driver
 metastoreDatabaseName: metastore_db
 
 metastoreSite:
   metastoreUris: thrift://xxx:9083
   metastoreWarehouseDir: file:///tmp/
-

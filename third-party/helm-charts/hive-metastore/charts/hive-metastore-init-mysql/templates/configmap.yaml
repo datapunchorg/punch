@@ -11,7 +11,7 @@ data:
       </property>
       <property>
       <name>javax.jdo.option.ConnectionDriverName</name>
-      <value>com.mysql.cj.jdbc.Driver</value>
+      <value>{{ .Values.jdbcDriverName }}</value>
       </property>
       <property>
       <name>javax.jdo.option.ConnectionUserName</name>

@@ -6,9 +6,9 @@ dbServerHost: mysql.default.svc.cluster.local
 dbServerPort: 3306
 dbUserName: root
 dbUserPassword: xxx
+jdbcDriverName: com.mysql.cj.jdbc.Driver
 metastoreDatabaseName: metastore_db
 
 metastoreSite:
   metastoreUris: thrift://xxx:9083
   metastoreWarehouseDir: file:///tmp/
-
