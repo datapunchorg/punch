@@ -2,7 +2,7 @@ image:
   name: ghcr.io/datapunchorg/helm-hive-metastore
   tag: main-1650942144
 
-dbServerHost: postgres-postgresql.default.svc.cluster.local
+dbServerHost: postgresql.hive-01.svc.cluster.local
 dbServerPort: 5432
 dbUserName: postgres
 dbUserPassword: xxx

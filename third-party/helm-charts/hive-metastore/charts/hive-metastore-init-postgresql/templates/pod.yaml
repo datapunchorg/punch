@@ -4,27 +4,8 @@ metadata:
   name: hive-metastore-init-postgresql
 
 spec:
-  initContainers:
-    - name: hive-metastore-create-db
-      image: docker.io/bitnami/postgresql:14.2.0-debian-10-r69
-      imagePullPolicy: IfNotPresent
-      command: [ 'psql' ]
-      args:
-        - -h
-        - {{ .Values.dbServerHost }}
-        - -p
-        - '{{ .Values.dbServerPort }}'
-        - -U
-        - {{ .Values.dbUserName }}
-        - -d
-        - postgres
-        - -c
-        - 'create database {{ .Values.metastoreDatabaseName }};'
-      env:
-        - name: PGPASSWORD
-          value: {{ .Values.dbUserPassword }}
   containers:
-    - name: hive-metastore-init-db
+    - name: init-db
       image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
       imagePullPolicy: IfNotPresent
       #command: [ 'sleep' ]

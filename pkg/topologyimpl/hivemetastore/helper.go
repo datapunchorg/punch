@@ -86,9 +86,10 @@ func CreatePostgresqlDatabase(commandEnvironment framework.CommandEnvironment, s
 	}
 
 	installName = "hive-metastore-postgresql-create-db"
+	dbServerHost := fmt.Sprintf("postgresql.%s.svc.cluster.local", namespace)
 	arguments = []string{
 		"--set",
-		fmt.Sprintf("dbServerHost=postgresql.%s.svc.cluster.local", namespace),
+		fmt.Sprintf("dbServerHost=%s", dbServerHost),
 		"--set",
 		fmt.Sprintf("dbUserPassword=%s", password),
 	}
@@ -96,7 +97,7 @@ func CreatePostgresqlDatabase(commandEnvironment framework.CommandEnvironment, s
 	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), hiveMetastoreCreateDatabaseHelmChart, kubeConfig, arguments, installName, namespace)
 
 	return DatabaseInfo{
-		Host: fmt.Sprintf("postgres-postgresql.%s.svc.cluster.local", namespace),
+		Host: dbServerHost,
 		Port: 5432,
 		UserName: "postgres",
 		// TODO mask UserPassword in logging
