@@ -100,7 +100,3 @@ func CreateDefaultKafkaTopology(namePrefix string) KafkaTopology {
 func (t *KafkaTopology) GetKind() string {
 	return t.Kind
 }
-
-func (t *KafkaTopology) GetSpec() framework.TopologySpecPointer {
-	return &t.Spec
-}

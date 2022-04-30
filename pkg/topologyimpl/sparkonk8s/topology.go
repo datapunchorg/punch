@@ -150,10 +150,6 @@ func (t *SparkTopology) GetKind() string {
 	return t.Kind
 }
 
-func (t *SparkTopology) GetSpec() framework.TopologySpecPointer {
-	return &t.Spec
-}
-
 func (t *SparkTopology) String() string {
 	topologyBytes, err := yaml.Marshal(t)
 	if err != nil {
