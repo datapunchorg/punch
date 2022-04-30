@@ -17,6 +17,7 @@ limitations under the License.
 package framework
 
 import (
+	"encoding/json"
 	"fmt"
 	"gopkg.in/yaml.v3"
 )
@@ -44,7 +45,7 @@ func (t *DeploymentOutputImpl) Output() map[string]DeploymentStepOutput {
 	return result
 }
 
-func MarshalDeploymentOutput(topologyKind string, deploymentOutput DeploymentOutput) string {
+func MarshalDeploymentOutput(topologyKind string, deploymentOutput DeploymentOutput, jsonFormat bool) string {
 	var output []DeploymentStepOutputStruct
 	for _, name := range deploymentOutput.Steps() {
 		output = append(output, DeploymentStepOutputStruct{
@@ -58,11 +59,19 @@ func MarshalDeploymentOutput(topologyKind string, deploymentOutput DeploymentOut
 		Output: output,
 	}
 
-	yamlContent, err := yaml.Marshal(s)
-	if err != nil {
-		return fmt.Sprintf("<failed to marshal deployment output: %s>", err.Error())
+	if jsonFormat {
+		jsonContent, err := json.Marshal(s)
+		if err != nil {
+			return fmt.Sprintf("<failed to marshal deployment output as JSON: %s>", err.Error())
+		}
+		return string(jsonContent)
+	} else {
+		yamlContent, err := yaml.Marshal(s)
+		if err != nil {
+			return fmt.Sprintf("<failed to marshal deployment output as YAML: %s>", err.Error())
+		}
+		return string(yamlContent)
 	}
-	return string(yamlContent)
 }
 
 type DeploymentOutputStruct struct {

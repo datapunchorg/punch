@@ -25,6 +25,7 @@ import (
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/sparkonk8s"
 	"github.com/spf13/cobra"
 	"log"
+	"strings"
 )
 
 var provisionCmd = &cobra.Command{
@@ -58,9 +59,9 @@ var provisionCmd = &cobra.Command{
 		}
 		log.Printf("Install finished")
 
-
-		deploymentOutputStr := framework.MarshalDeploymentOutput(topology.GetKind(), deploymentOutput)
 		outputFile := Output
+		jsonFormat := strings.HasSuffix(strings.ToLower(outputFile), ".json")
+		deploymentOutputStr := framework.MarshalDeploymentOutput(topology.GetKind(), deploymentOutput, jsonFormat)
 		if outputFile == "" {
 			log.Printf("----- Install Output -----\n%s", deploymentOutputStr)
 		} else {

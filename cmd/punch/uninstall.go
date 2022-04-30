@@ -49,16 +49,18 @@ var deleteCmd = &cobra.Command{
 
 		log.Printf("Uninstalling topology...")
 
-		deployment, err := handler.Uninstall(resolvedTopology)
+		deploymentOutput, err := handler.Uninstall(resolvedTopology)
 		if err != nil {
 			log.Fatalf("Failed to delete topology: %s", err.Error())
 		}
-
-		log.Printf("Uninstall finished")
-		if deployment != nil {
-			deploymentOutputStr := framework.MarshalDeploymentOutput(topology.GetKind(), deployment)
-			log.Printf("----- Uninstall Output -----\n%s", deploymentOutputStr)
+		if deploymentOutput == nil {
+			log.Fatalf("Install failed due to null deployment output")
 		}
+		log.Printf("Uninstall finished")
+
+		jsonFormat := false
+		deploymentOutputStr := framework.MarshalDeploymentOutput(topology.GetKind(), deploymentOutput, jsonFormat)
+		log.Printf("----- Uninstall Output -----\n%s", deploymentOutputStr)
 	},
 }
 
