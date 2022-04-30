@@ -211,3 +211,7 @@ func UpdateEksTopologyByS3BucketName(spec *EksTopologySpec, s3BucketName string)
 func (t *EksTopology) GetKind() string {
 	return t.Kind
 }
+
+func (t *EksTopology) GetSpec() framework.TopologySpecPointer {
+	return &t.Spec
+}

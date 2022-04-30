@@ -125,6 +125,10 @@ func (t *HiveMetastoreTopology) GetKind() string {
 	return t.Kind
 }
 
+func (t *HiveMetastoreTopology) GetSpec() framework.TopologySpecPointer {
+	return &t.Spec
+}
+
 func (t *HiveMetastoreTopology) String() string {
 	topologyBytes, err := yaml.Marshal(t)
 	if err != nil {
