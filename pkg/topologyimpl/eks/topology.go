@@ -79,11 +79,11 @@ func GenerateEksTopology() EksTopology {
 	topology.Spec.Region = "{{ or .Values.region `us-west-1` }}"
 	topology.Spec.VpcId = "{{ or .Values.vpcId .DefaultVpcId }}"
 
-	topology.Metadata.CommandEnvironment[CmdEnvHelmExecutable] = "{{ or .Env.helmExecutable `helm` }}"
-	topology.Metadata.CommandEnvironment[CmdEnvWithMinikube] = "{{ or .Env.withMinikube `false` }}"
-	topology.Metadata.CommandEnvironment[CmdEnvNginxHelmChart] = "{{ or .Env.nginxHelmChart `helm-charts/ingress-nginx/charts/ingress-nginx` }}"
-	topology.Metadata.CommandEnvironment[CmdEnvClusterAutoscalerHelmChart] = "{{ or .Env.clusterAutoscalerHelmChart `helm-charts/cluster-autoscaler/charts/cluster-autoscaler` }}"
-	topology.Metadata.CommandEnvironment[CmdEnvKubeConfig] = "{{ or .Env.kubeConfig `` }}"
+	topology.Metadata.CommandEnvironment[CmdEnvHelmExecutable] = "helm"
+	topology.Metadata.CommandEnvironment[CmdEnvWithMinikube] = "false"
+	topology.Metadata.CommandEnvironment[CmdEnvNginxHelmChart] = "helm-charts/ingress-nginx/charts/ingress-nginx"
+	topology.Metadata.CommandEnvironment[CmdEnvClusterAutoscalerHelmChart] = "helm-charts/cluster-autoscaler/charts/cluster-autoscaler"
+	topology.Metadata.CommandEnvironment[CmdEnvKubeConfig] = ""
 
 	topology.Metadata.Notes["apiUserPassword"] = "Please make sure to provide API gateway user password when deploying the topology, e.g. --set apiUserPassword=your-password"
 
