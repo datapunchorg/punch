@@ -27,5 +27,9 @@ This product includes software developed at
 Apache Hive (https://github.com/apache/hive).
 Licensed under the Apache License 2.0.
 
+This product includes software developed at
+bitnami helm charts (https://github.com/bitnami/charts).
+Licensed under the Apache License 2.0.
+
 II. License Summary
 - Apache License 2.0
