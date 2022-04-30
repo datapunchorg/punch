@@ -106,21 +106,24 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		return framework.NewDeploymentStepOutput(), nil
 	})
 	deployment.AddStep("installHiveMetastoreServer", "Install Hive Metastore server", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
+		spec := specificTopology.Spec
 		var databaseInfo DatabaseInfo
-		if !specificTopology.Spec.Database.UseExternalDb {
+		if !spec.Database.UseExternalDb {
 			databaseInfo = c.GetStepOutput("createHiveMetastoreDatabase")["databaseInfo"].(DatabaseInfo)
 		} else {
 			databaseInfo = DatabaseInfo{
-				ConnectionString: specificTopology.Spec.Database.ConnectionString,
-				UserName: specificTopology.Spec.Database.UserName,
-				UserPassword: specificTopology.Spec.Database.UserPassword,
+				ConnectionString: spec.Database.ConnectionString,
+				UserName: spec.Database.UserName,
+				UserPassword: spec.Database.UserPassword,
 			}
 		}
-		err := InstallMetastoreServer(commandEnvironment, specificTopology.Spec, databaseInfo)
+		err := InstallMetastoreServer(commandEnvironment, spec, databaseInfo)
 		if err != nil {
 			return framework.NewDeploymentStepOutput(), err
 		}
-		return framework.DeploymentStepOutput{}, nil
+		return framework.DeploymentStepOutput{
+			"metastoreUri": fmt.Sprintf("thrift://hive-metastore.%s.svc.cluster.local:9083", spec.Namespace),
+		}, nil
 	})
 	err = deployment.Run()
 	return deployment.GetOutput(), err
