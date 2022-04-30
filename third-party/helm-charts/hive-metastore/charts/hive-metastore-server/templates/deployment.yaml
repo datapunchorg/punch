@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "hive-metastore.name" . }}
+  name: hive-metastore-server
   labels:
     {{- include "hive-metastore.labels" $ | trim | nindent 4 }}
 spec:

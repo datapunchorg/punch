@@ -173,7 +173,7 @@ func InstallMetastoreServer(commandEnvironment framework.CommandEnvironment, spe
 		return fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
 	}
 
-	podNamePrefix := "hive-metastore-init-postgresql"
+	podNamePrefix := "hive-metastore-server"
 	waitPosStatus := v1.PodRunning
 	err = kubelib.WaitPodsInPhase(clientset, namespace, podNamePrefix, waitPosStatus)
 	if err != nil {
