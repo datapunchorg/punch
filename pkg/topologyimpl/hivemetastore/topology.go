@@ -52,6 +52,7 @@ type HiveMetastoreTopologySpec struct {
 	ImageRepository  string `json:"imageRepository" yaml:"imageRepository"`
 	ImageTag string `json:"imageTag" yaml:"imageTag"`
 	Database  HiveMetastoreDatabaseSpec `json:"database" yaml:"database"`
+	WarehouseDir string `json:"warehouseDir" yaml:"warehouseDir"`
 }
 
 type HiveMetastoreDatabaseSpec struct {
@@ -105,6 +106,7 @@ func CreateDefaultHiveMetastoreTopology(namePrefix string, s3BucketName string) 
 				UserName:       "",
 				UserPassword:   "",
 			},
+			WarehouseDir: fmt.Sprintf("s3a://%s/punch/hive/warehouse", s3BucketName),
 		},
 	}
 

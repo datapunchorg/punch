@@ -166,6 +166,11 @@ func InstallMetastoreServer(commandEnvironment framework.CommandEnvironment, spe
 		"--set", fmt.Sprintf("dbUserPassword=%s", databaseInfo.UserPassword),
 	}
 
+	if !commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
+		arguments = append(arguments, "--set")
+		arguments = append(arguments, fmt.Sprintf("metastoreWarehouseDir=%s", spec.WarehouseDir))
+	}
+
 	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvHiveMetastoreServerHelmChart), kubeConfig, arguments, installName, namespace)
 
 	_, clientset, err := awslib.CreateKubernetesClient(spec.EksSpec.Region, commandEnvironment.Get(CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
