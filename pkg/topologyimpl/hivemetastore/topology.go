@@ -106,7 +106,7 @@ func CreateDefaultHiveMetastoreTopology(namePrefix string, s3BucketName string) 
 				UserName:       "",
 				UserPassword:   "",
 			},
-			WarehouseDir: fmt.Sprintf("s3a://%s/punch/hive/warehouse", s3BucketName),
+			WarehouseDir: fmt.Sprintf("s3a://%s/punch/%s/warehouse", s3BucketName, namePrefix),
 		},
 	}
 

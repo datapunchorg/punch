@@ -1,6 +1,9 @@
 import pyspark
 from pyspark.sql import SparkSession
 
+# Note: add Spark config like following to run this application:
+# --conf spark.sql.catalogImplementation=hive --conf spark.hadoop.hive.metastore.uris=thrift://hive-metastore.hive-01.svc.cluster.local:9083 --conf spark.sql.warehouse.dir=s3a://YOU-BUCKET/foo/warehouse
+
 if __name__ == "__main__":
   appName = "Hive Example"
   print("Running: " + appName)

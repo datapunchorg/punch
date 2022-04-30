@@ -120,7 +120,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		if err != nil {
 			return framework.NewDeploymentStepOutput(), err
 		}
-		return framework.DeploymentStepOutput{"TODO": ""}, nil
+		return framework.DeploymentStepOutput{}, nil
 	})
 	err = deployment.Run()
 	return deployment.GetOutput(), err
@@ -133,5 +133,6 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 	if err != nil {
 		return nil, err
 	}
-	return deployment.GetOutput(), nil
+	err = deployment.Run()
+	return deployment.GetOutput(), err
 }
