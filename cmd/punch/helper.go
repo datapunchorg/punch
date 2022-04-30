@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"gopkg.in/yaml.v3"
+	"log"
+	"os"
 )
 
 // MarshalTopology gets a YAML string representation for the topology.
@@ -30,4 +32,17 @@ func MarshalTopology(topology framework.Topology) string {
 		return fmt.Sprintf("<Failed to serialize topology: %s>", err.Error())
 	}
 	return string(topologyBytes)
+}
+
+func writeOutputFile(filePath string, fileContent string) {
+	f, err := os.Create(filePath)
+	if err != nil {
+		exitWithError(fmt.Sprintf("Failed to create output file %s: %s", filePath, err.Error()))
+	}
+	defer f.Close()
+	_, err = f.WriteString(fileContent)
+	if err != nil {
+		exitWithError(fmt.Sprintf("Failed to write output file %s: %s", filePath, err.Error()))
+	}
+	log.Printf("Wrote output to file %s", filePath)
 }

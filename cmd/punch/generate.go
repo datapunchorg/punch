@@ -58,15 +58,7 @@ var generateCmd = &cobra.Command{
 		if outputFile == "" {
 			fmt.Printf("%s\n", generatedContent)
 		} else {
-			f, err := os.Create(outputFile)
-			if err != nil {
-				exitWithError(err.Error())
-			}
-			defer f.Close()
-			_, err = f.WriteString(generatedContent)
-			if err != nil {
-				exitWithError(err.Error())
-			}
+			writeOutputFile(outputFile, generatedContent)
 		}
 	},
 }

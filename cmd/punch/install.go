@@ -53,11 +53,18 @@ var provisionCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalf("Failed to provision topology: %s", err.Error())
 		}
-
+		if deploymentOutput == nil {
+			log.Fatalf("Install failed due to null deployment output")
+		}
 		log.Printf("Install finished")
-		if deploymentOutput != nil {
-			deploymentOutput := MarshalDeploymentOutput(deploymentOutput)
-			log.Printf("----- Install Output -----\n%s", deploymentOutput)
+
+
+		deploymentOutputStr := MarshalDeploymentOutput(deploymentOutput)
+		outputFile := Output
+		if outputFile == "" {
+			log.Printf("----- Install Output -----\n%s", deploymentOutputStr)
+		} else {
+			writeOutputFile(outputFile, deploymentOutputStr)
 		}
 
 		if PrintUsageExample {
@@ -75,5 +82,6 @@ func init() {
 	AddFileNameCommandFlag(provisionCmd)
 	AddKeyValueCommandFlags(provisionCmd)
 	AddDryRunCommandFlag(provisionCmd)
+	AddOutputCommandFlag(provisionCmd)
 	AddPrintUsageExampleCommandFlags(provisionCmd)
 }
