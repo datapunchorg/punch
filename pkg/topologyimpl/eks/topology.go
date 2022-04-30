@@ -212,6 +212,6 @@ func (t *EksTopology) GetKind() string {
 	return t.Kind
 }
 
-func (t *EksTopology) GetSpec() framework.TopologySpecPointer {
-	return &t.Spec
+func (t *EksTopology) GetMetadata() *framework.TopologyMetadata {
+	return &t.Metadata
 }

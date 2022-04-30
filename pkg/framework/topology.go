@@ -36,11 +36,8 @@ type TopologyBase struct {
 
 type Topology interface {
 	GetKind() string
-	GetSpec() TopologySpecPointer
+	GetMetadata() *TopologyMetadata
 }
-
-// TODO find a better way to indicate GetSpec() returning a pointer?
-type TopologySpecPointer interface{}
 
 type TopologyMetadata struct {
 	Name               string            `json:"name"`

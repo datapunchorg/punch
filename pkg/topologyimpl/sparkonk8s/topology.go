@@ -150,8 +150,8 @@ func (t *SparkTopology) GetKind() string {
 	return t.Kind
 }
 
-func (t *SparkTopology) GetSpec() framework.TopologySpecPointer {
-	return &t.Spec
+func (t *SparkTopology) GetMetadata() *framework.TopologyMetadata {
+	return &t.Metadata
 }
 
 func (t *SparkTopology) String() string {

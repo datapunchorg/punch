@@ -101,6 +101,6 @@ func (t *KafkaTopology) GetKind() string {
 	return t.Kind
 }
 
-func (t *KafkaTopology) GetSpec() framework.TopologySpecPointer {
-	return &t.Spec
+func (t *KafkaTopology) GetMetadata() *framework.TopologyMetadata {
+	return &t.Metadata
 }
