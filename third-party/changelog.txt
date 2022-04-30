@@ -1,1 +1,2 @@
+20220430 Use "repository: file://charts/common" in third-party/helm-charts/bitnami/charts/postgresql/Chart.lock
 20220420 Add api gateway config (configmap) to Spark Operator chart

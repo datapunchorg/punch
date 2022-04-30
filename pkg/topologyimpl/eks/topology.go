@@ -81,8 +81,8 @@ func GenerateEksTopology() EksTopology {
 
 	topology.Metadata.CommandEnvironment[CmdEnvHelmExecutable] = "helm"
 	topology.Metadata.CommandEnvironment[CmdEnvWithMinikube] = "false"
-	topology.Metadata.CommandEnvironment[CmdEnvNginxHelmChart] = "helm-charts/ingress-nginx/charts/ingress-nginx"
-	topology.Metadata.CommandEnvironment[CmdEnvClusterAutoscalerHelmChart] = "helm-charts/cluster-autoscaler/charts/cluster-autoscaler"
+	topology.Metadata.CommandEnvironment[CmdEnvNginxHelmChart] = "third-party/helm-charts/ingress-nginx/charts/ingress-nginx"
+	topology.Metadata.CommandEnvironment[CmdEnvClusterAutoscalerHelmChart] = "third-party/helm-charts/cluster-autoscaler/charts/cluster-autoscaler"
 	topology.Metadata.CommandEnvironment[CmdEnvKubeConfig] = ""
 
 	topology.Metadata.Notes["apiUserPassword"] = "Please make sure to provide API gateway user password when deploying the topology, e.g. --set apiUserPassword=your-password"
