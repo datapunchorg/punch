@@ -6,12 +6,12 @@ data:
   metastore-site.xml: |-
     <configuration>
       <property>
-      <name>javax.jdo.option.ConnectionURL</name>
-      <value>{{ .Values.dbConnectionPrefix }}://{{ .Values.dbServerHost }}:{{ .Values.dbServerPort }}/{{ .Values.metastoreDatabaseName }}</value>
+      <name>javax.jdo.option.ConnectionDriverName</name>
+      <value>{{ .Values.jdbcDriverName }}</value>
       </property>
       <property>
-      <name>javax.jdo.option.ConnectionDriverName</name>
-      <value>{{ .Values.dbDriverName }}</value>
+      <name>javax.jdo.option.ConnectionURL</name>
+      <value>{{ .Values.dbConnectionString }}</value>
       </property>
       <property>
       <name>javax.jdo.option.ConnectionUserName</name>
@@ -35,11 +35,11 @@ data:
       </property>
       <property>
       <name>hive.metastore.uris</name>
-      <value>{{ .Values.metastoreSite.metastoreUris }}</value>
+      <value>{{ .Values.metastoreUris }}</value>
       </property>
       <property>
       <name>hive.metastore.warehouse.dir</name>
-      <value>{{ .Values.metastoreSite.metastoreWarehouseDir }}</value>
+      <value>{{ .Values.metastoreWarehouseDir }}</value>
       </property>
       <property>
       <name>hive.metastore.event.db.notification.api.authfalse</name>

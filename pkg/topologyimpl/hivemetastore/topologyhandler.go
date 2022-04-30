@@ -89,7 +89,16 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		})
 	}
 	deployment.AddStep("initHiveMetastoreDatabase", "Init Hive Metastore database", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
-		databaseInfo := c.GetStepOutput("createHiveMetastoreDatabase")["databaseInfo"].(DatabaseInfo)
+		var databaseInfo DatabaseInfo
+		if !specificTopology.Spec.Database.UseExternalDb {
+			databaseInfo = c.GetStepOutput("createHiveMetastoreDatabase")["databaseInfo"].(DatabaseInfo)
+		} else {
+			databaseInfo = DatabaseInfo{
+				ConnectionString: specificTopology.Spec.Database.ConnectionString,
+				UserName: specificTopology.Spec.Database.UserName,
+				UserPassword: specificTopology.Spec.Database.UserPassword,
+			}
+		}
 		InitDatabase(commandEnvironment, specificTopology.Spec, databaseInfo)
 		return framework.DeploymentStepOutput{"TODO": specificTopology.Metadata.Name}, nil
 	})

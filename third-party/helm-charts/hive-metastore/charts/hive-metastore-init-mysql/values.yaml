@@ -2,13 +2,12 @@ image:
   name: ghcr.io/datapunchorg/helm-hive-metastore
   tag: main-1650942144
 
-dbServerHost: mysql.default.svc.cluster.local
-dbServerPort: 3306
-dbUserName: root
+jdbcDriverName: org.postgresql.Driver
+
+dbConnectionString: jdbc:postgresql://postgresql.hive-01.svc.cluster.local:5432/metastore_db
+dbUserName: postgres
 dbUserPassword: xxx
-jdbcDriverName: com.mysql.cj.jdbc.Driver
 metastoreDatabaseName: metastore_db
 
-metastoreSite:
-  metastoreUris: thrift://xxx:9083
-  metastoreWarehouseDir: file:///tmp/
+metastoreUris: thrift://xxx:9083
+metastoreWarehouseDir: file:///tmp/

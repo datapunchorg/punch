@@ -29,8 +29,7 @@ import (
 )
 
 type DatabaseInfo struct {
-	Host string
-	Port int
+	ConnectionString string
 	UserName string
 	UserPassword string
 }
@@ -97,8 +96,7 @@ func CreatePostgresqlDatabase(commandEnvironment framework.CommandEnvironment, s
 	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), hiveMetastoreCreateDatabaseHelmChart, kubeConfig, arguments, installName, namespace)
 
 	return DatabaseInfo{
-		Host: dbServerHost,
-		Port: 5432,
+		ConnectionString: fmt.Sprintf("jdbc:postgresql://%s:5432/metastore_db", dbServerHost),
 		UserName: "postgres",
 		// TODO mask UserPassword in logging
 		UserPassword: string(password),
@@ -119,8 +117,7 @@ func InitDatabase(commandEnvironment framework.CommandEnvironment, spec HiveMeta
 	arguments := []string{
 		"--set", fmt.Sprintf("image.name=%s", spec.ImageRepository),
 		"--set", fmt.Sprintf("image.tag=%s", spec.ImageTag),
-		"--set", fmt.Sprintf("dbServerHost=%s", databaseInfo.Host),
-		"--set", fmt.Sprintf("dbServerPort=%d", databaseInfo.Port),
+		"--set", fmt.Sprintf("dbConnectionString=%s", databaseInfo.ConnectionString),
 		"--set", fmt.Sprintf("dbUserName=%s", databaseInfo.UserName),
 		"--set", fmt.Sprintf("dbUserPassword=%s", databaseInfo.UserPassword),
 	}
