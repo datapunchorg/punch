@@ -35,11 +35,11 @@ data:
       </property>
       <property>
       <name>hive.metastore.uris</name>
-      <value>{{ .Values.metastoreSite.metastoreUris }}</value>
+      <value>{{ .Values.metastoreUris }}</value>
       </property>
       <property>
       <name>hive.metastore.warehouse.dir</name>
-      <value>{{ .Values.metastoreSite.metastoreWarehouseDir }}</value>
+      <value>{{ .Values.metastoreWarehouseDir }}</value>
       </property>
       <property>
       <name>hive.metastore.event.db.notification.api.authfalse</name>
