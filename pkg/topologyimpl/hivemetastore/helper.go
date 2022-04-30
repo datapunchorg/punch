@@ -69,9 +69,10 @@ func CreatePostgresqlDatabase(commandEnvironment framework.CommandEnvironment, s
 	}
 
 	podNamePrefix := "postgresql"
-	err = kubelib.WaitPodsInPhase(clientset, namespace, podNamePrefix, v1.PodRunning)
+	waitPosStatus := v1.PodRunning
+	err = kubelib.WaitPodsInPhase(clientset, namespace, podNamePrefix, waitPosStatus)
 	if err != nil {
-		return DatabaseInfo{}, fmt.Errorf("pod %s*** in namespace %s is not in phase %s", podNamePrefix, namespace, v1.PodRunning)
+		return DatabaseInfo{}, fmt.Errorf("pod %s*** in namespace %s is not in phase %s", podNamePrefix, namespace, waitPosStatus)
 	}
 
 	secretName := "postgresql"
@@ -94,6 +95,13 @@ func CreatePostgresqlDatabase(commandEnvironment framework.CommandEnvironment, s
 	}
 	hiveMetastoreCreateDatabaseHelmChart := commandEnvironment.Get(CmdEnvHiveMetastoreCreateDatabaseHelmChart)
 	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), hiveMetastoreCreateDatabaseHelmChart, kubeConfig, arguments, installName, namespace)
+
+	podNamePrefix = "hive-metastore-postgresql-create-db"
+	waitPosStatus = v1.PodSucceeded
+	err = kubelib.WaitPodsInPhase(clientset, namespace, podNamePrefix, waitPosStatus)
+	if err != nil {
+		return DatabaseInfo{}, fmt.Errorf("pod %s*** in namespace %s is not in phase %s", podNamePrefix, namespace, waitPosStatus)
+	}
 
 	return DatabaseInfo{
 		ConnectionString: fmt.Sprintf("jdbc:postgresql://%s:5432/metastore_db", dbServerHost),
@@ -123,6 +131,54 @@ func InitDatabase(commandEnvironment framework.CommandEnvironment, spec HiveMeta
 	}
 
 	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvHiveMetastoreInitHelmChart), kubeConfig, arguments, installName, namespace)
+
+	_, clientset, err := awslib.CreateKubernetesClient(spec.EksSpec.Region, commandEnvironment.Get(CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
+	if err != nil {
+		return fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
+	}
+
+	podNamePrefix := "hive-metastore-init-postgresql"
+	waitPosStatus := v1.PodSucceeded
+	err = kubelib.WaitPodsInPhase(clientset, namespace, podNamePrefix, waitPosStatus)
+	if err != nil {
+		return fmt.Errorf("pod %s*** in namespace %s is not in phase %s", podNamePrefix, namespace, waitPosStatus)
+	}
+
+	return nil
+}
+
+func InstallMetastoreServer(commandEnvironment framework.CommandEnvironment, spec HiveMetastoreTopologySpec, databaseInfo DatabaseInfo) error {
+	kubeConfig, err := awslib.CreateKubeConfig(spec.EksSpec.Region, commandEnvironment.Get(eks.CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
+	if err != nil {
+		return fmt.Errorf("Failed to get kube config: %s", err)
+	}
+
+	defer kubeConfig.Cleanup()
+
+	installName := "hive-metastore-server"
+	namespace := spec.Namespace
+
+	arguments := []string{
+		"--set", fmt.Sprintf("image.name=%s", spec.ImageRepository),
+		"--set", fmt.Sprintf("image.tag=%s", spec.ImageTag),
+		"--set", fmt.Sprintf("dbConnectionString=%s", databaseInfo.ConnectionString),
+		"--set", fmt.Sprintf("dbUserName=%s", databaseInfo.UserName),
+		"--set", fmt.Sprintf("dbUserPassword=%s", databaseInfo.UserPassword),
+	}
+
+	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvHiveMetastoreServerHelmChart), kubeConfig, arguments, installName, namespace)
+
+	_, clientset, err := awslib.CreateKubernetesClient(spec.EksSpec.Region, commandEnvironment.Get(CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
+	if err != nil {
+		return fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
+	}
+
+	podNamePrefix := "hive-metastore-init-postgresql"
+	waitPosStatus := v1.PodRunning
+	err = kubelib.WaitPodsInPhase(clientset, namespace, podNamePrefix, waitPosStatus)
+	if err != nil {
+		return fmt.Errorf("pod %s*** in namespace %s is not in phase %s", podNamePrefix, namespace, waitPosStatus)
+	}
 
 	return nil
 }
