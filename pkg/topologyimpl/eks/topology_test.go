@@ -27,7 +27,7 @@ import (
 )
 
 func TestTemplate(t *testing.T) {
-	d := framework.CreateTemplateData(nil, nil)
+	d := framework.CreateTemplateData(nil)
 
 	topology := CreateDefaultEksTopology("my", "{{ or .Values.s3BucketName .DefaultS3BucketName }}")
 	topology.Metadata.CommandEnvironment["kubeConfig"] = ""
@@ -40,8 +40,6 @@ func TestTemplate(t *testing.T) {
 	data := framework.CreateTemplateDataWithRegion(&d)
 	data.AddValue("s3BucketName", "bucket123abc")
 	data.AddValue("eksCluster", map[string]interface{}{"name": "cluster1"})
-	data.AddEnv("kubeConfig", "./foo/kube.config")
-	data.AddEnv("helmExecutable", "./bar/helm")
 
 	buffer := bytes.Buffer{}
 	err = tmpl.Execute(&buffer, &data)
@@ -54,12 +52,10 @@ func TestTemplate(t *testing.T) {
 	yaml.Unmarshal([]byte(str), &eksTopology)
 	assert.Equal(t, "bucket123abc", eksTopology.Spec.S3BucketName)
 	assert.Equal(t, "cluster1", eksTopology.Spec.Eks.ClusterName)
-	assert.Equal(t, "./foo/kube.config", eksTopology.Metadata.CommandEnvironment["kubeConfig"])
-	assert.Equal(t, "./bar/helm", eksTopology.Metadata.CommandEnvironment["helmExecutable"])
 }
 
 func TestTemplateWithAlternativeValue(t *testing.T) {
-	d := framework.CreateTemplateData(nil, nil)
+	d := framework.CreateTemplateData(nil)
 
 	topology := CreateDefaultEksTopology("my", "{{ or .Values.s3BucketName `abcde12345` }}")
 	topology.Metadata.CommandEnvironment["kubeConfig"] = ""
@@ -85,7 +81,7 @@ func TestTemplateWithAlternativeValue(t *testing.T) {
 }
 
 func TestTemplateWithUnresolvedValue(t *testing.T) {
-	d := framework.CreateTemplateData(nil, nil)
+	d := framework.CreateTemplateData(nil)
 
 	topology := CreateDefaultEksTopology("my", "{{ .Values.s3BucketName }}")
 	tmpl, err := template.New("").Parse(framework.TopologyString(&topology))

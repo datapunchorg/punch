@@ -31,17 +31,12 @@ const (
 )
 
 type TemplateData interface {
-	Env() map[string]string
 	Values() map[string]interface{}
 }
 
-func CreateTemplateData(env map[string]string, values map[string]string) TemplateDataImpl {
+func CreateTemplateData(values map[string]string) TemplateDataImpl {
 	result := TemplateDataImpl{
-		env:    map[string]string{},
 		values: map[string]interface{}{},
-	}
-	for key, value := range env {
-		result.env[key] = value
 	}
 	for key, value := range values {
 		result.AddValueWithNestedKey(key, value)
@@ -51,11 +46,7 @@ func CreateTemplateData(env map[string]string, values map[string]string) Templat
 
 func CopyTemplateData(from TemplateData) TemplateDataImpl {
 	result := TemplateDataImpl{
-		env:    map[string]string{},
 		values: map[string]interface{}{},
-	}
-	for key, value := range from.Env() {
-		result.env[key] = value
 	}
 	for key, value := range from.Values() {
 		result.values[key] = value
@@ -64,26 +55,11 @@ func CopyTemplateData(from TemplateData) TemplateDataImpl {
 }
 
 type TemplateDataImpl struct {
-	env    map[string]string
 	values map[string]interface{}
-}
-
-func (t *TemplateDataImpl) Env() map[string]string {
-	return t.env
 }
 
 func (t *TemplateDataImpl) Values() map[string]interface{} {
 	return t.values
-}
-
-func (t *TemplateDataImpl) AddEnv(key string, value string) {
-	t.env[key] = value
-}
-
-func (t *TemplateDataImpl) AddEnvs(values map[string]string) {
-	for key, value := range values {
-		t.env[key] = value
-	}
 }
 
 func (t *TemplateDataImpl) AddValue(key string, value interface{}) {

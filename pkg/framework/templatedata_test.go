@@ -22,7 +22,7 @@ import (
 )
 
 func TestAddValueWithNestedKey(t *testing.T) {
-	d := CreateTemplateData(nil, nil)
+	d := CreateTemplateData(nil)
 	data := CreateTemplateDataWithRegion(&d)
 	data.AddValueWithNestedKey("key1", "value1")
 	assert.Equal(t, "value1", data.GetStringValueOrDefault("key1", ""))

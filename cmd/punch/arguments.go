@@ -128,9 +128,8 @@ func transformTopologyTemplate(content string) string {
 		log.Fatalf("Failed to parse topology template, error: %s, template: %s", err.Error(), content)
 	}
 
-	commandEnvironment := createKeyValueMap(CommandEnv)
 	templateValues := createKeyValueMap(TemplateValues)
-	templateData := framework.CreateTemplateData(commandEnvironment, templateValues)
+	templateData := framework.CreateTemplateData(templateValues)
 	templateDataWithRegion := framework.CreateTemplateDataWithRegion(&templateData)
 
 	buffer := bytes.Buffer{}
