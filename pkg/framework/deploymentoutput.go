@@ -44,7 +44,7 @@ func (t *DeploymentOutputImpl) Output() map[string]DeploymentStepOutput {
 	return result
 }
 
-func MarshalDeploymentOutput(deploymentOutput DeploymentOutput) string {
+func MarshalDeploymentOutput(topologyKind string, deploymentOutput DeploymentOutput) string {
 	var output []DeploymentStepOutputStruct
 	for _, name := range deploymentOutput.Steps() {
 		output = append(output, DeploymentStepOutputStruct{
@@ -54,6 +54,7 @@ func MarshalDeploymentOutput(deploymentOutput DeploymentOutput) string {
 	}
 
 	s := DeploymentOutputStruct{
+		TopologyKind: topologyKind,
 		Output: output,
 	}
 
@@ -65,6 +66,7 @@ func MarshalDeploymentOutput(deploymentOutput DeploymentOutput) string {
 }
 
 type DeploymentOutputStruct struct {
+	TopologyKind string `json:"topologyKind" yaml:"topologyKind"`
 	Output []DeploymentStepOutputStruct `json:"output" yaml:"output"`
 }
 

@@ -56,7 +56,7 @@ var deleteCmd = &cobra.Command{
 
 		log.Printf("Uninstall finished")
 		if deployment != nil {
-			deploymentOutputStr := framework.MarshalDeploymentOutput(deployment)
+			deploymentOutputStr := framework.MarshalDeploymentOutput(topology.GetKind(), deployment)
 			log.Printf("----- Uninstall Output -----\n%s", deploymentOutputStr)
 		}
 	},
