@@ -82,21 +82,7 @@ type SparkHistoryServer struct {
 func GenerateSparkTopology() SparkTopology {
 	namePrefix := "{{ or .Values.namePrefix `my` }}"
 	s3BucketName := "{{ or .Values.s3BucketName .DefaultS3BucketName }}"
-
-	topology := CreateDefaultSparkTopology(namePrefix, s3BucketName)
-
-	eksTopology := eks.GenerateEksTopology()
-
-	topology.Spec.EksSpec = eksTopology.Spec
-	topology.Spec.ApiGateway.UserPassword = "{{ .Values.apiUserPassword }}"
-
-	topology.Metadata.CommandEnvironment = eksTopology.Metadata.CommandEnvironment
-	topology.Metadata.CommandEnvironment[CmdEnvSparkOperatorHelmChart] = "third-party/helm-charts/spark-operator-service/charts/spark-operator-chart"
-	topology.Metadata.CommandEnvironment[CmdEnvHistoryServerHelmChart] = "third-party/helm-charts/spark-history-server/charts/spark-history-server-chart"
-
-	topology.Metadata.Notes["apiUserPassword"] = "Please make sure to provide API gateway user password when deploying the topology, e.g. --set apiUserPassword=your-password"
-
-	return topology
+	return CreateDefaultSparkTopology(namePrefix, s3BucketName)
 }
 
 func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTopology {

@@ -73,21 +73,7 @@ type NginxIngress struct {
 func GenerateEksTopology() EksTopology {
 	namePrefix := "{{ or .Values.namePrefix `my` }}"
 	s3BucketName := "{{ or .Values.s3BucketName .DefaultS3BucketName }}"
-
-	topology := CreateDefaultEksTopology(namePrefix, s3BucketName)
-
-	topology.Spec.Region = "{{ or .Values.region `us-west-1` }}"
-	topology.Spec.VpcId = "{{ or .Values.vpcId .DefaultVpcId }}"
-
-	topology.Metadata.CommandEnvironment[CmdEnvHelmExecutable] = "helm"
-	topology.Metadata.CommandEnvironment[CmdEnvWithMinikube] = "false"
-	topology.Metadata.CommandEnvironment[CmdEnvNginxHelmChart] = "third-party/helm-charts/ingress-nginx/charts/ingress-nginx"
-	topology.Metadata.CommandEnvironment[CmdEnvClusterAutoscalerHelmChart] = "third-party/helm-charts/cluster-autoscaler/charts/cluster-autoscaler"
-	topology.Metadata.CommandEnvironment[CmdEnvKubeConfig] = ""
-
-	topology.Metadata.Notes["apiUserPassword"] = "Please make sure to provide API gateway user password when deploying the topology, e.g. --set apiUserPassword=your-password"
-
-	return topology
+	return CreateDefaultEksTopology(namePrefix, s3BucketName)
 }
 
 func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopology {
@@ -105,14 +91,20 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 				Name: topologyName,
 				CommandEnvironment: map[string]string{
 					CmdEnvHelmExecutable: DefaultHelmExecutable,
+					CmdEnvWithMinikube: "false",
+					CmdEnvNginxHelmChart: "third-party/helm-charts/ingress-nginx/charts/ingress-nginx",
+					CmdEnvClusterAutoscalerHelmChart: "third-party/helm-charts/cluster-autoscaler/charts/cluster-autoscaler",
+					CmdEnvKubeConfig: "",
 				},
-				Notes: map[string]string{},
+				Notes: map[string]string{
+					"apiUserPassword": "Please make sure to provide API gateway user password when deploying the topology, e.g. --set apiUserPassword=your-password",
+				},
 			},
 		},
 		Spec: EksTopologySpec{
 			NamePrefix:   namePrefix,
-			Region:       DefaultRegion,
-			VpcId:        "",
+			Region:       "{{ or .Values.region `us-west-1` }}",
+			VpcId:        "{{ or .Values.vpcId .DefaultVpcId }}",
 			S3BucketName: s3BucketName,
 			S3Policy:     resource.IAMPolicy{},
 			Eks: resource.EKSCluster{
