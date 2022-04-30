@@ -34,6 +34,7 @@ const (
 	CmdEnvHelmExecutable             = "helmExecutable"
 	CmdEnvWithMinikube               = "withMinikube"
 	CmdEnvKubeConfig                 = "kubeConfig"
+	CmdEnvPostgresqlHelmChart = "postgresqlHelmChart"
 	CmdEnvHiveMetastoreCreateDatabaseHelmChart = "hiveMetastoreCreateDatabaseHelmChart"
 	CmdEnvHiveMetastoreInitHelmChart = "hiveMetastoreInitHelmChart"
 	CmdEnvHiveMetastoreServerHelmChart = "hiveMetastoreServerHelmChart"
@@ -88,6 +89,7 @@ func CreateDefaultHiveMetastoreTopology(namePrefix string, s3BucketName string) 
 				CommandEnvironment: map[string]string{
 					CmdEnvHelmExecutable: DefaultHelmExecutable,
 				    CmdEnvWithMinikube: "false",
+					CmdEnvPostgresqlHelmChart: "helm-charts/bitnami/charts/postgresql",
 					CmdEnvHiveMetastoreCreateDatabaseHelmChart: "helm-charts/hive-metastore/charts/hive-metastore-postgresql-create-db",
 					CmdEnvHiveMetastoreInitHelmChart: "helm-charts/hive-metastore/charts/hive-metastore-init-postgresql",
 					CmdEnvHiveMetastoreServerHelmChart: "helm-charts/hive-metastore/charts/hive-metastore-server",

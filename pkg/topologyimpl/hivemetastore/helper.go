@@ -57,11 +57,13 @@ func CreatePostgresqlDatabase(commandEnvironment framework.CommandEnvironment, s
 	installName := "postgresql"
 	namespace := spec.Namespace
 
-	kubelib.RunHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable),[]string{"repo", "add", "bitnami", "https://charts.bitnami.com/bitnami"})
-	kubelib.RunHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable),[]string{"search", "repo", "postgres"})
+	//kubelib.RunHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable),[]string{"repo", "add", "bitnami", "https://charts.bitnami.com/bitnami"})
+	//kubelib.RunHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable),[]string{"search", "repo", "postgres"})
+	//kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), "bitnami/postgresql", kubeConfig, arguments, installName, namespace)
 
 	arguments := []string{}
-	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), "bitnami/postgresql", kubeConfig, arguments, installName, namespace)
+	postgresqlHelmChart := commandEnvironment.Get(CmdEnvPostgresqlHelmChart)
+	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), postgresqlHelmChart, kubeConfig, arguments, installName, namespace)
 
 	_, clientset, err := awslib.CreateKubernetesClient(spec.EksSpec.Region, commandEnvironment.Get(CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
 	if err != nil {
