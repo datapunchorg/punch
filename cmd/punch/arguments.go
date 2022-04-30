@@ -92,6 +92,11 @@ func getTopologyFromArguments(args []string) framework.Topology {
 		log.Fatalf("Failed to parse topology file %s: %s", fileName, err.Error())
 	}
 
+	commandEnvironment := createKeyValueMap(CommandEnv)
+	for k, v := range commandEnvironment {
+		topology.GetMetadata().CommandEnvironment[k] =v
+	}
+
 	if len(PatchValues) > 0 {
 		patchMap := createKeyValueMap(PatchValues)
 		for path, value := range patchMap {
