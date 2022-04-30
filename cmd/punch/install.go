@@ -59,7 +59,7 @@ var provisionCmd = &cobra.Command{
 		log.Printf("Install finished")
 
 
-		deploymentOutputStr := MarshalDeploymentOutput(deploymentOutput)
+		deploymentOutputStr := framework.MarshalDeploymentOutput(deploymentOutput)
 		outputFile := Output
 		if outputFile == "" {
 			log.Printf("----- Install Output -----\n%s", deploymentOutputStr)

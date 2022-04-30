@@ -16,6 +16,11 @@ limitations under the License.
 
 package framework
 
+import (
+	"fmt"
+	"gopkg.in/yaml.v3"
+)
+
 type DeploymentOutput interface {
 	Steps() []string
 	Output() map[string]DeploymentStepOutput
@@ -37,4 +42,33 @@ func (t *DeploymentOutputImpl) Output() map[string]DeploymentStepOutput {
 		result[key] = value
 	}
 	return result
+}
+
+func MarshalDeploymentOutput(deploymentOutput DeploymentOutput) string {
+	var output []DeploymentStepOutputStruct
+	for _, name := range deploymentOutput.Steps() {
+		output = append(output, DeploymentStepOutputStruct{
+			Step:   name,
+			Output: deploymentOutput.Output()[name],
+		})
+	}
+
+	s := DeploymentOutputStruct{
+		Output: output,
+	}
+
+	yamlContent, err := yaml.Marshal(s)
+	if err != nil {
+		return fmt.Sprintf("<failed to marshal deployment output: %s>", err.Error())
+	}
+	return string(yamlContent)
+}
+
+type DeploymentOutputStruct struct {
+	Output []DeploymentStepOutputStruct `json:"output" yaml:"output"`
+}
+
+type DeploymentStepOutputStruct struct {
+	Step   string                         `json:"step" yaml:"step"`
+	Output DeploymentStepOutput `json:"output" yaml:"output"`
 }
