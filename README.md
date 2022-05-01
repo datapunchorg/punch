@@ -4,7 +4,7 @@
 This project provides a fully automated one-click experience for people to create Cloud and Kubernetes environment 
 to run their Data Analytics workload like Apache Spark.
 
-For example, command like `punch install SparkOnK8s` will automatically create an AWS EKS cluster, Ingress Controller, 
+For example, command like `punch install SparkOnEks` will automatically create an AWS EKS cluster, Ingress Controller, 
 IAM Roles, Cluster AutoScaler, Spark Operator and a Spark REST Service. Then people could use curl or a command line 
 tool (`sparkcli`) to run Spark application without any other manual deployment work.
 

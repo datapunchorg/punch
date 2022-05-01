@@ -46,12 +46,12 @@ In the terminal, go the `dist` folder.
 
 ## Deploy Spark on K8s and Run Spark Application
 
-### Install SparkOnK8s on Minikube
+### Install SparkOnEks on Minikube
 
 Run punch command:
 
 ```
-./punch install SparkOnK8s --env withMinikube=true --patch spec.apiGateway.userPassword=password1 --print-usage-example
+./punch install SparkOnEks --env withMinikube=true --patch spec.apiGateway.userPassword=password1 --print-usage-example
 ```
 
 The upper `punch install` will print out example commands to run Spark application when it finishes.
@@ -65,10 +65,10 @@ Then Run `sparkcli`:
 ./sparkcli --user user1 --password password1 --insecure --url https://localhost:32443/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --image ghcr.io/datapunchorg/spark:spark-3.2.1-1643336295 --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar
 ```
 
-### Uninstall SparkOnK8s on Minikube
+### Uninstall SparkOnEks on Minikube
 
 Run punch command:
 
 ```
-./punch uninstall SparkOnK8s --env withMinikube=true
+./punch uninstall SparkOnEks --env withMinikube=true
 ```

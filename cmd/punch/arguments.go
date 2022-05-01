@@ -63,7 +63,7 @@ func getTopologyFromArguments(args []string) framework.Topology {
 		}
 		kind := args[0]
 
-		if kind == "SparkOnK8s" {
+		if kind == "SparkOnEks" {
 			log.Printf("[WARNING] Topology name SparkOnK8s is renamed to SparkOnEks. Please use SparkOnEks. SparkOnK8s will be deprecated!")
 			kind = "SparkOnEks"
 		}

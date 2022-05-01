@@ -22,7 +22,7 @@ import (
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/hivemetastore"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/kafka"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/rdsdatabase"
-	_ "github.com/datapunchorg/punch/pkg/topologyimpl/sparkonk8s"
+	_ "github.com/datapunchorg/punch/pkg/topologyimpl/sparkoneks"
 	"github.com/spf13/cobra"
 	"log"
 )

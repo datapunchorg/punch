@@ -13,20 +13,20 @@
 2. Increase memory to 5G in Docker Desktop: [instructions](docs/IncreaseDockerMemory.md)
 3. Install Minikube: only do step 1 "Installation" in https://minikube.sigs.k8s.io/docs/start
 
-### How to Install SparkOnK8s on Minikube
+### How to Install SparkOnEks on Minikube
 
 1. Run punch command:
 
 ```
-./punch install SparkOnK8s --env withMinikube=true --patch spec.apiGateway.userPassword=password1 --print-usage-example
+./punch install SparkOnEks --env withMinikube=true --patch spec.apiGateway.userPassword=password1 --print-usage-example
 ```
 
-### How to uninstall SparkOnK8s on Minikube
+### How to uninstall SparkOnEks on Minikube
 
 1. Run punch command:
 
 ```
-./punch uninstall SparkOnK8s --env withMinikube=true
+./punch uninstall SparkOnEks --env withMinikube=true
 ```
 
 ## Run punch on AWS
@@ -41,14 +41,14 @@
 aws configure
 ```
 
-### How to install SparkOnK8s on AWS
+### How to install SparkOnEks on AWS
 
 1. Unzip the zip file from Punch, and enter that folder in your terminal.
 
 2. Run punch command:
 
 ```
-./punch install SparkOnK8s --patch spec.apiGateway.userPassword=password1 --print-usage-example
+./punch install SparkOnEks --patch spec.apiGateway.userPassword=password1 --print-usage-example
 ```
 
 The upper punch command will create an EKS cluster and Spark REST Service, then people could submit Spark application via that REST service. Please note:
@@ -63,19 +63,19 @@ You could also generate a topology template file, manually modify that file, and
 ./punch install -f /tmp/SparkOnEks.yaml --patch spec.apiGateway.userPassword=password1 --print-usage-example
 ```
 
-### How to uninstall SparkOnK8s on AWS
+### How to uninstall SparkOnEks on AWS
 
 1. Run punch command:
 
 ```
-./punch uninstall SparkOnK8s
+./punch uninstall SparkOnEks
 ```
 
 "punch uninstall" will delete the EKS cluster and related load balancer. It will not delete the IMA role/policy,
 since the IAM role/policy may be still used by other AWS resources. You could manually delete them from AWS web UI.
 In the future, we may add option in "punch uninstall" command to delete those IAM role/policy in a safe way.
 
-## How to run Spark application after installing SparkOnK8s
+## How to run Spark application after installing SparkOnEks
 
 "punch install" in previous section will print out example commands to run Spark application.
 Please check the output from "punch install" command. Also see following section for how to use `sparkcli` command
@@ -94,13 +94,13 @@ brew install sparkcli
 
 To use `sparkcli`, you need to have a Spark API Gateway which is installed by `punch`. 
 
-If SparkOnK8s is installed on minikube, set load balancer domain name as below:
+If SparkOnEks is installed on minikube, set load balancer domain name as below:
 
 ```
 export LB_NAME=localhost:32443
 ```
 
-If SparkOnK8s is installed on AWS, set it as below (replace the value with real load balancer url from `punch install` command output):
+If SparkOnEks is installed on AWS, set it as below (replace the value with real load balancer url from `punch install` command output):
 ```
 export LB_NAME=xxx.us-west-1.elb.amazonaws.com
 ```
