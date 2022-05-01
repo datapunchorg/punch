@@ -171,6 +171,9 @@ func InstallMetastoreServer(commandEnvironment framework.CommandEnvironment, spe
 	if !commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
 		arguments = append(arguments, "--set")
 		arguments = append(arguments, fmt.Sprintf("metastoreWarehouseDir=%s", spec.WarehouseDir))
+	} else {
+		arguments = append(arguments, "--set", "service.type=NodePort")
+		arguments = append(arguments, "--set", "service.nodePorts.thrift=39083")
 	}
 
 	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvHiveMetastoreServerHelmChart), kubeConfig, arguments, installName, namespace)

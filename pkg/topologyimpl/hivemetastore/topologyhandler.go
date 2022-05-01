@@ -126,7 +126,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		}
 		var thriftUrls []string
 		for _, url := range urls {
-			thriftUrls = append(thriftUrls, fmt.Sprintf("thrift://%s:9083", url))
+			thriftUrls = append(thriftUrls, fmt.Sprintf("thrift://%s", url))
 		}
 		return framework.DeploymentStepOutput{
 			"metastoreInClusterUrl": fmt.Sprintf("thrift://hive-metastore.%s.svc.cluster.local:9083", spec.Namespace),

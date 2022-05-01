@@ -123,9 +123,7 @@ func GetServiceLoadBalancerUrls(clientset *kubernetes.Clientset, namespace strin
 	switch service.Spec.Type {
 	case v1.ServiceTypeNodePort:
 		for _, port := range service.Spec.Ports {
-			if port.AppProtocol != nil && *port.AppProtocol == "https" {
-				ingressHostNames = append(ingressHostNames, fmt.Sprintf("localhost:%v", port.NodePort))
-			}
+			ingressHostNames = append(ingressHostNames, fmt.Sprintf("localhost:%v", port.NodePort))
 		}
 	case v1.ServiceTypeLoadBalancer:
 		for _, ingress := range service.Status.LoadBalancer.Ingress {
