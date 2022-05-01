@@ -19,6 +19,7 @@ package framework
 type DeploymentStep interface {
 	Name() string
 	Description() string
+	StepFunc() DeploymentStepFunc
 	Run(context DeploymentContext) (DeploymentStepOutput, error)
 }
 
@@ -34,6 +35,10 @@ func (d deploymentStepWrapper) Name() string {
 
 func (d deploymentStepWrapper) Description() string {
 	return d.description
+}
+
+func (d deploymentStepWrapper) StepFunc() DeploymentStepFunc {
+	return d.run
 }
 
 func (d deploymentStepWrapper) Run(context DeploymentContext) (DeploymentStepOutput, error) {

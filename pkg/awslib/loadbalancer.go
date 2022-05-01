@@ -29,7 +29,7 @@ import (
 	"time"
 )
 
-func DeleteLoadBalancerOnEKS(region string, vpcId string, eksClusterName string, namespace string) error {
+func DeleteLoadBalancersOnEKS(region string, vpcId string, eksClusterName string, namespace string) error {
 	session := CreateSession(region)
 	ec2Client := ec2.New(session)
 

@@ -140,10 +140,12 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
 	specificTopology := topology.(*HiveMetastoreTopology)
 	commandEnvironment := framework.CreateCommandEnvironment(specificTopology.Metadata.CommandEnvironment)
+
 	deployment, err := eks.BuildUninstallDeployment(specificTopology.Spec.EksSpec, commandEnvironment)
 	if err != nil {
 		return nil, err
 	}
+
 	err = deployment.Run()
 	return deployment.GetOutput(), err
 }

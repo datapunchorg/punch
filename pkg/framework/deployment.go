@@ -24,6 +24,7 @@ import (
 type Deployment interface {
 	GetContext() DeploymentContext
 	AddStep(name string, description string, run DeploymentStepFunc)
+	GetSteps() []DeploymentStep
 	Run() error
 	GetOutput() DeploymentOutput
 }
@@ -51,6 +52,10 @@ func (d *deploymentImpl) AddStep(name string, description string, run Deployment
 		run:         run,
 	}
 	d.steps = append(d.steps, step)
+}
+
+func (d *deploymentImpl) GetSteps() []DeploymentStep {
+	return d.steps
 }
 
 func (d *deploymentImpl) Run() error {
