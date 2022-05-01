@@ -44,12 +44,12 @@ func RetryUntilTrue(run func() (bool, error), maxWait time.Duration, sleepTime t
 	return fmt.Errorf("timed out after running %d seconds while max wait time is %d seconds", int(currentTime.Sub(startTime).Seconds()), int(maxWait.Seconds()))
 }
 
-func PatchStructPathByStringValue(target interface{}, path string, value string) error {
+func PatchValuePathByString(target interface{}, path string, value string) error {
 	parts := strings.Split(path, ".")
 	return patchStructPathArrayByStringValue(target, parts, value)
 }
 
-func PatchStructFieldByStringValue(target interface{}, field string, value string) error {
+func PatchValueFieldByString(target interface{}, field string, value string) error {
 	valueOfTarget := reflect.ValueOf(target).Elem()
 	if valueOfTarget.Kind() == reflect.Struct {
 		return patchStructFieldByStringValue(target, field, value)
@@ -144,7 +144,7 @@ func patchStructPathArrayByStringValue(target interface{}, path []string, value 
 	if len(path) == 0 {
 		return fmt.Errorf("invalid path (zero length)")
 	} else if len(path) == 1 {
-		return PatchStructFieldByStringValue(target, path[0], value)
+		return PatchValueFieldByString(target, path[0], value)
 	}
 	fieldV, err := getSettableField(target, path[0])
 	if err != nil {

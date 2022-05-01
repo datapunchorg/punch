@@ -45,60 +45,60 @@ type struct3 struct {
 	MapField1 map[string]string
 }
 
-func TestPatchStructFieldByStringValue(t *testing.T) {
+func TestPatchStructFieldByString(t *testing.T) {
 	s1 := struct1{}
 	var pointer interface{} = &s1
-	err := PatchStructFieldByStringValue(pointer, "Id123", "new_value")
+	err := PatchValueFieldByString(pointer, "Id123", "new_value")
 	assert.NotNil(t, err)
-	err = PatchStructFieldByStringValue(pointer, "Id", "new_value")
+	err = PatchValueFieldByString(pointer, "Id", "new_value")
 	assert.Nil(t, err)
 	assert.Equal(t, "new_value", s1.Id)
-	err = PatchStructFieldByStringValue(pointer, "Enabled", "true")
+	err = PatchValueFieldByString(pointer, "Enabled", "true")
 	assert.Nil(t, err)
 	assert.Equal(t, true, s1.Enabled)
-	err = PatchStructFieldByStringValue(pointer, "Enabled", "false")
+	err = PatchValueFieldByString(pointer, "Enabled", "false")
 	assert.Nil(t, err)
 	assert.Equal(t, false, s1.Enabled)
-	err = PatchStructFieldByStringValue(pointer, "Count", "100")
+	err = PatchValueFieldByString(pointer, "Count", "100")
 	assert.Nil(t, err)
 	assert.Equal(t, 100, s1.Count)
 }
 
-func TestPatchStructPathByStringValue(t *testing.T) {
+func TestPatchStructPathByString(t *testing.T) {
 	s1 := struct1{}
 	var pointer interface{} = &s1
-	err := PatchStructPathByStringValue(pointer, "Id123", "new_value")
+	err := PatchValuePathByString(pointer, "Id123", "new_value")
 	assert.NotNil(t, err)
-	err = PatchStructPathByStringValue(pointer, "Id", "new_value")
+	err = PatchValuePathByString(pointer, "Id", "new_value")
 	assert.Nil(t, err)
 	assert.Equal(t, "new_value", s1.Id)
-	err = PatchStructPathByStringValue(pointer, "Enabled", "true")
+	err = PatchValuePathByString(pointer, "Enabled", "true")
 	assert.Nil(t, err)
 	assert.Equal(t, true, s1.Enabled)
-	err = PatchStructPathByStringValue(pointer, "Enabled", "false")
+	err = PatchValuePathByString(pointer, "Enabled", "false")
 	assert.Nil(t, err)
 	assert.Equal(t, false, s1.Enabled)
-	err = PatchStructPathByStringValue(pointer, "Count", "100")
+	err = PatchValuePathByString(pointer, "Count", "100")
 	assert.Nil(t, err)
 	assert.Equal(t, 100, s1.Count)
 
 	s2 := struct2{}
 	pointer = &s2
-	err = PatchStructPathByStringValue(pointer, "s1.Id", "new_value")
+	err = PatchValuePathByString(pointer, "s1.Id", "new_value")
 	assert.Nil(t, err)
 	assert.Equal(t, "new_value", s2.S1.Id)
-	err = PatchStructPathByStringValue(pointer, "S1.enabled", "true")
+	err = PatchValuePathByString(pointer, "S1.enabled", "true")
 	assert.Nil(t, err)
 	assert.Equal(t, true, s2.S1.Enabled)
-	err = PatchStructPathByStringValue(pointer, "S1.Enabled", "false")
+	err = PatchValuePathByString(pointer, "S1.Enabled", "false")
 	assert.Nil(t, err)
 	assert.Equal(t, false, s2.S1.Enabled)
-	err = PatchStructPathByStringValue(pointer, "S1.Count", "100")
+	err = PatchValuePathByString(pointer, "S1.Count", "100")
 	assert.Nil(t, err)
 	assert.Equal(t, 100, s2.S1.Count)
 }
 
-func TestPatchStructMapFieldByStringValue(t *testing.T) {
+func TestPatchStructMapFieldByString(t *testing.T) {
 	s3 := struct3{
 		MapField1: map[string]string{
 			"key1": "value1",
@@ -106,11 +106,12 @@ func TestPatchStructMapFieldByStringValue(t *testing.T) {
 		},
 	}
 	var pointer interface{} = &s3
-	err := PatchStructPathByStringValue(pointer, "MapField1", "new_value")
+	err := PatchValuePathByString(pointer, "MapField1", "new_value")
 	assert.NotNil(t, err)
-	err = PatchStructPathByStringValue(pointer, "MapField1.not_existing_key", "new_value")
+	err = PatchValuePathByString(pointer, "MapField1.not_existing_key", "new_value")
 	assert.NotNil(t, err)
-	err = PatchStructPathByStringValue(pointer, "MapField1.key1", "new_value")
+	err = PatchValuePathByString(pointer, "MapField1.key1", "new_value")
 	assert.Nil(t, err)
 	assert.Equal(t, "new_value", s3.MapField1["key1"])
+	assert.Equal(t, "value2", s3.MapField1["key2"])
 }
