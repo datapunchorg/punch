@@ -109,7 +109,7 @@ func WaitPodsInPhase(clientset *kubernetes.Clientset, namespace string, podNameP
 		10*time.Second)
 }
 
-func GetServiceLoadBalancerUrls(clientset *kubernetes.Clientset, namespace string, serviceName string) ([]string, error) {
+func GetServiceLoadBalancerHostPorts(clientset *kubernetes.Clientset, namespace string, serviceName string) ([]common.HostPort, error) {
 	service, err := clientset.CoreV1().Services(namespace).Get(
 		context.TODO(),
 		serviceName,
@@ -118,24 +118,34 @@ func GetServiceLoadBalancerUrls(clientset *kubernetes.Clientset, namespace strin
 		return nil, err
 	}
 
-	var ingressHostNames []string
+	var hostPorts []common.HostPort
 
 	switch service.Spec.Type {
 	case v1.ServiceTypeNodePort:
 		for _, port := range service.Spec.Ports {
-			ingressHostNames = append(ingressHostNames, fmt.Sprintf("localhost:%v", port.NodePort))
+			hostPort := common.HostPort{
+				Host: "localhost",
+				Port: port.NodePort,
+			}
+			hostPorts = append(hostPorts, hostPort)
 		}
 	case v1.ServiceTypeLoadBalancer:
 		for _, ingress := range service.Status.LoadBalancer.Ingress {
 			if ingress.Hostname != "" {
-				ingressHostNames = append(ingressHostNames, ingress.Hostname)
+				for _, port := range ingress.Ports {
+					hostPort := common.HostPort{
+						Host: ingress.Hostname,
+						Port: port.Port,
+					}
+					hostPorts = append(hostPorts, hostPort)
+				}
 			}
 		}
 	default:
 		return nil, fmt.Errorf("invalid service spec type: %v", service.Spec.Type)
 	}
 
-	return ingressHostNames, nil
+	return hostPorts, nil
 }
 
 func GetKubeConfigPath() string {

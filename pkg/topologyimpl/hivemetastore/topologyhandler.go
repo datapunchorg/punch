@@ -124,13 +124,9 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		if len(urls) == 0 {
 			return framework.NewDeploymentStepOutput(), fmt.Errorf("did not get any load balancer url for hive metastore")
 		}
-		var thriftUrls []string
-		for _, url := range urls {
-			thriftUrls = append(thriftUrls, fmt.Sprintf("thrift://%s", url))
-		}
 		return framework.DeploymentStepOutput{
 			"metastoreInClusterUrl": fmt.Sprintf("thrift://hive-metastore.%s.svc.cluster.local:9083", spec.Namespace),
-			"metastoreLoadBalancerUrls": thriftUrls,
+			"metastoreLoadBalancerUrls": urls,
 		}, nil
 	})
 	err = deployment.Run()

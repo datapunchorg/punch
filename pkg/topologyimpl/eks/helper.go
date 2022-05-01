@@ -162,18 +162,35 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 		log.Fatalf("Pod %s*** in namespace %s is not in phase %s", serviceName, nginxNamespace, v1.PodRunning)
 	}
 
-	urls, err := awslib.GetLoadBalancerUrls(region, commandEnvironment.Get(CmdEnvKubeConfig), eksClusterName, nginxNamespace, serviceName)
+	hostPorts, err := awslib.GetLoadBalancerHostPorts(region, commandEnvironment.Get(CmdEnvKubeConfig), eksClusterName, nginxNamespace, serviceName)
 	if err != nil {
 		log.Fatalf("Failed to get load balancer urls for nginx controller service %s in namespace %s", serviceName, nginxNamespace)
 	}
 
+	dnsNamesMap := make(map[string]bool, len(hostPorts))
+	for _, entry := range hostPorts {
+		dnsNamesMap[entry.Host] = true
+	}
+	dnsNames := make([]string, 0, len(dnsNamesMap))
+	for k := range dnsNamesMap {
+		dnsNames = append(dnsNames, k)
+	}
+
 	if !commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
-		err = awslib.WaitLoadBalancersReadyByUrls(region, urls)
+		err = awslib.WaitLoadBalancersReadyByDnsNames(region, dnsNames)
 		if err != nil {
 			log.Fatalf("Failed to wait and get load balancer urls: %s", err.Error())
 		}
 	}
 
+	urls := make([]string, 0, len(hostPorts))
+	for _, entry := range hostPorts {
+		if entry.Port == 443 {
+			urls = append(urls, fmt.Sprintf("https://%s", entry.Host))
+		} else {
+			urls = append(urls, fmt.Sprintf("http://%s:%d", entry.Host, entry.Port))
+		}
+	}
 	output := make(map[string]interface{})
 	output["loadBalancerUrls"] = urls
 	return output

@@ -192,16 +192,30 @@ func InstallMetastoreServer(commandEnvironment framework.CommandEnvironment, spe
 
 	serviceName := "hive-metastore"
 
-	urls, err := awslib.GetLoadBalancerUrls(spec.EksSpec.Region, commandEnvironment.Get(CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName, namespace, serviceName)
+	hostPorts, err := awslib.GetLoadBalancerHostPorts(spec.EksSpec.Region, commandEnvironment.Get(CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName, namespace, serviceName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get load balancer urls for nginx controller service %s in namespace %s", serviceName, namespace)
 	}
 
+	dnsNamesMap := make(map[string]bool, len(hostPorts))
+	for _, entry := range hostPorts {
+		dnsNamesMap[entry.Host] = true
+	}
+	dnsNames := make([]string, 0, len(dnsNamesMap))
+	for k := range dnsNamesMap {
+		dnsNames = append(dnsNames, k)
+	}
+
 	if !commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
-		err = awslib.WaitLoadBalancersReadyByUrls(spec.EksSpec.Region, urls)
+		err = awslib.WaitLoadBalancersReadyByDnsNames(spec.EksSpec.Region, dnsNames)
 		if err != nil {
 			return nil, fmt.Errorf("failed to wait and get load balancer urls: %s", err.Error())
 		}
+	}
+
+	urls := make([]string, 0, len(hostPorts))
+	for _, entry := range hostPorts {
+		urls = append(urls, fmt.Sprintf("thrift://%s:%d", entry.Host, entry.Port))
 	}
 
 	return urls, nil

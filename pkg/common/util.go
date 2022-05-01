@@ -24,6 +24,11 @@ import (
 	"time"
 )
 
+type HostPort struct {
+	Host string
+	Port int32
+}
+
 func RetryUntilTrue(run func() (bool, error), maxWait time.Duration, sleepTime time.Duration) error {
 	currentTime := time.Now()
 	startTime := currentTime

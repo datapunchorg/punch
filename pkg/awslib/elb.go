@@ -63,7 +63,7 @@ func GetLoadBalancerByDNSName(elbClient *elb.ELB, dnsName string) (*elb.LoadBala
 	return nil, nil
 }
 
-func GetLoadBalancerInstanceStatesByDNSName(elbClient *elb.ELB, dnsName string) ([]*elb.InstanceState, error) {
+func GetLoadBalancerInstanceStatesByDnsName(elbClient *elb.ELB, dnsName string) ([]*elb.InstanceState, error) {
 	var hasMoreResult = true
 	var marker *string
 	var loadBalancer *elb.LoadBalancerDescription

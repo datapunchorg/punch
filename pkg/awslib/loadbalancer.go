@@ -128,29 +128,29 @@ func DeleteLoadBalancersOnEKS(region string, vpcId string, eksClusterName string
 	return nil
 }
 
-func GetLoadBalancerUrls(region string, kubeConfigFile string, eksClusterName string, namespace string, serviceName string) ([]string, error) {
+func GetLoadBalancerHostPorts(region string, kubeConfigFile string, eksClusterName string, namespace string, serviceName string) ([]common.HostPort, error) {
 	_, clientset, err := CreateKubernetesClient(region, kubeConfigFile, eksClusterName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
 	}
-	urls, err := kubelib.GetServiceLoadBalancerUrls(clientset, namespace, serviceName)
+	hostPorts, err := kubelib.GetServiceLoadBalancerHostPorts(clientset, namespace, serviceName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get load balancers for service %s in namespace %s in cluster %s: %v", serviceName, namespace, eksClusterName, err)
 	}
-	return urls, nil
+	return hostPorts, nil
 }
 
-func WaitLoadBalancersReadyByUrls(region string, urls []string) error {
-	for _, url := range urls {
+func WaitLoadBalancersReadyByDnsNames(region string, dnsNames []string) error {
+	for _, dnsName := range dnsNames {
 		session := CreateSession(region)
 		elbClient := elb.New(session)
 		err := common.RetryUntilTrue(func() (bool, error) {
-			instanceStates, err := GetLoadBalancerInstanceStatesByDNSName(elbClient, url)
+			instanceStates, err := GetLoadBalancerInstanceStatesByDnsName(elbClient, dnsName)
 			if err != nil {
 				return false, err
 			}
 			if len(instanceStates) == 0 {
-				log.Printf("Did not find instances for load balancer %s, wait and retry", url)
+				log.Printf("Did not find instances for load balancer %s, wait and retry", dnsName)
 				return false, nil
 			}
 			for _, entry := range instanceStates {
@@ -158,13 +158,13 @@ func WaitLoadBalancersReadyByUrls(region string, urls []string) error {
 					return true, nil
 				}
 			}
-			log.Printf("No ready instance for load balancer %s, wait and retry", url)
+			log.Printf("No ready instance for load balancer %s, wait and retry", dnsName)
 			return false, nil
 		},
 			10*time.Minute,
 			10*time.Second)
 		if err != nil {
-			return fmt.Errorf("no ready instance for load balancer %s", url)
+			return fmt.Errorf("no ready instance for load balancer %s", dnsName)
 		}
 	}
 	return nil
