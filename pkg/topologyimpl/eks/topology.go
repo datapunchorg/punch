@@ -96,9 +96,7 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 					CmdEnvClusterAutoscalerHelmChart: "third-party/helm-charts/cluster-autoscaler/charts/cluster-autoscaler",
 					CmdEnvKubeConfig: "",
 				},
-				Notes: map[string]string{
-					"apiUserPassword": "Please make sure to provide API gateway user password when deploying the topology, e.g. --set apiUserPassword=your-password",
-				},
+				Notes: map[string]string{},
 			},
 		},
 		Spec: EksTopologySpec{
