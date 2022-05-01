@@ -81,8 +81,6 @@ func CreateDefaultHiveMetastoreTopology(namePrefix string, s3BucketName string) 
 			Metadata: framework.TopologyMetadata{
 				Name:               topologyName,
 				CommandEnvironment: map[string]string{
-					CmdEnvHelmExecutable: DefaultHelmExecutable,
-				    CmdEnvWithMinikube: "false",
 					CmdEnvPostgresqlHelmChart: "third-party/helm-charts/bitnami/charts/postgresql",
 					CmdEnvHiveMetastoreCreateDatabaseHelmChart: "third-party/helm-charts/hive-metastore/charts/hive-metastore-postgresql-create-db",
 					CmdEnvHiveMetastoreInitHelmChart: "third-party/helm-charts/hive-metastore/charts/hive-metastore-init-postgresql",
@@ -106,11 +104,7 @@ func CreateDefaultHiveMetastoreTopology(namePrefix string, s3BucketName string) 
 		},
 	}
 
-	for k, v := range eksTopology.Metadata.CommandEnvironment {
-		if _, ok := topology.Metadata.CommandEnvironment[k]; !ok {
-			topology.Metadata.CommandEnvironment[k] = v
-		}
-	}
+	framework.CopyMissingKeyValuesFromStringMap(topology.Metadata.CommandEnvironment, eksTopology.Metadata.CommandEnvironment)
 
 	eks.UpdateEksTopologyByS3BucketName(&topology.Spec.EksSpec, s3BucketName)
 

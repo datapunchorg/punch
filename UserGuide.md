@@ -18,7 +18,7 @@
 1. Run punch command:
 
 ```
-./punch install SparkOnK8s --env withMinikube=true --set apiUserPassword=password1 --print-usage-example
+./punch install SparkOnK8s --env withMinikube=true --patch spec.apiGateway.userPassword=password1 --print-usage-example
 ```
 
 ### How to uninstall SparkOnK8s on Minikube
@@ -48,7 +48,7 @@ aws configure
 2. Run punch command:
 
 ```
-./punch install SparkOnK8s --set apiUserPassword=password1 --print-usage-example
+./punch install SparkOnK8s --patch spec.apiGateway.userPassword=password1 --print-usage-example
 ```
 
 The upper punch command will create an EKS cluster and Spark REST Service, then people could submit Spark application via that REST service. Please note:
@@ -60,7 +60,7 @@ You could also generate a topology template file, manually modify that file, and
 
 ```
 ./punch generate SparkOnK8s -o /tmp/SparkOnK8s.yaml
-./punch install -f /tmp/SparkOnK8s.yaml --set apiUserPassword=password1 --print-usage-example
+./punch install -f /tmp/SparkOnK8s.yaml --patch spec.apiGateway.userPassword=password1 --print-usage-example
 ```
 
 ### How to uninstall SparkOnK8s on AWS

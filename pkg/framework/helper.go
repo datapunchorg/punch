@@ -23,3 +23,11 @@ func GetOrElse(valueMap map[string]string, key string, defaultValue string) stri
 		return defaultValue
 	}
 }
+
+func CopyMissingKeyValuesFromStringMap(target map[string]string, source map[string]string )  {
+	for k, v := range source {
+		if _, ok := target[k]; !ok {
+			target[k] = v
+		}
+	}
+}

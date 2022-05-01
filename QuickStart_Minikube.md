@@ -51,7 +51,7 @@ In the terminal, go the `dist` folder.
 Run punch command:
 
 ```
-./punch install SparkOnK8s --env withMinikube=true --set apiUserPassword=password1 --print-usage-example
+./punch install SparkOnK8s --env withMinikube=true --patch spec.apiGateway.userPassword=password1 --print-usage-example
 ```
 
 The upper `punch install` will print out example commands to run Spark application when it finishes.

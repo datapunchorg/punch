@@ -95,7 +95,6 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 			Metadata: framework.TopologyMetadata{
 				Name: topologyName,
 				CommandEnvironment: map[string]string{
-					eks.CmdEnvHelmExecutable: eks.DefaultHelmExecutable,
 					CmdEnvSparkOperatorHelmChart: "third-party/helm-charts/spark-operator-service/charts/spark-operator-chart",
 					CmdEnvHistoryServerHelmChart: "third-party/helm-charts/spark-history-server/charts/spark-history-server-chart",
 				},
@@ -124,12 +123,7 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 		},
 	}
 
-	// TODO delete following
-	for k, v := range eksTopology.Metadata.CommandEnvironment {
-		if _, ok := topology.Metadata.CommandEnvironment[k]; !ok {
-			topology.Metadata.CommandEnvironment[k] = v
-		}
-	}
+	framework.CopyMissingKeyValuesFromStringMap(topology.Metadata.CommandEnvironment, eksTopology.Metadata.CommandEnvironment)
 
 	eks.UpdateEksTopologyByS3BucketName(&topology.Spec.EksSpec, s3BucketName)
 	return topology
