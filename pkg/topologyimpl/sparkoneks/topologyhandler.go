@@ -36,6 +36,8 @@ const (
 
 func init() {
 	framework.DefaultTopologyHandlerManager.AddHandler(KindSparkTopology, &TopologyHandler{})
+	// TODO delete SparkOnK8s in the future
+	framework.DefaultTopologyHandlerManager.AddHandler("SparkOnK8s", &TopologyHandler{})
 }
 
 type TopologyHandler struct {

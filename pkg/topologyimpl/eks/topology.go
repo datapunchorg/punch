@@ -78,7 +78,7 @@ func GenerateEksTopology() EksTopology {
 
 func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopology {
 	topologyName := fmt.Sprintf("%s-Eks-k8s", namePrefix)
-	k8sClusterName := fmt.Sprintf("%s-k8s-01", namePrefix)
+	k8sClusterName := fmt.Sprintf("%s-eks-01", namePrefix)
 	controlPlaneRoleName := fmt.Sprintf("%s-eks-control-plane", namePrefix)
 	instanceRoleName := fmt.Sprintf("%s-eks-instance", namePrefix)
 	securityGroupName := fmt.Sprintf("%s-eks-sg-01", namePrefix)

@@ -30,7 +30,7 @@ func DeployClusterAutoscaler(commandEnvironment framework.CommandEnvironment, to
 }
 
 func InstallClusterAutoscalerHelm(commandEnvironment framework.CommandEnvironment, topology EksTopologySpec) {
-	// helm install cluster-autoscaler third-party/helm-charts/cluster-autoscaler --set autoDiscovery.clusterName=my-k8s-01 --set awsRegion=us-west-1
+	// helm install cluster-autoscaler third-party/helm-charts/cluster-autoscaler --set autoDiscovery.clusterName=my-eks-01 --set awsRegion=us-west-1
 
 	kubeConfig, err := awslib.CreateKubeConfig(topology.Region, commandEnvironment.Get(CmdEnvKubeConfig), topology.Eks.ClusterName)
 	if err != nil {

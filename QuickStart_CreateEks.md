@@ -51,7 +51,7 @@ In the terminal, go the `dist` folder.
 Now you could use [kubectl](https://kubernetes.io/docs/tasks/tools/) to explore the cluster.
 
 ```
-aws eks update-kubeconfig --region us-west-1 --name my-k8s-01
+aws eks update-kubeconfig --region us-west-1 --name my-eks-01
 kubectl get nodes
 kubectl get pods -A
 ```
