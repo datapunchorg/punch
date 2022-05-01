@@ -132,7 +132,7 @@ func GetServiceLoadBalancerHostPorts(clientset *kubernetes.Clientset, namespace 
 	case v1.ServiceTypeLoadBalancer:
 		for _, ingress := range service.Status.LoadBalancer.Ingress {
 			if ingress.Hostname != "" {
-				for _, port := range ingress.Ports {
+				for _, port := range service.Spec.Ports {
 					hostPort := common.HostPort{
 						Host: ingress.Hostname,
 						Port: port.Port,

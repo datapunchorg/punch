@@ -187,6 +187,8 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 	for _, entry := range hostPorts {
 		if entry.Port == 443 {
 			urls = append(urls, fmt.Sprintf("https://%s", entry.Host))
+		} else if entry.Port == 80 {
+			urls = append(urls, fmt.Sprintf("http://%s", entry.Host))
 		} else {
 			urls = append(urls, fmt.Sprintf("http://%s:%d", entry.Host, entry.Port))
 		}
