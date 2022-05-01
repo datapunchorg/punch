@@ -117,12 +117,20 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 				UserPassword: spec.Database.UserPassword,
 			}
 		}
-		err := InstallMetastoreServer(commandEnvironment, spec, databaseInfo)
+		urls, err := InstallMetastoreServer(commandEnvironment, spec, databaseInfo)
 		if err != nil {
 			return framework.NewDeploymentStepOutput(), err
 		}
+		if len(urls) == 0 {
+			return framework.NewDeploymentStepOutput(), fmt.Errorf("did not get any load balancer url for hive metastore")
+		}
+		var thriftUrls []string
+		for _, url := range urls {
+			thriftUrls = append(thriftUrls, fmt.Sprintf("thrift://%s:9083", url))
+		}
 		return framework.DeploymentStepOutput{
-			"metastoreUri": fmt.Sprintf("thrift://hive-metastore.%s.svc.cluster.local:9083", spec.Namespace),
+			"metastoreInClusterUrl": fmt.Sprintf("thrift://hive-metastore.%s.svc.cluster.local:9083", spec.Namespace),
+			"metastoreLoadBalancerUrls": thriftUrls,
 		}, nil
 	})
 	err = deployment.Run()

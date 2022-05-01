@@ -22,6 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/datapunchorg/punch/pkg/common"
+	"github.com/datapunchorg/punch/pkg/kubelib"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"log"
 	"strings"
@@ -125,4 +126,44 @@ func DeleteLoadBalancerOnEKS(region string, vpcId string, eksClusterName string,
 	}
 
 	return nil
+}
+
+func WaitAndGetEksServiceLoadBalancerUrls(region string, kubeConfigFile string, eksClusterName string, namespace string, serviceName string) ([]string, error) {
+	_, clientset, err := CreateKubernetesClient(region, kubeConfigFile, eksClusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
+	}
+
+	urls, err := kubelib.GetServiceLoadBalancerUrls(clientset, namespace, serviceName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get load balancers for service %s in namespace %s in cluster %s: %v", serviceName, namespace, eksClusterName, err)
+	}
+
+	for _, url := range urls {
+		session := CreateSession(region)
+		elbClient := elb.New(session)
+		err := common.RetryUntilTrue(func() (bool, error) {
+			instanceStates, err := GetLoadBalancerInstanceStatesByDNSName(elbClient, url)
+			if err != nil {
+				return false, err
+			}
+			if len(instanceStates) == 0 {
+				log.Printf("Did not find instances for load balancer %s, wait and retry", url)
+				return false, nil
+			}
+			for _, entry := range instanceStates {
+				if strings.EqualFold(*entry.State, "InService") {
+					return true, nil
+				}
+			}
+			log.Printf("No ready instance for load balancer %s, wait and retry", url)
+			return false, nil
+		},
+			10*time.Minute,
+			10*time.Second)
+		if err != nil {
+			return nil, fmt.Errorf("no ready instance for load balancer %s", url)
+		}
+	}
+	return urls, nil
 }

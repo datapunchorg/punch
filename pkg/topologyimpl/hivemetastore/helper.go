@@ -149,10 +149,10 @@ func InitDatabase(commandEnvironment framework.CommandEnvironment, spec HiveMeta
 	return nil
 }
 
-func InstallMetastoreServer(commandEnvironment framework.CommandEnvironment, spec HiveMetastoreTopologySpec, databaseInfo DatabaseInfo) error {
+func InstallMetastoreServer(commandEnvironment framework.CommandEnvironment, spec HiveMetastoreTopologySpec, databaseInfo DatabaseInfo) ([]string, error) {
 	kubeConfig, err := awslib.CreateKubeConfig(spec.EksSpec.Region, commandEnvironment.Get(eks.CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
 	if err != nil {
-		return fmt.Errorf("Failed to get kube config: %s", err)
+		return nil, fmt.Errorf("Failed to get kube config: %s", err)
 	}
 
 	defer kubeConfig.Cleanup()
@@ -177,15 +177,21 @@ func InstallMetastoreServer(commandEnvironment framework.CommandEnvironment, spe
 
 	_, clientset, err := awslib.CreateKubernetesClient(spec.EksSpec.Region, commandEnvironment.Get(CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
 	if err != nil {
-		return fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
+		return nil, fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
 	}
 
 	podNamePrefix := "hive-metastore-server"
 	waitPosStatus := v1.PodRunning
 	err = kubelib.WaitPodsInPhase(clientset, namespace, podNamePrefix, waitPosStatus)
 	if err != nil {
-		return fmt.Errorf("pod %s*** in namespace %s is not in phase %s", podNamePrefix, namespace, waitPosStatus)
+		return nil, fmt.Errorf("pod %s*** in namespace %s is not in phase %s", podNamePrefix, namespace, waitPosStatus)
 	}
 
-	return nil
+	serviceName := "hive-metastore"
+	urls, err := awslib.WaitAndGetEksServiceLoadBalancerUrls(spec.EksSpec.Region, commandEnvironment.Get(CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName, spec.Namespace, serviceName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to wait and get load balancer urls: %s", err.Error())
+	}
+
+	return urls, nil
 }

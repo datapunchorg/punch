@@ -20,10 +20,8 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/common"
 	"github.com/datapunchorg/punch/pkg/framework"
@@ -164,33 +162,9 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 		log.Fatalf("Pod %s*** in namespace %s is not in phase %s", serviceName, nginxNamespace, v1.PodRunning)
 	}
 
-	urls, err := kubelib.GetServiceLoadBalancerUrls(clientset, nginxNamespace, serviceName)
+	urls, err := awslib.WaitAndGetEksServiceLoadBalancerUrls(region, commandEnvironment.Get(CmdEnvKubeConfig), eksClusterName, nginxNamespace, serviceName)
 	if err != nil {
-		log.Fatalf("Failed to get load balancers for service %s in namespace %s in cluster %s: %v", serviceName, nginxNamespace, eksClusterName, err)
-	}
-
-	for _, url := range urls {
-		session := awslib.CreateSession(region)
-		elbClient := elb.New(session)
-		common.RetryUntilTrue(func() (bool, error) {
-			instanceStates, err := awslib.GetLoadBalancerInstanceStatesByDNSName(elbClient, url)
-			if err != nil {
-				return false, err
-			}
-			if len(instanceStates) == 0 {
-				log.Printf("Did not find instances for load balancer %s, wait and retry", url)
-				return false, nil
-			}
-			for _, entry := range instanceStates {
-				if strings.EqualFold(*entry.State, "InService") {
-					return true, nil
-				}
-			}
-			log.Printf("No ready instance for load balancer %s, wait and retry", url)
-			return false, nil
-		},
-			10*time.Minute,
-			10*time.Second)
+		log.Fatalf("Failed to wait and get load balancer urls: %s", err.Error())
 	}
 
 	output := make(map[string]interface{})
