@@ -41,6 +41,10 @@ type struct2 struct {
 	S1 struct1
 }
 
+type struct3 struct {
+	MapField1 map[string]string
+}
+
 func TestPatchStructFieldByStringValue(t *testing.T) {
 	s1 := struct1{}
 	var pointer interface{} = &s1
@@ -92,4 +96,21 @@ func TestPatchStructPathByStringValue(t *testing.T) {
 	err = PatchStructPathByStringValue(pointer, "S1.Count", "100")
 	assert.Nil(t, err)
 	assert.Equal(t, 100, s2.S1.Count)
+}
+
+func TestPatchStructMapFieldByStringValue(t *testing.T) {
+	s3 := struct3{
+		MapField1: map[string]string{
+			"key1": "value1",
+			"key2": "value2",
+		},
+	}
+	var pointer interface{} = &s3
+	err := PatchStructPathByStringValue(pointer, "MapField1", "new_value")
+	assert.NotNil(t, err)
+	err = PatchStructPathByStringValue(pointer, "MapField1.not_existing_key", "new_value")
+	assert.NotNil(t, err)
+	err = PatchStructPathByStringValue(pointer, "MapField1.key1", "new_value")
+	assert.Nil(t, err)
+	assert.Equal(t, "new_value", s3.MapField1["key1"])
 }
