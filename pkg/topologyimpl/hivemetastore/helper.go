@@ -188,9 +188,17 @@ func InstallMetastoreServer(commandEnvironment framework.CommandEnvironment, spe
 	}
 
 	serviceName := "hive-metastore"
-	urls, err := awslib.WaitAndGetEksServiceLoadBalancerUrls(spec.EksSpec.Region, commandEnvironment.Get(CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName, spec.Namespace, serviceName)
+
+	urls, err := awslib.GetLoadBalancerUrls(spec.EksSpec.Region, commandEnvironment.Get(CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName, namespace, serviceName)
 	if err != nil {
-		return nil, fmt.Errorf("failed to wait and get load balancer urls: %s", err.Error())
+		return nil, fmt.Errorf("failed to get load balancer urls for nginx controller service %s in namespace %s", serviceName, namespace)
+	}
+
+	if !commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
+		err = awslib.WaitLoadBalancersReadyByUrls(spec.EksSpec.Region, urls)
+		if err != nil {
+			return nil, fmt.Errorf("failed to wait and get load balancer urls: %s", err.Error())
+		}
 	}
 
 	return urls, nil

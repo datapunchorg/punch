@@ -128,17 +128,19 @@ func DeleteLoadBalancersOnEKS(region string, vpcId string, eksClusterName string
 	return nil
 }
 
-func WaitAndGetEksServiceLoadBalancerUrls(region string, kubeConfigFile string, eksClusterName string, namespace string, serviceName string) ([]string, error) {
+func GetLoadBalancerUrls(region string, kubeConfigFile string, eksClusterName string, namespace string, serviceName string) ([]string, error) {
 	_, clientset, err := CreateKubernetesClient(region, kubeConfigFile, eksClusterName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
 	}
-
 	urls, err := kubelib.GetServiceLoadBalancerUrls(clientset, namespace, serviceName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get load balancers for service %s in namespace %s in cluster %s: %v", serviceName, namespace, eksClusterName, err)
 	}
+	return urls, nil
+}
 
+func WaitLoadBalancersReadyByUrls(region string, urls []string) error {
 	for _, url := range urls {
 		session := CreateSession(region)
 		elbClient := elb.New(session)
@@ -162,8 +164,8 @@ func WaitAndGetEksServiceLoadBalancerUrls(region string, kubeConfigFile string, 
 			10*time.Minute,
 			10*time.Second)
 		if err != nil {
-			return nil, fmt.Errorf("no ready instance for load balancer %s", url)
+			return fmt.Errorf("no ready instance for load balancer %s", url)
 		}
 	}
-	return urls, nil
+	return nil
 }
