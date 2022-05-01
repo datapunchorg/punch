@@ -35,7 +35,7 @@ const (
 	DefaultSparkHistoryServerImageTag        = "spark-history-server-3.2-1650337377"
 	DefaultSparkHistoryServerNamespace       = "spark-history-server"
 
-	KindSparkTopology = "SparkOnK8s"
+	KindSparkTopology = "SparkOnEks"
 
 	FieldMaskValue = "***"
 

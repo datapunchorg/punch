@@ -59,8 +59,8 @@ The upper punch command will create an EKS cluster and Spark REST Service, then 
 You could also generate a topology template file, manually modify that file, and then install from it:
 
 ```
-./punch generate SparkOnK8s -o /tmp/SparkOnK8s.yaml
-./punch install -f /tmp/SparkOnK8s.yaml --patch spec.apiGateway.userPassword=password1 --print-usage-example
+./punch generate SparkOnEks -o /tmp/SparkOnEks.yaml
+./punch install -f /tmp/SparkOnEks.yaml --patch spec.apiGateway.userPassword=password1 --print-usage-example
 ```
 
 ### How to uninstall SparkOnK8s on AWS

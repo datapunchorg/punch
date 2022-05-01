@@ -27,7 +27,7 @@ func TestGenerateTopology(t *testing.T) {
 	handler := &TopologyHandler{}
 	topology, err := handler.Generate()
 	assert.Equal(t, nil, err)
-	assert.Equal(t, "SparkOnK8s", topology.GetKind())
+	assert.Equal(t, "SparkOnEks", topology.GetKind())
 
 	log.Printf("-----\n%s\n-----\n", framework.TopologyString(topology))
 
@@ -44,7 +44,7 @@ func TestParseTopology(t *testing.T) {
 
 	topology, err = handler.Parse([]byte(yamlContent))
 	assert.Equal(t, nil, err)
-	assert.Equal(t, "SparkOnK8s", topology.GetKind())
+	assert.Equal(t, "SparkOnEks", topology.GetKind())
 	sparkTopology = topology.(*SparkTopology)
 	assert.Equal(t, "foo", sparkTopology.Spec.EksSpec.NamePrefix)
 }
@@ -60,7 +60,7 @@ func TestResolveTopology(t *testing.T) {
 	topology.(*SparkTopology).Spec.ApiGateway.UserPassword = "aaa"
 	resolvedTopology, err := handler.Validate(topology, framework.PhaseBeforeInstall)
 	assert.Equal(t, nil, err)
-	assert.Equal(t, "SparkOnK8s", resolvedTopology.GetKind())
+	assert.Equal(t, "SparkOnEks", resolvedTopology.GetKind())
 }
 
 func TestResolveTopology_NoPassword(t *testing.T) {

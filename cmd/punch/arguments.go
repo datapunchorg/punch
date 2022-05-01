@@ -62,6 +62,12 @@ func getTopologyFromArguments(args []string) framework.Topology {
 			log.Fatalf("Please specify an argument to identify the kind of topology, or specify -f to provide a topology file")
 		}
 		kind := args[0]
+
+		if kind == "SparkOnK8s" {
+			log.Printf("[WARNING] Topology name SparkOnK8s is renamed to SparkOnEks. Please use SparkOnEks. SparkOnK8s will be deprecated!")
+			kind = "SparkOnEks"
+		}
+
 		handler := getTopologyHandlerOrFatal(kind)
 		generatedTopology, err := handler.Generate()
 		if err != nil {
