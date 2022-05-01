@@ -162,9 +162,13 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 		log.Fatalf("Pod %s*** in namespace %s is not in phase %s", serviceName, nginxNamespace, v1.PodRunning)
 	}
 
-	urls, err := awslib.WaitAndGetEksServiceLoadBalancerUrls(region, commandEnvironment.Get(CmdEnvKubeConfig), eksClusterName, nginxNamespace, serviceName)
-	if err != nil {
-		log.Fatalf("Failed to wait and get load balancer urls: %s", err.Error())
+	var urls []string
+
+	if !commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
+		urls, err = awslib.WaitAndGetEksServiceLoadBalancerUrls(region, commandEnvironment.Get(CmdEnvKubeConfig), eksClusterName, nginxNamespace, serviceName)
+		if err != nil {
+			log.Fatalf("Failed to wait and get load balancer urls: %s", err.Error())
+		}
 	}
 
 	output := make(map[string]interface{})
