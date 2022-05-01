@@ -165,7 +165,7 @@ func CreateApiGatewayService(clientset *kubernetes.Clientset, namespace string, 
 		log.Fatalf("Failed to get API gateway service %s in namespace %s: %v", serviceName, namespace, err)
 	}
 
-	// TODO wait until service.Status.LoadBalancer.Ingress has value
+	// TODO delete following?
 	for _, ingress := range service.Status.LoadBalancer.Ingress {
 		log.Printf("Got ingress %s for API gateway service %s in namespace %s", ingress.Hostname, serviceName, namespace)
 	}

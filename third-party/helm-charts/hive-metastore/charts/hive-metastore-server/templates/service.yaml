@@ -5,11 +5,15 @@ metadata:
   labels:
     {{- include "hive-metastore.labels" $ | trim | nindent 4 }}
 spec:
-  type: ClusterIP
+  type: {{ .Values.service.type }}
   ports:
+  {{- $setNodePorts := (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) }}
     - name: thrift
       protocol: TCP
-      port: 9083
-      targetPort: 9083
+      port: {{ .Values.service.ports.thrift }}
+      targetPort: {{ .Values.service.targetPorts.thrift }}
+    {{- if (and $setNodePorts (not (empty .Values.service.nodePorts.thrift))) }}
+      nodePort: { { .Values.service.nodePorts.thrift }}
+    {{- end }}
   selector:
     {{- include "hive-metastore.selectorLabels" . | nindent 4 }}

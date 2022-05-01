@@ -6,6 +6,16 @@ image:
   name: ghcr.io/datapunchorg/helm-hive-metastore
   tag: main-1650942144
 
+service:
+  type: LoadBalancer
+  ports:
+    thrift: 9083
+  targetPorts:
+    thrift: 9083
+  nodePorts:
+    thrift: ""
+
+
 jdbcDriverName: org.postgresql.Driver
 
 dbConnectionString: jdbc:postgresql://postgresql.hive-01.svc.cluster.local:5432/metastore_db
@@ -24,14 +34,6 @@ resources:
   requests:
     cpu: 1
     memory: 1Gi
-
-service:
-  type: ClusterIP
-  ports:
-    - name: thrift
-      port: 9083
-      targetPort: 9083
-      protocol: TCP
 
 ## Auto-scaling (hpa) configuration
 autoscaling:
