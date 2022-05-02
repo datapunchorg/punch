@@ -30,9 +30,7 @@ See [Quick Start Guide](QuickStart_Minikube.md) for details.
 
 Again, use one command like `punch install SparkOnEks` to deploy a runnable Spark environment on EKS.
 
-See [Quick Start Guide](QuickStart_Minikube.md) for details.
-
-Also see [User Guide](UserGuide.md) for more details, section: `Run punch on AWS`.
+See [User Guide](UserGuide.md) for more details in section: `Run punch on AWS`.
 
 ## Quick Start - Create EKS Cluster
 
