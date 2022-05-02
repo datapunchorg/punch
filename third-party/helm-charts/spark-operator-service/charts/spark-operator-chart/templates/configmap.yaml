@@ -8,3 +8,10 @@ data:
       sparkConf:
         spark.eventLog.enabled: {{ .Values.apiGateway.sparkEventLogEnabled }}
         spark.eventLog.dir: {{ .Values.apiGateway.sparkEventLogDir }}
+        spark.sql.catalogImplementation: hive
+      {{- if (not (empty .Values.apiGateway.hiveMetastoreUris)) }}
+        spark.hadoop.hive.metastore.uris: {{ .Values.apiGateway.hiveMetastoreUris }}
+      {{- end }}
+      {{- if (not (empty .Values.apiGateway.sparkSqlWarehouseDir)) }}
+        spark.sql.warehouse.dir: {{ .Values.apiGateway.sparkSqlWarehouseDir }}
+      {{- end }}

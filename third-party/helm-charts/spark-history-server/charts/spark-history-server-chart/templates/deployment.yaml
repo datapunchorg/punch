@@ -32,7 +32,7 @@ spec:
           - name: SPARK_NO_DAEMONIZE
             value: "true"
           - name: SPARK_HISTORY_OPTS
-            value: "-Dspark.history.fs.logDirectory={{ .Values.sparkLogDirectory }}"
+            value: "-Dspark.history.fs.logDirectory={{ .Values.sparkEventLogDir }}"
           - name: AWS_ROLE_SESSION_NAME
             value: "spark-history-server"
           - name: SPARK_CONF_DIR

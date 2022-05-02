@@ -62,6 +62,8 @@ type SparkApiGateway struct {
 	UserName     string `json:"userName" yaml:"userName"`
 	UserPassword string `json:"userPassword" yaml:"userPassword"`
 	SparkEventLogDir string `json:"sparkEventLogDir" yaml:"sparkEventLogDir"`
+	HiveMetastoreUris string `json:"hiveMetastoreUris" yaml:"hiveMetastoreUris"`
+	SparkSqlWarehouseDir string `json:"sparkSqlWarehouseDir" yaml:"sparkSqlWarehouseDir"`
 }
 
 type SparkOperator struct {

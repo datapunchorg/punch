@@ -4,6 +4,6 @@ metadata:
   name: spark-history-server-config
 data:
   spark-defaults.conf: |-
-    spark.history.fs.logDirectory={{ .Values.sparkLogDirectory }}
+    spark.history.fs.logDirectory={{ .Values.sparkEventLogDir }}
     spark.history.fs.cleaner.enabled=true
     spark.history.fs.cleaner.maxAge=3d

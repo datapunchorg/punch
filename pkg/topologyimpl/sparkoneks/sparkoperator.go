@@ -206,6 +206,15 @@ func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, t
 		arguments = append(arguments, "apiGateway.sparkEventLogDir=" + topology.ApiGateway.SparkEventLogDir)
 	}
 
+	if topology.ApiGateway.HiveMetastoreUris != "" {
+		arguments = append(arguments, "--set")
+		arguments = append(arguments, "apiGateway.hiveMetastoreUris=" + topology.ApiGateway.HiveMetastoreUris)
+	}
+	if topology.ApiGateway.SparkSqlWarehouseDir != "" {
+		arguments = append(arguments, "--set")
+		arguments = append(arguments, "apiGateway.sparkSqlWarehouseDir=" + topology.ApiGateway.SparkSqlWarehouseDir)
+	}
+
 	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvSparkOperatorHelmChart), kubeConfig, arguments, installName, operatorNamespace)
 }
 

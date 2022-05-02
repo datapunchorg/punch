@@ -6,7 +6,7 @@ image:
   pullPolicy: IfNotPresent
   pullSecrets: []
 
-sparkLogDirectory: /opt/spark
+sparkEventLogDir: file:/tmp/spark-events
 
 resources:
   limits:

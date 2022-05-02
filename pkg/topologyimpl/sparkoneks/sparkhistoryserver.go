@@ -71,7 +71,7 @@ func InstallHistoryServerHelm(commandEnvironment framework.CommandEnvironment, t
 
 	if !commandEnvironment.GetBoolOrElse(eks.CmdEnvWithMinikube, false) {
 		arguments = append(arguments, "--set")
-		arguments = append(arguments, fmt.Sprintf("sparkLogDirectory=%s", topology.ApiGateway.SparkEventLogDir))
+		arguments = append(arguments, fmt.Sprintf("sparkEventLogDir=%s", topology.ApiGateway.SparkEventLogDir))
 	}
 
 	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvHistoryServerHelmChart), kubeConfig, arguments, installName, installNamespace)
