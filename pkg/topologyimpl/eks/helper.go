@@ -31,6 +31,9 @@ import (
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+var NodePortLocalHttp int32 = 32080
+var NodePortLocalHttps int32 = 32443
+
 func CreateInstanceIamRole(topology EksTopologySpec) string {
 	region := topology.Region
 	roleName, err := resource.CreateIAMRoleWithMorePolicies(region, topology.Eks.InstanceRole, []resource.IAMPolicy{topology.S3Policy})
@@ -148,7 +151,8 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 
 	if commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
 		arguments = append(arguments, "--set", "controller.service.type=NodePort")
-		arguments = append(arguments, "--set", "controller.service.nodePorts.https=32443")
+		arguments = append(arguments, "--set", fmt.Sprintf("controller.service.nodePorts.http=%d", NodePortLocalHttp))
+		arguments = append(arguments, "--set", fmt.Sprintf("controller.service.nodePorts.https=%d", NodePortLocalHttps))
 	}
 
 	kubelib.InstallHelm(commandEnvironment.Get(CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvNginxHelmChart), kubeConfig, arguments, helmInstallName, nginxNamespace)
@@ -187,6 +191,8 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 	for _, entry := range hostPorts {
 		if entry.Port == 443 {
 			urls = append(urls, fmt.Sprintf("https://%s", entry.Host))
+		} else if entry.Port == NodePortLocalHttps {
+			urls = append(urls, fmt.Sprintf("https://%s:%d", entry.Host, entry.Port))
 		} else if entry.Port == 80 {
 			urls = append(urls, fmt.Sprintf("http://%s", entry.Host))
 		} else {
