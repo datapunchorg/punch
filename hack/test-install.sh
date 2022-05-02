@@ -39,10 +39,11 @@ export apiGatewayLoadBalancerUrl=$(jq -r '.output[] | select(.step=="deployNginx
 export metastoreWarehouseDirS3Url=$(echo $metastoreWarehouseDir | sed -e "s/^s3a/s3/")
 
 aws s3 ls $metastoreWarehouseDirS3Url/
-aws s3 rm --recursive $metastoreWarehouseDirS3Url/db01.db
+aws s3 rm --recursive $metastoreWarehouseDirS3Url/punch_test_db_01.db
+aws s3 ls $metastoreWarehouseDirS3Url/
 
 ./sparkcli --user $sparkApiGatewayUser --password $sparkApiGatewayPassword --insecure \
   --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 submit \
   --image ghcr.io/datapunchorg/spark:pyspark-3.2.1-1643336295 --spark-version 3.2 \
   --driver-memory 512m --executor-memory 512m \
-  pyspark-hive-example.py
+  examples/pyspark-hive-example.py
