@@ -22,28 +22,23 @@ Go to `dist` folder, then check [User Guide](UserGuide.md) to see how to run `pu
 
 You could build this project (`make release`) and use `punch` to deploy Spark on [Minikube](https://minikube.sigs.k8s.io/docs/start/), and run Spark application for a quick try.
 
+For example, use one command like `punch install SparkOnEks --env withMinikube=true` to deploy a runnable Spark environment on Minikube.
+
 See [Quick Start Guide](QuickStart_Minikube.md) for details.
 
 ## User Guide - Run Spark on AWS EKS
 
-See [User Guide](UserGuide.md), section: `Run punch on AWS`.
+Again, use one command like `punch install SparkOnEks` to deploy a runnable Spark environment on EKS.
+
+See [Quick Start Guide](QuickStart_Minikube.md) for details.
+
+Also see [User Guide](UserGuide.md) for more details, section: `Run punch on AWS`.
 
 ## Quick Start - Create EKS Cluster
 
 You could build this project (`make release`) and use `punch` to crate an AWS EKS cluster and play with it.
 
 See [Quick Start Guide](QuickStart_CreateEks.md) for details.
-
-
-## Install using Homebrew
-
-```
-brew tap datapunchorg/punch
-brew install punch
-
-brew tap datapunchorg/sparkcli
-brew install sparkcli
-```
 
 ## TODO
 
