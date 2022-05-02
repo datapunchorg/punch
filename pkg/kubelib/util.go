@@ -69,7 +69,7 @@ func AppendHelmKubeArguments(arguments []string, kubeConfig KubeConfig) []string
 	return arguments
 }
 
-func CheckPodsInPhase(clientset *kubernetes.Clientset, namespace string, podNamePrefix string, podPhase v1.PodPhase) (bool, error) {
+func CheckPodsInPhases(clientset *kubernetes.Clientset, namespace string, podNamePrefix string, podPhases []v1.PodPhase) (bool, error) {
 	podList, err := clientset.CoreV1().Pods(namespace).List(
 		context.TODO(),
 		metav1.ListOptions{})
@@ -83,8 +83,8 @@ func CheckPodsInPhase(clientset *kubernetes.Clientset, namespace string, podName
 			continue
 		}
 		podsCount++
-		if pod.Status.Phase != podPhase {
-			log.Printf("Pod %s in namespace %s is in phase %s (not expected: %s)", pod.Name, namespace, pod.Status.Phase, podPhase)
+		if !containsPodPhase(podPhases, pod.Status.Phase) {
+			log.Printf("Pod %s in namespace %s is in phase %s (not expected: %s)", pod.Name, namespace, pod.Status.Phase, podPhases)
 			podsReady = false
 			break
 		}
@@ -96,10 +96,10 @@ func CheckPodsInPhase(clientset *kubernetes.Clientset, namespace string, podName
 	}
 }
 
-func WaitPodsInPhase(clientset *kubernetes.Clientset, namespace string, podNamePrefix string, podPhase v1.PodPhase) error {
+func WaitPodsInPhases(clientset *kubernetes.Clientset, namespace string, podNamePrefix string, podPhases []v1.PodPhase) error {
 	return common.RetryUntilTrue(func() (bool, error) {
-		log.Printf("Checking whether pod %s*** in namespace %s is in phase %s", podNamePrefix, namespace, podPhase)
-		result, err := CheckPodsInPhase(clientset, namespace, podNamePrefix, podPhase)
+		log.Printf("Checking whether pod %s*** in namespace %s is in phase %s", podNamePrefix, namespace, podPhases)
+		result, err := CheckPodsInPhases(clientset, namespace, podNamePrefix, podPhases)
 		if err != nil {
 			return result, err
 		}
@@ -154,4 +154,13 @@ func GetKubeConfigPath() string {
 		return os.Getenv("HOME") + "/.kube/config"
 	}
 	return kubeConfigEnv
+}
+
+func containsPodPhase(slice []v1.PodPhase, value v1.PodPhase) bool {
+	for _, v := range slice {
+		if v == value {
+			return true
+		}
+	}
+	return false
 }

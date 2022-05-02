@@ -92,7 +92,7 @@ func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, topolo
 	CreateApiGatewayService(clientset, operatorNamespace, helmInstallName, helmInstallName)
 
 	sparkOperatorPodNamePrefix := helmInstallName
-	err = kubelib.WaitPodsInPhase(clientset, operatorNamespace, sparkOperatorPodNamePrefix, v1.PodRunning)
+	err = kubelib.WaitPodsInPhases(clientset, operatorNamespace, sparkOperatorPodNamePrefix, []v1.PodPhase{v1.PodRunning})
 	if err != nil {
 		log.Fatalf("Pod %s*** in namespace %s is not in phase %s", sparkOperatorPodNamePrefix, operatorNamespace, v1.PodRunning)
 	}

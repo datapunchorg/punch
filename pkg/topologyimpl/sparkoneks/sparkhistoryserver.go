@@ -43,7 +43,7 @@ func DeployHistoryServer(commandEnvironment framework.CommandEnvironment, topolo
 
 	namespace := topology.HistoryServer.Namespace
 	podNamePrefix := helmInstallName
-	err = kubelib.WaitPodsInPhase(clientset, namespace, podNamePrefix, v1.PodRunning)
+	err = kubelib.WaitPodsInPhases(clientset, namespace, podNamePrefix, []v1.PodPhase{v1.PodRunning})
 	if err != nil {
 		return fmt.Errorf("pod %s*** in namespace %s is not in phase %s", podNamePrefix, namespace, v1.PodRunning)
 	}

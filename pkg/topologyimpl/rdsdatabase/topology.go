@@ -80,7 +80,7 @@ func CreateDefaultDatabaseTopology(namePrefix string) DatabaseTopology {
 			EngineVersion:      "10.14",
 			EngineMode:         "serverless",
 			MasterUserName:     DefaultUserName,
-			MasterUserPassword: "{{ .Values.masterUserPassword }}",
+			MasterUserPassword: "",
 			SecurityGroups: []resource.SecurityGroup{
 				{
 					Name: securityGroupName,

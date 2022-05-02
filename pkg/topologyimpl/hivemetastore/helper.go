@@ -74,8 +74,8 @@ func CreatePostgresqlDatabase(commandEnvironment framework.CommandEnvironment, s
 	}
 
 	podNamePrefix := "postgresql"
-	waitPosStatus := v1.PodRunning
-	err = kubelib.WaitPodsInPhase(clientset, namespace, podNamePrefix, waitPosStatus)
+	waitPosStatus := []v1.PodPhase{v1.PodRunning}
+	err = kubelib.WaitPodsInPhases(clientset, namespace, podNamePrefix, waitPosStatus)
 	if err != nil {
 		return DatabaseInfo{}, fmt.Errorf("pod %s*** in namespace %s is not in phase %s", podNamePrefix, namespace, waitPosStatus)
 	}
@@ -102,8 +102,8 @@ func CreatePostgresqlDatabase(commandEnvironment framework.CommandEnvironment, s
 	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), hiveMetastoreCreateDatabaseHelmChart, kubeConfig, arguments, installName, namespace)
 
 	podNamePrefix = "hive-metastore-postgresql-create-db"
-	waitPosStatus = v1.PodSucceeded
-	err = kubelib.WaitPodsInPhase(clientset, namespace, podNamePrefix, waitPosStatus)
+	waitPosStatus = []v1.PodPhase{v1.PodSucceeded}
+	err = kubelib.WaitPodsInPhases(clientset, namespace, podNamePrefix, waitPosStatus)
 	if err != nil {
 		return DatabaseInfo{}, fmt.Errorf("pod %s*** in namespace %s is not in phase %s", podNamePrefix, namespace, waitPosStatus)
 	}
@@ -143,8 +143,8 @@ func InitDatabase(commandEnvironment framework.CommandEnvironment, spec HiveMeta
 	}
 
 	podNamePrefix := "hive-metastore-init-postgresql"
-	waitPosStatus := v1.PodSucceeded
-	err = kubelib.WaitPodsInPhase(clientset, namespace, podNamePrefix, waitPosStatus)
+	waitPosStatus := []v1.PodPhase{v1.PodSucceeded, v1.PodFailed} // TODO deal with repeated init postgresql and do not wait PodFailed
+	err = kubelib.WaitPodsInPhases(clientset, namespace, podNamePrefix, waitPosStatus)
 	if err != nil {
 		return fmt.Errorf("pod %s*** in namespace %s is not in phase %s", podNamePrefix, namespace, waitPosStatus)
 	}
@@ -189,8 +189,8 @@ func InstallMetastoreServer(commandEnvironment framework.CommandEnvironment, spe
 	}
 
 	podNamePrefix := "hive-metastore-server"
-	waitPosStatus := v1.PodRunning
-	err = kubelib.WaitPodsInPhase(clientset, namespace, podNamePrefix, waitPosStatus)
+	waitPosStatus := []v1.PodPhase{v1.PodRunning}
+	err = kubelib.WaitPodsInPhases(clientset, namespace, podNamePrefix, waitPosStatus)
 	if err != nil {
 		return nil, fmt.Errorf("pod %s*** in namespace %s is not in phase %s", podNamePrefix, namespace, waitPosStatus)
 	}

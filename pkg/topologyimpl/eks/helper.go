@@ -162,7 +162,7 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 	if err != nil {
 		log.Fatalf("Failed to create Kubernetes client: %s", err.Error())
 	}
-	err = kubelib.WaitPodsInPhase(clientset, nginxNamespace, serviceName, v1.PodRunning)
+	err = kubelib.WaitPodsInPhases(clientset, nginxNamespace, serviceName, []v1.PodPhase{v1.PodRunning})
 	if err != nil {
 		log.Fatalf("Pod %s*** in namespace %s is not in phase %s", serviceName, nginxNamespace, v1.PodRunning)
 	}

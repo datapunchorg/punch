@@ -61,7 +61,7 @@ func InstallClusterAutoscalerHelm(commandEnvironment framework.CommandEnvironmen
 	}
 
 	podNamePrefix := "cluster-autoscaler-aws-cluster-autoscaler"
-	err = kubelib.WaitPodsInPhase(clientset, installNamespace, podNamePrefix, v1.PodRunning)
+	err = kubelib.WaitPodsInPhases(clientset, installNamespace, podNamePrefix, []v1.PodPhase{v1.PodRunning})
 	if err != nil {
 		log.Fatalf("Pod %s*** in namespace %s is not in phase %s", podNamePrefix, installNamespace, v1.PodRunning)
 	}
