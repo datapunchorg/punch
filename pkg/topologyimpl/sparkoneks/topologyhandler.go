@@ -124,20 +124,12 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 func (t *TopologyHandler) PrintUsageExample(topology framework.Topology, deploymentOutput framework.DeploymentOutput) {
 	specificTopology := topology.(*SparkTopology)
 
-	var loadBalancerUrls []string
-	loadBalancerUrls = deploymentOutput.Output()["deployNginxIngressController"]["loadBalancerUrls"].([]string)
-	if len(loadBalancerUrls) > 0 {
-		url := loadBalancerUrls[0]
-		for _, entry := range loadBalancerUrls {
-			// Use https url if possible
-			if strings.HasPrefix(strings.ToLower(entry), "https") {
-				url = entry
-			}
-		}
+	loadBalancerUrl := deploymentOutput.Output()["deployNginxIngressController"]["loadBalancerPreferredUrl"].(string)
+	if loadBalancerUrl != "" {
 		if _, ok := deploymentOutput.Output()["minikubeStart"]; ok {
-			printExampleCommandToRunSparkOnMinikube(url, *specificTopology)
+			printExampleCommandToRunSparkOnMinikube(loadBalancerUrl, *specificTopology)
 		} else {
-			printExampleCommandToRunSparkOnAws(url, *specificTopology)
+			printExampleCommandToRunSparkOnAws(loadBalancerUrl, *specificTopology)
 		}
 	} else {
 		log.Printf("Did not find load balancer url, cannot print usage example command")

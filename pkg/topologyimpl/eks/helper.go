@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/datapunchorg/punch/pkg/awslib"
@@ -201,6 +202,20 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 	}
 	output := make(map[string]interface{})
 	output["loadBalancerUrls"] = urls
+
+	preferredUrl := ""
+	if len(urls) > 0 {
+		preferredUrl = urls[0]
+		for _, entry := range urls {
+			// Use https url if possible
+			if strings.HasPrefix(strings.ToLower(entry), "https") {
+				preferredUrl = entry
+			}
+		}
+	}
+
+	output["loadBalancerPreferredUrl"] = preferredUrl
+
 	return output
 }
 
