@@ -28,6 +28,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+var NODE_PORT_LOCAL_THRIFT_PORT = 30083
+var WAREHOUSE_DIR_LOCAL_FILE_TEMP_DIRECTORY = "file:///tmp/"
+
 type DatabaseInfo struct {
 	ConnectionString string
 	UserName string
@@ -172,8 +175,10 @@ func InstallMetastoreServer(commandEnvironment framework.CommandEnvironment, spe
 		arguments = append(arguments, "--set")
 		arguments = append(arguments, fmt.Sprintf("metastoreWarehouseDir=%s", spec.WarehouseDir))
 	} else {
+		arguments = append(arguments, "--set")
+		arguments = append(arguments, fmt.Sprintf("metastoreWarehouseDir=%s", WAREHOUSE_DIR_LOCAL_FILE_TEMP_DIRECTORY))
 		arguments = append(arguments, "--set", "service.type=NodePort")
-		arguments = append(arguments, "--set", "service.nodePorts.thrift=39083")
+		arguments = append(arguments, "--set", fmt.Sprintf("service.nodePorts.thrift=%d", NODE_PORT_LOCAL_THRIFT_PORT))
 	}
 
 	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvHiveMetastoreServerHelmChart), kubeConfig, arguments, installName, namespace)

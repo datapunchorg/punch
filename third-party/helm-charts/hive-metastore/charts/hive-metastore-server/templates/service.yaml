@@ -13,7 +13,7 @@ spec:
       port: {{ .Values.service.ports.thrift }}
       targetPort: {{ .Values.service.targetPorts.thrift }}
     {{- if (and $setNodePorts (not (empty .Values.service.nodePorts.thrift))) }}
-      nodePort: { { .Values.service.nodePorts.thrift }}
+      nodePort: {{ .Values.service.nodePorts.thrift }}
     {{- end }}
   selector:
     {{- include "hive-metastore.selectorLabels" . | nindent 4 }}

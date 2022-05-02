@@ -31,15 +31,12 @@ const (
 	DefaultVersion    = "datapunch.org/v1alpha1"
 	DefaultNamePrefix = "my"
 
-	CmdEnvHelmExecutable             = "helmExecutable"
 	CmdEnvWithMinikube               = "withMinikube"
 	CmdEnvKubeConfig                 = "kubeConfig"
 	CmdEnvPostgresqlHelmChart = "postgresqlHelmChart"
 	CmdEnvHiveMetastoreCreateDatabaseHelmChart = "hiveMetastoreCreateDatabaseHelmChart"
 	CmdEnvHiveMetastoreInitHelmChart = "hiveMetastoreInitHelmChart"
 	CmdEnvHiveMetastoreServerHelmChart = "hiveMetastoreServerHelmChart"
-
-	DefaultHelmExecutable = "helm"
 )
 
 type HiveMetastoreTopology struct {
