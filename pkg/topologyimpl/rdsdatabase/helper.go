@@ -51,15 +51,17 @@ func CreateDatabase(databaseSpec DatabaseTopologySpec) (*rds.DBCluster, error) {
 		DBClusterIdentifier:   aws.String(strings.ToLower(databaseId)),
 		// DBClusterParameterGroupName: aws.String("parametergroup-01"),
 		DatabaseName:        aws.String(normalizeDatabaseName(databaseId)),
-		Engine:              aws.String("aurora"),
-		EngineVersion:       aws.String("5.6.10a"),
-		EngineMode:          aws.String("serverless"),
+		Engine:              aws.String(databaseSpec.Engine),
+		EngineVersion:       aws.String(databaseSpec.EngineVersion),
+		EngineMode:          aws.String(databaseSpec.EngineMode),
 		MasterUsername:      aws.String(databaseSpec.MasterUserName),
 		MasterUserPassword:  aws.String(databaseSpec.MasterUserPassword),
-		Port:                aws.Int64(3306),
 		StorageEncrypted:    aws.Bool(true),
 		EnableHttpEndpoint:  aws.Bool(true),
 		VpcSecurityGroupIds: securityGroupIds,
+	}
+	if databaseSpec.Port != 0 {
+		input.Port = aws.Int64(databaseSpec.Port)
 	}
 	result, err := svc.CreateDBCluster(input)
 	if err != nil {

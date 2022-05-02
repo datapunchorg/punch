@@ -46,9 +46,14 @@ type DatabaseTopologySpec struct {
 	VpcId             string   `json:"vpcId" yaml:"vpcId"`
 	AvailabilityZones []string `json:"availabilityZones" yaml:"availabilityZones"`
 	DatabaseId        string   `json:"databaseId" yaml:"databaseId"`
+	Engine            string   `json:"engine" yaml:"engine"`
+	EngineVersion     string   `json:"engineVersion" yaml:"engineVersion"`
+	// The DB engine mode of the DB cluster, either provisioned, serverless, parallelquery, global, or multimaster.
+	EngineMode        string   `json:"engineMode" yaml:"engineMode"`
 	MasterUserName    string   `json:"masterUserName" yaml:"masterUserName"`
 	// password must not shorter than 8 characters
 	MasterUserPassword string                   `json:"masterUserPassword" yaml:"masterUserPassword"`
+	Port               int64     `json:"port" yaml:"port"`
 	SecurityGroups     []resource.SecurityGroup `json:"securityGroups" yaml:"securityGroups"`
 }
 
@@ -71,6 +76,9 @@ func CreateDefaultDatabaseTopology(namePrefix string) DatabaseTopology {
 			VpcId:              "{{ or .Values.vpcId .DefaultVpcId }}",
 			AvailabilityZones:  []string{"us-west-1a"},
 			DatabaseId:         topologyName,
+			Engine:             "aurora-postgresql",
+			EngineVersion:      "10.14",
+			EngineMode:         "serverless",
 			MasterUserName:     DefaultUserName,
 			MasterUserPassword: "{{ .Values.masterUserPassword }}",
 			SecurityGroups: []resource.SecurityGroup{

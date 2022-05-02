@@ -54,10 +54,10 @@ type HiveMetastoreTopologySpec struct {
 }
 
 type HiveMetastoreDatabaseSpec struct {
-	UseExternalDb    bool   `json:"useExternalDb" yaml:"useExternalDb"`
+	ExternalDb       bool   `json:"useExternalDb" yaml:"useExternalDb"`
 	ConnectionString string `json:"connectionString" yaml:"connectionString"`
-	UserName       string `json:"userName" yaml:"userName"`
-	UserPassword string `json:"userPassword" yaml:"userPassword"`
+	User       string `json:"user" yaml:"user"`
+	Password string `json:"password" yaml:"password"`
 }
 
 func GenerateHiveMetastoreTopology() HiveMetastoreTopology {
@@ -92,10 +92,10 @@ func CreateDefaultHiveMetastoreTopology(namePrefix string, s3BucketName string) 
 			ImageRepository: "ghcr.io/datapunchorg/helm-hive-metastore",
 			ImageTag: "main-1650942144",
 			Database: HiveMetastoreDatabaseSpec{
-				UseExternalDb:    false,
+				ExternalDb:       false,
 				ConnectionString: "",
-				UserName:       "",
-				UserPassword:   "",
+				User:             "",
+				Password:         "",
 			},
 			WarehouseDir: fmt.Sprintf("s3a://%s/punch/%s/warehouse", s3BucketName, namePrefix),
 		},
@@ -126,8 +126,8 @@ func (t *HiveMetastoreTopology) String() string {
 	if err != nil {
 		return fmt.Sprintf("(Failed to deserialize topology in ToYamlString(): %s)", err.Error())
 	}
-	if copy.Spec.Database.UserPassword != "" {
-		copy.Spec.Database.UserPassword = FieldMaskValue
+	if copy.Spec.Database.Password != "" {
+		copy.Spec.Database.Password = FieldMaskValue
 	}
 	topologyBytes, err = yaml.Marshal(copy)
 	if err != nil {

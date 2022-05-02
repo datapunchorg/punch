@@ -33,15 +33,15 @@ var WAREHOUSE_DIR_LOCAL_FILE_TEMP_DIRECTORY = "file:///tmp/"
 
 type DatabaseInfo struct {
 	ConnectionString string
-	UserName string
-	UserPassword string
+	User     string
+	Password string
 }
 
-// TODO mask DatabaseInfo.UserPassword in YAML output
+// TODO mask DatabaseInfo.Password in YAML output
 
 func (t DatabaseInfo) String() string {
 	copy := t
-	copy.UserPassword = FieldMaskValue
+	copy.Password = FieldMaskValue
 	bytes, err := yaml.Marshal(copy)
 	if err != nil {
 		return fmt.Sprintf("(failed to get string for DatabaseInfo: %s)", err.Error())
@@ -110,9 +110,9 @@ func CreatePostgresqlDatabase(commandEnvironment framework.CommandEnvironment, s
 
 	return DatabaseInfo{
 		ConnectionString: fmt.Sprintf("jdbc:postgresql://%s:5432/metastore_db", dbServerHost),
-		UserName: "postgres",
-		// TODO mask UserPassword in logging
-		UserPassword: string(password),
+		User:             "postgres",
+		// TODO mask Password in logging
+		Password: string(password),
 	}, nil
 }
 
@@ -131,8 +131,8 @@ func InitDatabase(commandEnvironment framework.CommandEnvironment, spec HiveMeta
 		"--set", fmt.Sprintf("image.name=%s", spec.ImageRepository),
 		"--set", fmt.Sprintf("image.tag=%s", spec.ImageTag),
 		"--set", fmt.Sprintf("dbConnectionString=%s", databaseInfo.ConnectionString),
-		"--set", fmt.Sprintf("dbUserName=%s", databaseInfo.UserName),
-		"--set", fmt.Sprintf("dbUserPassword=%s", databaseInfo.UserPassword),
+		"--set", fmt.Sprintf("dbUserName=%s", databaseInfo.User),
+		"--set", fmt.Sprintf("dbUserPassword=%s", databaseInfo.Password),
 	}
 
 	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvHiveMetastoreInitHelmChart), kubeConfig, arguments, installName, namespace)
@@ -167,8 +167,8 @@ func InstallMetastoreServer(commandEnvironment framework.CommandEnvironment, spe
 		"--set", fmt.Sprintf("image.name=%s", spec.ImageRepository),
 		"--set", fmt.Sprintf("image.tag=%s", spec.ImageTag),
 		"--set", fmt.Sprintf("dbConnectionString=%s", databaseInfo.ConnectionString),
-		"--set", fmt.Sprintf("dbUserName=%s", databaseInfo.UserName),
-		"--set", fmt.Sprintf("dbUserPassword=%s", databaseInfo.UserPassword),
+		"--set", fmt.Sprintf("dbUserName=%s", databaseInfo.User),
+		"--set", fmt.Sprintf("dbUserPassword=%s", databaseInfo.Password),
 	}
 
 	if !commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {

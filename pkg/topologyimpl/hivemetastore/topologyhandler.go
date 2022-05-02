@@ -59,8 +59,8 @@ func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (f
 	specificTopology := topology.(*HiveMetastoreTopology)
 
 	if strings.EqualFold(phase, framework.PhaseBeforeInstall) {
-		if specificTopology.Spec.Database.UseExternalDb {
-			if specificTopology.Spec.Database.UserPassword == "" || specificTopology.Spec.Database.UserPassword == framework.TemplateNoValue {
+		if specificTopology.Spec.Database.ExternalDb {
+			if specificTopology.Spec.Database.Password == "" || specificTopology.Spec.Database.Password == framework.TemplateNoValue {
 				return nil, fmt.Errorf("spec.dbUserPassword is emmpty, please provide the value for the password")
 			}
 		}
@@ -79,7 +79,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 	if err != nil {
 		return nil, err
 	}
-	if !specificTopology.Spec.Database.UseExternalDb {
+	if !specificTopology.Spec.Database.ExternalDb {
 		deployment.AddStep("createHiveMetastoreDatabase", "Create Hive Metastore database", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
 			databaseInfo, err := CreatePostgresqlDatabase(commandEnvironment, specificTopology.Spec)
 			if err != nil {
@@ -90,13 +90,13 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 	}
 	deployment.AddStep("initHiveMetastoreDatabase", "Init Hive Metastore database", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
 		var databaseInfo DatabaseInfo
-		if !specificTopology.Spec.Database.UseExternalDb {
+		if !specificTopology.Spec.Database.ExternalDb {
 			databaseInfo = c.GetStepOutput("createHiveMetastoreDatabase")["databaseInfo"].(DatabaseInfo)
 		} else {
 			databaseInfo = DatabaseInfo{
 				ConnectionString: specificTopology.Spec.Database.ConnectionString,
-				UserName: specificTopology.Spec.Database.UserName,
-				UserPassword: specificTopology.Spec.Database.UserPassword,
+				User:             specificTopology.Spec.Database.User,
+				Password:         specificTopology.Spec.Database.Password,
 			}
 		}
 		err := InitDatabase(commandEnvironment, specificTopology.Spec, databaseInfo)
@@ -108,13 +108,13 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 	deployment.AddStep("installHiveMetastoreServer", "Install Hive Metastore server", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
 		spec := specificTopology.Spec
 		var databaseInfo DatabaseInfo
-		if !spec.Database.UseExternalDb {
+		if !spec.Database.ExternalDb {
 			databaseInfo = c.GetStepOutput("createHiveMetastoreDatabase")["databaseInfo"].(DatabaseInfo)
 		} else {
 			databaseInfo = DatabaseInfo{
 				ConnectionString: spec.Database.ConnectionString,
-				UserName: spec.Database.UserName,
-				UserPassword: spec.Database.UserPassword,
+				User:             spec.Database.User,
+				Password:         spec.Database.Password,
 			}
 		}
 		urls, err := InstallMetastoreServer(commandEnvironment, spec, databaseInfo)
