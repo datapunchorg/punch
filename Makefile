@@ -61,10 +61,15 @@ test:
 release: build
 	@echo "generating release ..."
 	mkdir -p dist
+	mkdir -p dist/test
+	mkdir -p dist/examples
 	mkdir -p dist/third-party/helm-charts
 	cp -R third-party/helm-charts/* dist/third-party/helm-charts/
-	cp hack/pyspark-example.py dist/
-	cp hack/pyspark-iceberg-example.py dist/
+	cp hack/pyspark-example.py dist/examples/
+	cp hack/pyspark-iceberg-example.py dist/examples/
+	cp hack/pyspark-hive-example.py dist/examples/
+	cp hack/test-install.sh dist/test/
+	cp hack/test-uninstall.sh dist/test/
 	curl -L -o dist/sparkcli.tar.gz https://github.com/datapunchorg/spark-on-k8s-operator/releases/download/v0.1.0/sparkcli.tar.gz
 	tar xzvf dist/sparkcli.tar.gz -C dist
 	rm dist/sparkcli.tar.gz

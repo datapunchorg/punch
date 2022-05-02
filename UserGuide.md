@@ -158,6 +158,6 @@ submit --image ghcr.io/datapunchorg/spark:pyspark-3.1-1643212945 --spark-version
 --conf spark.sql.catalog.my_catalog.jdbc.useSSL=true \
 --conf spark.sql.catalog.my_catalog.jdbc.user=user1 \
 --conf spark.sql.catalog.my_catalog.jdbc.password=password1 \
-pyspark-iceberg-example.py
+examples/pyspark-iceberg-example.py
 ```
 
