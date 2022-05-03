@@ -5,6 +5,20 @@ metadata:
 data:
   apiGatewayConfig.yml: |
     submissionConfig:
+      sparkImages:
+        - version: 3.2
+          type: java
+          image: ghcr.io/datapunchorg/spark:spark-3.2.1-1643336295
+        - version: 3.2
+          type: python
+          image: ghcr.io/datapunchorg/spark:pyspark-3.2.1-1643336295
+        - version: 3.1
+          type: java
+          image: ghcr.io/datapunchorg/spark:spark-3.1-1643212945
+        - version: 3.1
+          type: python
+          image: ghcr.io/datapunchorg/spark:pyspark-3.1-1643212945
+      defaultSparkVersion: 3.1
       sparkConf:
         spark.eventLog.enabled: {{ .Values.apiGateway.sparkEventLogEnabled }}
         spark.eventLog.dir: {{ .Values.apiGateway.sparkEventLogDir }}
