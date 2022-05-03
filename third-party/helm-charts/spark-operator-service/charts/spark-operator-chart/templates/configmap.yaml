@@ -18,6 +18,7 @@ data:
         - version: 3.1
           type: python
           image: ghcr.io/datapunchorg/spark:pyspark-3.1-1643212945
+      serviceAccount: spark
       defaultSparkVersion: 3.1
       sparkConf:
         spark.eventLog.enabled: {{ .Values.apiGateway.sparkEventLogEnabled }}
