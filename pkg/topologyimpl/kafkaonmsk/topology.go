@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package kafka
+package kafkaonmsk
 
 import (
 	"fmt"
@@ -25,7 +25,7 @@ import (
 
 const (
 
-	KindKafkaTopology = "Kafka"
+	KindKafkaTopology = "KafkaOnMsk"
 
 	DefaultVersion    = "datapunch.org/v1alpha1"
 	DefaultRegion     = "us-west-1"
