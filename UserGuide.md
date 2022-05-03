@@ -108,7 +108,7 @@ export LB_NAME=xxx.us-west-1.elb.amazonaws.com
 After upper steps, now you could follow below examples to run `sparkcli`:
 
 ```
-./sparkcli --user user1 --password password1 --insecure --url https://$LB_NAME/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --image ghcr.io/datapunchorg/spark:spark-3.2.1-1643336295 --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar
+./sparkcli --user user1 --password password1 --insecure --url https://$LB_NAME/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar
 
 ./sparkcli --user user1 --password password1 --insecure --url https://$LB_NAME/sparkapi/v1 status your_submission_id
 
@@ -143,7 +143,7 @@ copy/paste to run your own application):
 ```
 ./sparkcli --user user1 --password password1 --insecure \
 --url https://xxx.us-west-1.elb.amazonaws.com/sparkapi/v1 \
-submit --image ghcr.io/datapunchorg/spark:pyspark-3.1-1643212945 --spark-version 3.1 \
+submit --spark-version 3.1 \
 --driver-memory 512m --executor-memory 512m \
 --conf spark.jars=s3a://datapunch-public-01/jars/iceberg-spark3-runtime-0.12.1.jar,s3a://datapunch-public-01/jars/awssdk-url-connection-client-2.17.105.jar,s3a://datapunch-public-01/jars/awssdk-bundle-2.17.105.jar,s3a://datapunch-public-01/jars/mariadb-java-client-2.7.4.jar \
 --conf spark.sql.warehouse.dir=s3a://xxx/warehouse \

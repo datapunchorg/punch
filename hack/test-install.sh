@@ -32,7 +32,7 @@ export apiGatewayLoadBalancerUrl=$(jq -r '.output[] | select(.step=="deployNginx
 
 ./sparkcli --user $sparkApiGatewayUser --password $sparkApiGatewayPassword --insecure \
   --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi \
-  --image ghcr.io/datapunchorg/spark:spark-3.2.1-1643336295 --spark-version 3.2 \
+  --spark-version 3.2 \
   --driver-memory 512m --executor-memory 512m \
   local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar
 
@@ -44,6 +44,6 @@ aws s3 ls $metastoreWarehouseDirS3Url/
 
 ./sparkcli --user $sparkApiGatewayUser --password $sparkApiGatewayPassword --insecure \
   --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 submit \
-  --image ghcr.io/datapunchorg/spark:pyspark-3.2.1-1643336295 --spark-version 3.2 \
+  --spark-version 3.2 \
   --driver-memory 512m --executor-memory 512m \
   examples/pyspark-hive-example.py

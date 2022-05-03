@@ -26,7 +26,7 @@ import (
 const (
 	DefaultApiUserName                  = "user1"
 	DefaultOperatorImageRepository      = "ghcr.io/datapunchorg/spark-on-k8s-operator"
-	DefaultSparkOperatorImageTag        = "sha-9f1794f"
+	DefaultSparkOperatorImageTag        = "sha-d1e09f9"
 	DefaultSparkOperatorNamespace       = "spark-operator-01"
 	DefaultSparkOperatorHelmInstallName = "spark-operator-01"
 	DefaultSparkApplicationNamespace    = "spark-01"

@@ -62,7 +62,7 @@ Please check the console output. Also see following section for how to run Spark
 Then Run `sparkcli`:
 
 ```
-./sparkcli --user user1 --password password1 --insecure --url https://localhost:32443/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --image ghcr.io/datapunchorg/spark:spark-3.2.1-1643336295 --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar
+./sparkcli --user user1 --password password1 --insecure --url https://localhost:32443/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar
 ```
 
 ### Uninstall SparkOnEks on Minikube
