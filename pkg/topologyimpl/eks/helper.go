@@ -37,7 +37,7 @@ var NodePortLocalHttps int32 = 32443
 
 func CreateInstanceIamRole(topology EksTopologySpec) string {
 	region := topology.Region
-	roleName, err := resource.CreateIAMRoleWithMorePolicies(region, topology.Eks.InstanceRole, []resource.IAMPolicy{topology.S3Policy})
+	roleName, err := resource.CreateIAMRoleWithMorePolicies(region, topology.Eks.InstanceRole, []resource.IAMPolicy{topology.S3Policy, topology.KafkaPolicy})
 	if err != nil {
 		// TODO remove Fatalf
 		log.Fatalf("Failed to create instance IAM role: %s", err.Error())

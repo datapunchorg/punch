@@ -57,6 +57,7 @@ type EksTopologySpec struct {
 	VpcId             string                   `json:"vpcId" yaml:"vpcId"`
 	S3BucketName      string                   `json:"s3BucketName" yaml:"s3BucketName"`
 	S3Policy          resource.IAMPolicy       `json:"s3Policy" yaml:"s3Policy"`
+	KafkaPolicy       resource.IAMPolicy       `json:"KafkaPolicy" yaml:"KafkaPolicy"`
 	Eks               resource.EKSCluster  `json:"eks" yaml:"eks"`
 	NodeGroups        []resource.NodeGroup `json:"nodeGroups" yaml:"nodeGroups"`
 	NginxIngress      NginxIngress             `json:"nginxIngress" yaml:"nginxIngress"`
@@ -105,6 +106,12 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 			VpcId:        "{{ or .Values.vpcId .DefaultVpcId }}",
 			S3BucketName: s3BucketName,
 			S3Policy:     resource.IAMPolicy{},
+			KafkaPolicy: resource.IAMPolicy{
+				Name: fmt.Sprintf("%s-eks-kafka-cluster", namePrefix),
+				PolicyDocument: `{"Version":"2012-10-17","Statement":[
+{"Effect":"Allow","Action":"kafka-cluster:*","Resource":"*"}
+]}`,
+			},
 			Eks: resource.EKSCluster{
 				ClusterName: k8sClusterName,
 				// TODO fill in default value for SubnetIds
