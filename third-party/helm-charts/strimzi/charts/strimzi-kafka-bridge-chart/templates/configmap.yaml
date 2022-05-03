@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: strimzi-kafka-bridge-conf
+data:
+  application.properties: |-
+    #Bridge related settings
+    bridge.id=my-bridge
+    # uncomment the following line to enable Jaeger tracing, check the documentation how to configure the tracer
+    #bridge.tracing=jaeger
+
+    #Apache Kafka common
+    kafka.bootstrap.servers={{ .Values.kafka.bootstrapServers }}
+
+    #AWS settings
+    kafka.security.protocol=SASL_SSL
+    kafka.sasl.mechanism=AWS_MSK_IAM
+    kafka.sasl.jaas.config=software.amazon.msk.auth.iam.IAMLoginModule required awsDebugCreds=true;
+    kafka.sasl.client.callback.handler.class=software.amazon.msk.auth.iam.IAMClientCallbackHandler
+
+    #Apache Kafka producer
+    kafka.producer.acks=1
+
+    #Apache Kafka consumer
+    kafka.consumer.auto.offset.reset=earliest
+
+    #AMQP related settings
+    amqp.enabled=false
+    amqp.flowCredit=100
+    amqp.mode=SERVER
+    amqp.host=0.0.0.0
+    amqp.port=5672
+    amqp.certDir=
+    amqp.messageConverter=io.strimzi.kafka.bridge.amqp.converter.AmqpDefaultMessageConverter
+
+    #HTTP related settings
+    http.enabled=true
+    http.host=0.0.0.0
+    http.port=8080
+    #Enable CORS
+    http.cors.enabled=false
+    http.cors.allowedOrigins=*
+    http.cors.allowedMethods=GET,POST,PUT,DELETE,OPTIONS,PATCH
+  log4j2.properties: |-
+    name = BridgeConfig
+
+    appender.console.type = Console
+    appender.console.name = STDOUT
+    appender.console.layout.type = PatternLayout
+    appender.console.layout.pattern = [%d] %-5p <%-12.12c{1}:%L> [%-12.12t] %m%n
+
+    rootLogger.level = INFO
+    rootLogger.appenderRefs = console
+    rootLogger.appenderRef.console.ref = STDOUT
+    rootLogger.additivity = false
+
+    logger.bridge.name = io.strimzi.kafka.bridge
+    logger.bridge.level = INFO
+    logger.bridge.appenderRefs = console
+    logger.bridge.appenderRef.console.ref = STDOUT
+    logger.bridge.additivity = false
+
+    # HTTP OpenAPI specific logging levels (default is INFO)
+    # Logging healthy and ready endpoints is very verbose because of Kubernetes health checking.
+    logger.healthy.name = http.openapi.operation.healthy
+    logger.healthy.level = WARN
+    logger.ready.name = http.openapi.operation.ready
+    logger.ready.level = WARN

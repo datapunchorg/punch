@@ -1,0 +1,17 @@
+replicaCount: 1
+
+image:
+  name: ghcr.io/datapunchorg/strimzi-kafka-bridge:0.22.0-SNAPSHOT-1651610846
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+kafka:
+  bootstrapServers: b-2.my-kafka-01.6xjlk6.c2.kafka.us-west-1.amazonaws.com:9098,b-1.my-kafka-01.6xjlk6.c2.kafka.us-west-1.amazonaws.com:9098
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 1024Mi
+  requests:
+    cpu: 100m
+    memory: 1024Mi

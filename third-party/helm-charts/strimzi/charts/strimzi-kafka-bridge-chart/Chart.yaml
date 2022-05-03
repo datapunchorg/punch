@@ -1,0 +1,9 @@
+apiVersion: v2
+name: strimzi-kafka-bridge
+description: A Helm chart for strimzi-kafka-bridge
+version: 0.0.1
+appVersion: 0.0.1
+home: https://github.com/datapunchorg/punch
+maintainers:
+  - name: DataPunch Project
+    email: datapunch2021@gmail.com

@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: strimzi-kafka-bridge
+  labels:
+    app: strimzi-kafka-bridge
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: strimzi-kafka-bridge
+  template:
+    metadata:
+      labels:
+        app: strimzi-kafka-bridge
+    spec:
+     {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: strimzi-kafka-bridge
+        image: {{ .Values.image.name }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+          - /opt/strimzi/bin/kafka_bridge_run.sh
+        args:
+          - --config-file=/opt/strimzi-kafka-bridge/conf/application.properties
+        volumeMounts:
+          - name: strimzi-kafka-bridge-conf
+            mountPath: /opt/strimzi-kafka-bridge/conf/
+        ports:
+          - name: http
+            containerPort: 80
+            protocol: TCP
+        resources:
+{{ toYaml .Values.resources | indent 12 }}
+      volumes:
+        - name: strimzi-kafka-bridge-conf
+          configMap:
+            name: strimzi-kafka-bridge-conf
