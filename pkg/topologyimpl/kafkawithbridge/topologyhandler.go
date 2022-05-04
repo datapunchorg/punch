@@ -86,9 +86,10 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		}
 		DeployKafkaBridge(commandEnvironment, spec)
 		kafkaBridgeUrl := fmt.Sprintf("%s/topics", loadBalancerUrl)
-		err := common.WaitHttpUrlReady(kafkaBridgeUrl, 10 * time.Minute, 10 * time.Second)
+		maxWaitMinutes := 10
+		err := common.WaitHttpUrlReady(kafkaBridgeUrl, time.Duration(maxWaitMinutes) * time.Minute, 10 * time.Second)
 		if err != nil {
-			return framework.NewDeploymentStepOutput(), fmt.Errorf("kafka bridge url %s is not ready after waiting", kafkaBridgeUrl)
+			return framework.NewDeploymentStepOutput(), fmt.Errorf("kafka bridge url %s is not ready after waiting %d minutes", kafkaBridgeUrl, maxWaitMinutes)
 		}
 		return framework.DeployableOutput{
 			"kafkaBridgeUrl": loadBalancerUrl,

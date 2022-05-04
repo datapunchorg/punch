@@ -18,6 +18,7 @@ package common
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"log"
 	"net/http"
@@ -41,7 +42,11 @@ func checkHttpUrl(url string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create get http request for %s: %s", url, err.Error())
 	}
-	response, err := http.DefaultClient.Do(req)
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Transport: transport}
+	response, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to get http %s: %s", url, err.Error())
 	}
