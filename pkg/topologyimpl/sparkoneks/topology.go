@@ -127,7 +127,6 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 
 	framework.CopyMissingKeyValuesFromStringMap(topology.Metadata.CommandEnvironment, eksTopology.Metadata.CommandEnvironment)
 
-	eks.UpdateEksTopologyByS3BucketName(&topology.Spec.EksSpec, s3BucketName)
 	return topology
 }
 

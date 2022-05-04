@@ -102,10 +102,15 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 		},
 		Spec: EksTopologySpec{
 			NamePrefix:   namePrefix,
-			Region:       "{{ or .Values.region `us-west-1` }}",
+			Region:       fmt.Sprintf("{{ or .Values.region `%s` }}", DefaultRegion),
 			VpcId:        "{{ or .Values.vpcId .DefaultVpcId }}",
 			S3BucketName: s3BucketName,
-			S3Policy:     resource.IAMPolicy{},
+			S3Policy:     resource.IAMPolicy{
+				Name: fmt.Sprintf("%s-s3", s3BucketName),
+				PolicyDocument: fmt.Sprintf(`{"Version":"2012-10-17","Statement":[
+{"Effect":"Allow","Action":"s3:*","Resource":["arn:aws:s3:::%s", "arn:aws:s3:::%s/*"]}
+]}`, s3BucketName, s3BucketName),
+			},
 			KafkaPolicy: resource.IAMPolicy{
 				Name: fmt.Sprintf("%s-eks-kafka-cluster", namePrefix),
 				PolicyDocument: `{"Version":"2012-10-17","Statement":[
@@ -194,16 +199,7 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 			},
 		},
 	}
-	UpdateEksTopologyByS3BucketName(&topology.Spec, s3BucketName)
 	return topology
-}
-
-func UpdateEksTopologyByS3BucketName(spec *EksTopologySpec, s3BucketName string) {
-	spec.S3BucketName = s3BucketName
-	spec.S3Policy.Name = fmt.Sprintf("%s-s3", s3BucketName)
-	spec.S3Policy.PolicyDocument = fmt.Sprintf(`{"Version":"2012-10-17","Statement":[
-{"Effect":"Allow","Action":"s3:*","Resource":["arn:aws:s3:::%s", "arn:aws:s3:::%s/*"]}
-]}`, s3BucketName, s3BucketName)
 }
 
 func (t *EksTopology) GetKind() string {

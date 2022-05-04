@@ -103,8 +103,6 @@ func CreateDefaultHiveMetastoreTopology(namePrefix string, s3BucketName string) 
 
 	framework.CopyMissingKeyValuesFromStringMap(topology.Metadata.CommandEnvironment, eksTopology.Metadata.CommandEnvironment)
 
-	eks.UpdateEksTopologyByS3BucketName(&topology.Spec.EksSpec, s3BucketName)
-
 	return topology
 }
 
