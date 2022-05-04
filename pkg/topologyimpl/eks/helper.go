@@ -37,7 +37,7 @@ var NodePortLocalHttps int32 = 32443
 
 func CreateInstanceIamRole(topology EksTopologySpec) string {
 	region := topology.Region
-	roleName, err := resource.CreateIAMRoleWithMorePolicies(region, topology.Eks.InstanceRole, []resource.IAMPolicy{topology.S3Policy, topology.KafkaPolicy})
+	roleName, err := resource.CreateIamRoleWithMorePolicies(region, topology.Eks.InstanceRole, []resource.IamPolicy{topology.S3Policy, topology.KafkaPolicy})
 	if err != nil {
 		// TODO remove Fatalf
 		log.Fatalf("Failed to create instance IAM role: %s", err.Error())
@@ -53,7 +53,7 @@ func CreateClusterAutoscalerIamRole(topology EksTopologySpec, oidcId string) (st
 	if err != nil {
 		return "", fmt.Errorf("failed to get current account: %s", err.Error())
 	}
-	role := topology.AutoScaling.ClusterAutoscalerIAMRole
+	role := topology.AutoScaling.ClusterAutoscalerIamRole
 	role.AssumeRolePolicyDocument = fmt.Sprintf(`{
     "Version": "2012-10-17",
     "Statement": [
@@ -74,7 +74,7 @@ func CreateClusterAutoscalerIamRole(topology EksTopologySpec, oidcId string) (st
 }
 `, accountId, oidcId, oidcId, oidcId)
 	role.Name += "-" + oidcId
-	err = resource.CreateIAMRole(region, role)
+	err = resource.CreateIamRole(region, role)
 	if err != nil {
 		return "", fmt.Errorf("failed to create cluster autoscaler IAM role: %s", err.Error())
 	}

@@ -109,7 +109,7 @@ func AttachToRoleByPolicyArn(iamClient *iam.IAM, roleName string, policyArn stri
 	return nil
 }
 
-func AttachIAMPolicy(iamClient *iam.IAM, roleName string, policyName string, policyDocument string) error {
+func AttachIamPolicy(iamClient *iam.IAM, roleName string, policyName string, policyDocument string) error {
 	createPolicyOutput, err := iamClient.CreatePolicy(&iam.CreatePolicyInput{
 		PolicyName:     aws.String(policyName),
 		PolicyDocument: aws.String(policyDocument),
@@ -134,7 +134,7 @@ func AttachIAMPolicy(iamClient *iam.IAM, roleName string, policyName string, pol
 	return nil
 }
 
-func GetIAMRoleArnByName(region string, roleName string) (string, error) {
+func GetIamRoleArnByName(region string, roleName string) (string, error) {
 	session := CreateSession(region)
 	iamClient := iam.New(session)
 	getRoleOutput, err := iamClient.GetRole(&iam.GetRoleInput{

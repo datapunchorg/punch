@@ -37,10 +37,10 @@ type EKSCluster struct {
 	// operations on your behalf. For more information, see Amazon Eks Service IAM
 	// Role (https://docs.aws.amazon.com/eks/latest/userguide/service_IAM_role.html)
 	// in the Amazon Eks User Guide.
-	ControlPlaneRole IAMRole `json:"controlPlaneRole" yaml:"controlPlaneRole"`
+	ControlPlaneRole IamRole `json:"controlPlaneRole" yaml:"controlPlaneRole"`
 	// See https://docs.aws.amazon.com/eks/latest/userguide/sec-group-reqs.html
 	SecurityGroups []SecurityGroup `json:"securityGroups" yaml:"securityGroups"`
-	InstanceRole   IAMRole         `json:"instanceRole" yaml:"instanceRole"`
+	InstanceRole   IamRole         `json:"instanceRole" yaml:"instanceRole"`
 }
 
 type EKSClusterSummary struct {

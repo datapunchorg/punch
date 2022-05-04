@@ -55,10 +55,10 @@ type EksTopologySpec struct {
 	NamePrefix        string                   `json:"namePrefix" yaml:"namePrefix"`
 	Region            string                   `json:"region"`
 	VpcId             string                   `json:"vpcId" yaml:"vpcId"`
-	S3BucketName      string                   `json:"s3BucketName" yaml:"s3BucketName"`
-	S3Policy          resource.IAMPolicy       `json:"s3Policy" yaml:"s3Policy"`
-	KafkaPolicy       resource.IAMPolicy       `json:"kafkaPolicy" yaml:"kafkaPolicy"`
-	Eks               resource.EKSCluster  `json:"eks" yaml:"eks"`
+	S3BucketName      string              `json:"s3BucketName" yaml:"s3BucketName"`
+	S3Policy          resource.IamPolicy  `json:"s3Policy" yaml:"s3Policy"`
+	KafkaPolicy       resource.IamPolicy  `json:"kafkaPolicy" yaml:"kafkaPolicy"`
+	Eks               resource.EKSCluster `json:"eks" yaml:"eks"`
 	NodeGroups        []resource.NodeGroup `json:"nodeGroups" yaml:"nodeGroups"`
 	NginxIngress      NginxIngress             `json:"nginxIngress" yaml:"nginxIngress"`
 	AutoScaling       resource.AutoScalingSpec `json:"autoScaling" yaml:"autoScaling"`
@@ -105,13 +105,13 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 			Region:       fmt.Sprintf("{{ or .Values.region `%s` }}", DefaultRegion),
 			VpcId:        "{{ or .Values.vpcId .DefaultVpcId }}",
 			S3BucketName: s3BucketName,
-			S3Policy:     resource.IAMPolicy{
+			S3Policy:     resource.IamPolicy{
 				Name: fmt.Sprintf("%s-s3", s3BucketName),
 				PolicyDocument: fmt.Sprintf(`{"Version":"2012-10-17","Statement":[
 {"Effect":"Allow","Action":"s3:*","Resource":["arn:aws:s3:::%s", "arn:aws:s3:::%s/*"]}
 ]}`, s3BucketName, s3BucketName),
 			},
-			KafkaPolicy: resource.IAMPolicy{
+			KafkaPolicy: resource.IamPolicy{
 				Name: fmt.Sprintf("%s-eks-kafka-cluster", namePrefix),
 				PolicyDocument: `{"Version":"2012-10-17","Statement":[
 {"Effect":"Allow","Action":"kafka-cluster:*","Resource":"*"}
@@ -120,14 +120,14 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 			Eks: resource.EKSCluster{
 				ClusterName: k8sClusterName,
 				// TODO fill in default value for SubnetIds
-				ControlPlaneRole: resource.IAMRole{
+				ControlPlaneRole: resource.IamRole{
 					Name:                     controlPlaneRoleName,
 					AssumeRolePolicyDocument: framework.DefaultEKSAssumeRolePolicyDocument,
 					ExtraPolicyArns: []string{
 						"arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
 					},
 				},
-				InstanceRole: resource.IAMRole{
+				InstanceRole: resource.IamRole{
 					Name:                     instanceRoleName,
 					AssumeRolePolicyDocument: framework.DefaultEC2AssumeRolePolicyDocument,
 					ExtraPolicyArns: []string{
@@ -154,10 +154,10 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 			},
 			AutoScaling: resource.AutoScalingSpec{
 				EnableClusterAutoscaler: false,
-				ClusterAutoscalerIAMRole: resource.IAMRole{
+				ClusterAutoscalerIamRole: resource.IamRole{
 					Name: fmt.Sprintf("%s-cluster-autoscaler-role", namePrefix),
-					Policies: []resource.IAMPolicy{
-						resource.IAMPolicy{
+					Policies: []resource.IamPolicy{
+						resource.IamPolicy{
 							Name: fmt.Sprintf("%s-cluster-autoscaler-policy", namePrefix),
 							PolicyDocument: `{
     "Version": "2012-10-17",

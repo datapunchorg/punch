@@ -167,7 +167,7 @@ func CreateInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fr
 			if roleName == "" {
 				return framework.NewDeploymentStepOutput(), fmt.Errorf("failed to get role name from previous step")
 			}
-			roleArn, err := awslib.GetIAMRoleArnByName(topologySpec.Region, roleName)
+			roleArn, err := awslib.GetIamRoleArnByName(topologySpec.Region, roleName)
 			if err != nil {
 				return framework.NewDeploymentStepOutput(), err
 			}

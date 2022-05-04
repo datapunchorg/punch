@@ -24,20 +24,20 @@ import (
 	"log"
 )
 
-type IAMRole struct {
+type IamRole struct {
 	Name string `json:"name" yaml:"name"`
 	// The trust relationship policy document that grants an entity permission to assume the role.
 	AssumeRolePolicyDocument string      `json:"assumeRolePolicyDocument" yaml:"assumeRolePolicyDocument"`
-	Policies                 []IAMPolicy `json:"policies" yaml:"policies"`
+	Policies                 []IamPolicy `json:"policies" yaml:"policies"`
 	ExtraPolicyArns          []string    `json:"extraPolicyArns" yaml:"extraPolicyArns"`
 }
 
-type IAMPolicy struct {
+type IamPolicy struct {
 	Name           string `json:"name" yaml:"name"`
 	PolicyDocument string `json:"policyDocument" yaml:"policyDocument"`
 }
 
-func CreateIAMRole(region string, iamRole IAMRole) error {
+func CreateIamRole(region string, iamRole IamRole) error {
 	session := awslib.CreateSession(region)
 	iamClient := iam.New(session)
 	assumeRolePolicyDocument := iamRole.AssumeRolePolicyDocument
@@ -57,7 +57,7 @@ func CreateIAMRole(region string, iamRole IAMRole) error {
 	}
 
 	for _, entry := range iamRole.Policies {
-		err = awslib.AttachIAMPolicy(iamClient, roleName, entry.Name, entry.PolicyDocument)
+		err = awslib.AttachIamPolicy(iamClient, roleName, entry.Name, entry.PolicyDocument)
 		if err != nil {
 			return fmt.Errorf("failed to to attach IAM policy %s to role %s: %s", entry.Name, roleName, err.Error())
 		}
@@ -73,11 +73,11 @@ func CreateIAMRole(region string, iamRole IAMRole) error {
 	return nil
 }
 
-func CreateIAMRoleWithMorePolicies(region string, iamRole IAMRole, policies []IAMPolicy) (string, error) {
+func CreateIamRoleWithMorePolicies(region string, iamRole IamRole, policies []IamPolicy) (string, error) {
 	session := awslib.CreateSession(region)
 	iamClient := iam.New(session)
 
-	err := CreateIAMRole(region, iamRole)
+	err := CreateIamRole(region, iamRole)
 	if err != nil {
 		return "", fmt.Errorf("failed to create IAM role: %s", err.Error())
 	}
@@ -86,7 +86,7 @@ func CreateIAMRoleWithMorePolicies(region string, iamRole IAMRole, policies []IA
 	for _, policy := range policies {
 		policyName := policy.Name
 		policyDocument := policy.PolicyDocument
-		err = awslib.AttachIAMPolicy(iamClient, roleName, policyName, policyDocument)
+		err = awslib.AttachIamPolicy(iamClient, roleName, policyName, policyDocument)
 		if err != nil {
 			return "", fmt.Errorf("failed to to attach IAM policy %s to role %s: %v", policyName, roleName, err)
 		}
