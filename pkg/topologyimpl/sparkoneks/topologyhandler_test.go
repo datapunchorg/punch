@@ -31,21 +31,21 @@ func TestGenerateTopology(t *testing.T) {
 
 	log.Printf("-----\n%s\n-----\n", framework.TopologyString(topology))
 
-	sparkTopology := topology.(*SparkTopology)
+	sparkTopology := topology.(*SparkOnEksTopology)
 	assert.Equal(t, "{{ or .Values.namePrefix `my` }}", sparkTopology.Spec.EksSpec.NamePrefix)
 }
 
 func TestParseTopology(t *testing.T) {
 	handler := &TopologyHandler{}
 	topology, err := handler.Generate()
-	sparkTopology := topology.(*SparkTopology)
+	sparkTopology := topology.(*SparkOnEksTopology)
 	sparkTopology.Spec.EksSpec.NamePrefix = "foo"
 	yamlContent := framework.TopologyString(topology)
 
 	topology, err = handler.Parse([]byte(yamlContent))
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "SparkOnEks", topology.GetKind())
-	sparkTopology = topology.(*SparkTopology)
+	sparkTopology = topology.(*SparkOnEksTopology)
 	assert.Equal(t, "foo", sparkTopology.Spec.EksSpec.NamePrefix)
 }
 
@@ -56,8 +56,8 @@ func TestResolveTopology(t *testing.T) {
 		"nginxHelmChart":         "../../../third-party/helm-charts/ingress-nginx/charts/ingress-nginx",
 		"sparkOperatorHelmChart": "../../../third-party/helm-charts/spark-operator-service/charts/spark-operator-chart",
 	}
-	topology.(*SparkTopology).Metadata.CommandEnvironment = env
-	topology.(*SparkTopology).Spec.ApiGateway.UserPassword = "aaa"
+	topology.(*SparkOnEksTopology).Metadata.CommandEnvironment = env
+	topology.(*SparkOnEksTopology).Spec.ApiGateway.UserPassword = "aaa"
 	resolvedTopology, err := handler.Validate(topology, framework.PhaseBeforeInstall)
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "SparkOnEks", resolvedTopology.GetKind())
@@ -70,8 +70,8 @@ func TestResolveTopology_NoPassword(t *testing.T) {
 		"nginxHelmChart":         "../../../third-party/helm-charts/ingress-nginx/charts/ingress-nginx",
 		"sparkOperatorHelmChart": "../../../third-party/helm-charts/spark-operator-service/charts/spark-operator-chart",
 	}
-	topology.(*SparkTopology).Metadata.CommandEnvironment = env
-	topology.(*SparkTopology).Spec.ApiGateway.UserPassword = ""
+	topology.(*SparkOnEksTopology).Metadata.CommandEnvironment = env
+	topology.(*SparkOnEksTopology).Spec.ApiGateway.UserPassword = ""
 	resolvedTopology, err := handler.Validate(topology, framework.PhaseBeforeInstall)
 	assert.NotEqual(t, nil, err)
 	assert.Equal(t, nil, resolvedTopology)

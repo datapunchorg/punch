@@ -44,12 +44,12 @@ type TopologyHandler struct {
 }
 
 func (t *TopologyHandler) Generate() (framework.Topology, error) {
-	topology := GenerateSparkTopology()
+	topology := GenerateSparkOnEksTopology()
 	return &topology, nil
 }
 
 func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) {
-	result := CreateDefaultSparkTopology(DefaultNamePrefix, eks.ToBeReplacedS3BucketName)
+	result := CreateDefaultSparkEksTopology(DefaultNamePrefix, eks.ToBeReplacedS3BucketName)
 	err := yaml.Unmarshal(yamlContent, &result)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse YAML (%s): \n%s", err.Error(), string(yamlContent))
@@ -58,7 +58,7 @@ func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) 
 }
 
 func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (framework.Topology, error) {
-	resolvedSpecificTopology := topology.(*SparkTopology)
+	resolvedSpecificTopology := topology.(*SparkOnEksTopology)
 
 	if strings.EqualFold(phase, framework.PhaseBeforeInstall) {
 		if resolvedSpecificTopology.Spec.ApiGateway.UserPassword == "" || resolvedSpecificTopology.Spec.ApiGateway.UserPassword == framework.TemplateNoValue {
@@ -94,7 +94,7 @@ func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (f
 }
 
 func (t *TopologyHandler) Install(topology framework.Topology) (framework.DeploymentOutput, error) {
-	specificTopology := topology.(*SparkTopology)
+	specificTopology := topology.(*SparkOnEksTopology)
 
 	commandEnvironment := framework.CreateCommandEnvironment(specificTopology.Metadata.CommandEnvironment)
 
@@ -108,7 +108,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 }
 
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
-	specificTopology := topology.(*SparkTopology)
+	specificTopology := topology.(*SparkOnEksTopology)
 
 	commandEnvironment := framework.CreateCommandEnvironment(specificTopology.Metadata.CommandEnvironment)
 
@@ -122,7 +122,7 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 }
 
 func (t *TopologyHandler) PrintUsageExample(topology framework.Topology, deploymentOutput framework.DeploymentOutput) {
-	specificTopology := topology.(*SparkTopology)
+	specificTopology := topology.(*SparkOnEksTopology)
 
 	loadBalancerUrl := deploymentOutput.Output()["deployNginxIngressController"]["loadBalancerPreferredUrl"].(string)
 	if loadBalancerUrl != "" {
@@ -136,7 +136,7 @@ func (t *TopologyHandler) PrintUsageExample(topology framework.Topology, deploym
 	}
 }
 
-func printExampleCommandToRunSparkOnMinikube(url string, topology SparkTopology) {
+func printExampleCommandToRunSparkOnMinikube(url string, topology SparkOnEksTopology) {
 	userName := topology.Spec.ApiGateway.UserName
 	userPassword := topology.Spec.ApiGateway.UserPassword
 
@@ -148,7 +148,7 @@ Run: ` + sparkcliJavaExampleCommandFormat
 	log.Printf(str, userName, userPassword, url)
 }
 
-func printExampleCommandToRunSparkOnAws(url string, topology SparkTopology) {
+func printExampleCommandToRunSparkOnAws(url string, topology SparkOnEksTopology) {
 	userName := topology.Spec.ApiGateway.UserName
 	userPassword := topology.Spec.ApiGateway.UserPassword
 
@@ -210,7 +210,7 @@ func checkCmdEnvFolderExists(metadata framework.TopologyMetadata, cmdEnvKey stri
 	return nil
 }
 
-func BuildInstallDeployment(topologySpec SparkTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
+func BuildInstallDeployment(topologySpec SparkOnEksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
 	deployment, err := eks.CreateInstallDeployment(topologySpec.EksSpec, commandEnvironment)
 	if err != nil {
 		return nil, err
@@ -229,7 +229,7 @@ func BuildInstallDeployment(topologySpec SparkTopologySpec, commandEnvironment f
 	return deployment, nil
 }
 
-func BuildUninstallDeployment(topologySpec SparkTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
+func BuildUninstallDeployment(topologySpec SparkOnEksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
 	deployment, err := eks.CreateUninstallDeployment(topologySpec.EksSpec, commandEnvironment)
 	return deployment, err
 }

@@ -50,21 +50,21 @@ func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) 
 }
 
 func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (framework.Topology, error) {
-	resolvedSpecificTopology := topology.(*EksTopology)
+	currentTopology := topology.(*EksTopology)
 
-	err := checkCmdEnvFolderExists(resolvedSpecificTopology.Metadata, CmdEnvNginxHelmChart)
+	err := checkCmdEnvFolderExists(currentTopology.Metadata, CmdEnvNginxHelmChart)
 	if err != nil {
 		return nil, err
 	}
 
-	if resolvedSpecificTopology.Spec.AutoScaling.EnableClusterAutoscaler {
-		err = checkCmdEnvFolderExists(resolvedSpecificTopology.Metadata, CmdEnvClusterAutoscalerHelmChart)
+	if currentTopology.Spec.AutoScaling.EnableClusterAutoscaler {
+		err = checkCmdEnvFolderExists(currentTopology.Metadata, CmdEnvClusterAutoscalerHelmChart)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	if resolvedSpecificTopology.Spec.AutoScaling.EnableClusterAutoscaler {
+	if currentTopology.Spec.AutoScaling.EnableClusterAutoscaler {
 		err = awslib.CheckEksCtlCmd("eksctl")
 		if err != nil {
 			return nil, err
@@ -75,11 +75,11 @@ func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (f
 }
 
 func (t *TopologyHandler) Install(topology framework.Topology) (framework.DeploymentOutput, error) {
-	specificTopology := topology.(*EksTopology)
+	currentTopology := topology.(*EksTopology)
 
-	commandEnvironment := framework.CreateCommandEnvironment(specificTopology.Metadata.CommandEnvironment)
+	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
 
-	deployment, err := CreateInstallDeployment(specificTopology.Spec, commandEnvironment)
+	deployment, err := CreateInstallDeployment(currentTopology.Spec, commandEnvironment)
 	if err != nil {
 		return deployment.GetOutput(), err
 	}
@@ -89,11 +89,11 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 }
 
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
-	specificTopology := topology.(*EksTopology)
+	currentTopology := topology.(*EksTopology)
 
-	commandEnvironment := framework.CreateCommandEnvironment(specificTopology.Metadata.CommandEnvironment)
+	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
 
-	deployment, err := CreateUninstallDeployment(specificTopology.Spec, commandEnvironment)
+	deployment, err := CreateUninstallDeployment(currentTopology.Spec, commandEnvironment)
 	if err != nil {
 		return deployment.GetOutput(), err
 	}
@@ -103,7 +103,7 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 }
 
 func (t *TopologyHandler) PrintUsageExample(topology framework.Topology, deploymentOutput framework.DeploymentOutput) {
-	specificTopology := topology.(*EksTopology)
+	currentTopology := topology.(*EksTopology)
 
 	str := `
 ------------------------------
@@ -111,7 +111,7 @@ Example commands to use EKS cluster:
 ------------------------------
 Step 1: run: aws eks update-kubeconfig --region %s --name %s
 Step 2: run: kubectl get pods -A`
-	log.Printf(str, specificTopology.Spec.Region, specificTopology.Spec.Eks.ClusterName)
+	log.Printf(str, currentTopology.Spec.Region, currentTopology.Spec.Eks.ClusterName)
 }
 
 func CreateInstallDeployment(topologySpec EksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {

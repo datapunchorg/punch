@@ -26,7 +26,7 @@ import (
 	"log"
 )
 
-func DeployHistoryServer(commandEnvironment framework.CommandEnvironment, topology SparkTopologySpec) error {
+func DeployHistoryServer(commandEnvironment framework.CommandEnvironment, topology SparkOnEksTopologySpec) error {
 	region := topology.EksSpec.Region
 	clusterName := topology.EksSpec.Eks.ClusterName
 	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(eks.CmdEnvKubeConfig), clusterName)
@@ -51,7 +51,7 @@ func DeployHistoryServer(commandEnvironment framework.CommandEnvironment, topolo
 	return nil
 }
 
-func InstallHistoryServerHelm(commandEnvironment framework.CommandEnvironment, topology SparkTopologySpec) error {
+func InstallHistoryServerHelm(commandEnvironment framework.CommandEnvironment, topology SparkOnEksTopologySpec) error {
 	// helm install spark-history-server third-party/helm-charts/spark-history-server/charts/spark-history-server --namespace spark-history-server --create-namespace
 
 	kubeConfig, err := awslib.CreateKubeConfig(topology.EksSpec.Region, commandEnvironment.Get(eks.CmdEnvKubeConfig), topology.EksSpec.Eks.ClusterName)

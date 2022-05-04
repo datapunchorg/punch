@@ -46,12 +46,12 @@ const (
 	DefaultNamePrefix = "my"
 )
 
-type SparkTopology struct {
-	framework.TopologyBase               `json:",inline" yaml:",inline"`
-	Spec       SparkTopologySpec          `json:"spec" yaml:"spec"`
+type SparkOnEksTopology struct {
+	framework.TopologyBase `json:",inline" yaml:",inline"`
+	Spec                   SparkOnEksTopologySpec `json:"spec" yaml:"spec"`
 }
 
-type SparkTopologySpec struct {
+type SparkOnEksTopologySpec struct {
 	EksSpec           eks.EksTopologySpec `json:"eksSpec" yaml:"eksSpec"`
 	SparkOperator SparkOperator       `json:"sparkOperator" yaml:"sparkOperator"`
 	ApiGateway    SparkApiGateway     `json:"apiGateway" yaml:"apiGateway"`
@@ -81,16 +81,16 @@ type SparkHistoryServer struct {
 	ImageTag                  string `json:"imageTag" yaml:"imageTag"`
 }
 
-func GenerateSparkTopology() SparkTopology {
+func GenerateSparkOnEksTopology() SparkOnEksTopology {
 	namePrefix := "{{ or .Values.namePrefix `my` }}"
 	s3BucketName := "{{ or .Values.s3BucketName .DefaultS3BucketName }}"
-	return CreateDefaultSparkTopology(namePrefix, s3BucketName)
+	return CreateDefaultSparkEksTopology(namePrefix, s3BucketName)
 }
 
-func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTopology {
+func CreateDefaultSparkEksTopology(namePrefix string, s3BucketName string) SparkOnEksTopology {
 	topologyName := fmt.Sprintf("%s-spark-k8s", namePrefix)
 	eksTopology := eks.CreateDefaultEksTopology(namePrefix, s3BucketName)
-	topology := SparkTopology{
+	topology := SparkOnEksTopology{
 		TopologyBase: framework.TopologyBase{
 			ApiVersion: DefaultVersion,
 			Kind:       KindSparkTopology,
@@ -103,7 +103,7 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 				Notes: map[string]string{},
 			},
 		},
-		Spec: SparkTopologySpec{
+		Spec: SparkOnEksTopologySpec{
 			EksSpec: eksTopology.Spec,
 			ApiGateway: SparkApiGateway{
 				UserName: DefaultApiUserName,
@@ -130,20 +130,20 @@ func CreateDefaultSparkTopology(namePrefix string, s3BucketName string) SparkTop
 	return topology
 }
 
-func (t *SparkTopology) GetKind() string {
+func (t *SparkOnEksTopology) GetKind() string {
 	return t.Kind
 }
 
-func (t *SparkTopology) GetMetadata() *framework.TopologyMetadata {
+func (t *SparkOnEksTopology) GetMetadata() *framework.TopologyMetadata {
 	return &t.Metadata
 }
 
-func (t *SparkTopology) String() string {
+func (t *SparkOnEksTopology) String() string {
 	topologyBytes, err := yaml.Marshal(t)
 	if err != nil {
 		return fmt.Sprintf("(Failed to serialize topology: %s)", err.Error())
 	}
-	var copy SparkTopology
+	var copy SparkOnEksTopology
 	err = yaml.Unmarshal(topologyBytes, &copy)
 	if err != nil {
 		return fmt.Sprintf("(Failed to deserialize topology in ToYamlString(): %s)", err.Error())

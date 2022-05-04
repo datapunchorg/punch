@@ -39,7 +39,7 @@ import (
 
 // TODO remove log.Fatalf
 
-func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, topology SparkTopologySpec) {
+func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, topology SparkOnEksTopologySpec) {
 	region := topology.EksSpec.Region
 	clusterName := topology.EksSpec.Eks.ClusterName
 	operatorNamespace := topology.SparkOperator.Namespace
@@ -172,7 +172,7 @@ func CreateApiGatewayService(clientset *kubernetes.Clientset, namespace string, 
 }
 
 // TODO remove log.Fatalf
-func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, topology SparkTopologySpec) {
+func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, topology SparkOnEksTopologySpec) {
 	// helm install my-release spark-operator/spark-operator --namespace spark-operator --create-namespace --set sparkJobNamespace=default
 
 	kubeConfig, err := awslib.CreateKubeConfig(topology.EksSpec.Region, commandEnvironment.Get(eks.CmdEnvKubeConfig), topology.EksSpec.Eks.ClusterName)
