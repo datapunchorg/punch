@@ -43,6 +43,14 @@ type KafkaWithBridgeTopology struct {
 type KafkaWithBridgeTopologySpec struct {
 	KafkaOnMskSpec    kafkaonmsk.KafkaTopologySpec   `json:"kafkaOnMskSpec" yaml:"kafkaOnMskSpec"`
 	EksSpec           eks.EksTopologySpec `json:"eksSpec" yaml:"eksSpec"`
+	KafkaBridge   KafkaBridgeSpec  `json:"kafkaBridge" yaml:"kafkaBridge"`
+}
+
+type KafkaBridgeSpec struct {
+	HelmInstallName string `json:"helmInstallName" yaml:"helmInstallName"`
+	Namespace  string `json:"namespace" yaml:"namespace"`
+	Image string `json:"image" yaml:"image"`
+	KafkaBootstrapServers string `json:"kafkaBootstrapServers" yaml:"kafkaBootstrapServers"`
 }
 
 func GenerateDefaultTopology() KafkaWithBridgeTopology {
@@ -63,13 +71,21 @@ func CreateDefaultTopology(namePrefix string, s3BucketName string) KafkaWithBrid
 			Kind:       KindKafkaTopology,
 			Metadata: framework.TopologyMetadata{
 				Name:               topologyName,
-				CommandEnvironment: map[string]string{},
+				CommandEnvironment: map[string]string{
+					CmdEnvKafkaBridgeHelmChart: "third-party/helm-charts/strimzi/charts/strimzi-kafka-bridge-chart",
+				},
 				Notes:              map[string]string{},
 			},
 		},
 		Spec: KafkaWithBridgeTopologySpec{
 			KafkaOnMskSpec: kafkaOnMskTopology.Spec,
 			EksSpec: eksTopology.Spec,
+			KafkaBridge: KafkaBridgeSpec{
+				HelmInstallName: "strimzi-kafka-bridge",
+				Namespace: "kafka-01",
+				Image: "ghcr.io/datapunchorg/strimzi-kafka-bridge:0.22.0-SNAPSHOT-1651610846",
+				KafkaBootstrapServers: "localhost:9098",
+			},
 		},
 	}
 

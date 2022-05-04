@@ -6,7 +6,7 @@ image:
   pullSecrets: []
 
 kafka:
-  bootstrapServers: b-2.my-kafka-01.6xjlk6.c2.kafka.us-west-1.amazonaws.com:9098,b-1.my-kafka-01.6xjlk6.c2.kafka.us-west-1.amazonaws.com:9098
+  bootstrapServers: localhost:9098,another-server:9098
 
 resources:
   limits:

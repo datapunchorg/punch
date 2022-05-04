@@ -16,3 +16,56 @@ limitations under the License.
 
 package kafkawithbridge
 
+import (
+	"fmt"
+	"github.com/datapunchorg/punch/pkg/awslib"
+	"github.com/datapunchorg/punch/pkg/framework"
+	"github.com/datapunchorg/punch/pkg/kubelib"
+	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
+	v1 "k8s.io/api/core/v1"
+	"log"
+)
+
+func DeployKafkaBridge(commandEnvironment framework.CommandEnvironment, spec KafkaWithBridgeTopologySpec) error {
+	region := spec.EksSpec.Region
+	clusterName := spec.EksSpec.Eks.ClusterName
+	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(eks.CmdEnvKubeConfig), clusterName)
+	if err != nil {
+		return fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
+	}
+
+	err = InstallKafkaBridgeHelm(commandEnvironment, spec)
+	if err != nil {
+		return fmt.Errorf("failed to install Spark History Server helm chart: %s", err.Error())
+	}
+
+	namespace := spec.KafkaBridge.Namespace
+	podNamePrefix := "strimzi-kafka-bridge"
+	err = kubelib.WaitPodsInPhases(clientset, namespace, podNamePrefix, []v1.PodPhase{v1.PodRunning})
+	if err != nil {
+		return fmt.Errorf("pod %s*** in namespace %s is not in phase %s", podNamePrefix, namespace, v1.PodRunning)
+	}
+
+	return nil
+}
+
+func InstallKafkaBridgeHelm(commandEnvironment framework.CommandEnvironment, spec KafkaWithBridgeTopologySpec) error {
+	kubeConfig, err := awslib.CreateKubeConfig(spec.EksSpec.Region, commandEnvironment.Get(eks.CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
+	if err != nil {
+		log.Fatalf("Failed to get kube config: %s", err)
+	}
+
+	defer kubeConfig.Cleanup()
+
+	installName := spec.KafkaBridge.HelmInstallName
+	installNamespace := spec.KafkaBridge.Namespace
+
+	arguments := []string{
+		"--set", fmt.Sprintf("image.name=%s", spec.KafkaBridge.Image),
+		"--set", fmt.Sprintf("kafka.bootstrapServers=%s", spec.KafkaBridge.KafkaBootstrapServers),
+	}
+
+	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvKafkaBridgeHelmChart), kubeConfig, arguments, installName, installNamespace)
+
+	return nil
+}

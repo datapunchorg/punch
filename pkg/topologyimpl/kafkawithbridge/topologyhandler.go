@@ -70,6 +70,10 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 	for _, step := range deployment2.GetSteps() {
 		deployment.AddStep(step.Name(), step.Description(), step.StepFunc())
 	}
+	deployment.AddStep("deployStrimziKafkaBridge", "Deploy Spark History Server", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
+		DeployKafkaBridge(commandEnvironment, currentTopology.Spec)
+		return framework.NewDeploymentStepOutput(), nil
+	})
 	err = deployment.Run()
 	if err != nil {
 		return nil, err
