@@ -57,7 +57,7 @@ type EksTopologySpec struct {
 	VpcId             string                   `json:"vpcId" yaml:"vpcId"`
 	S3BucketName      string                   `json:"s3BucketName" yaml:"s3BucketName"`
 	S3Policy          resource.IAMPolicy       `json:"s3Policy" yaml:"s3Policy"`
-	KafkaPolicy       resource.IAMPolicy       `json:"KafkaPolicy" yaml:"KafkaPolicy"`
+	KafkaPolicy       resource.IAMPolicy       `json:"kafkaPolicy" yaml:"kafkaPolicy"`
 	Eks               resource.EKSCluster  `json:"eks" yaml:"eks"`
 	NodeGroups        []resource.NodeGroup `json:"nodeGroups" yaml:"nodeGroups"`
 	NginxIngress      NginxIngress             `json:"nginxIngress" yaml:"nginxIngress"`

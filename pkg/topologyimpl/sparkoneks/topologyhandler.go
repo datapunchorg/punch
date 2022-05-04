@@ -58,32 +58,32 @@ func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) 
 }
 
 func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (framework.Topology, error) {
-	resolvedSpecificTopology := topology.(*SparkOnEksTopology)
+	currentTopology := topology.(*SparkOnEksTopology)
 
 	if strings.EqualFold(phase, framework.PhaseBeforeInstall) {
-		if resolvedSpecificTopology.Spec.ApiGateway.UserPassword == "" || resolvedSpecificTopology.Spec.ApiGateway.UserPassword == framework.TemplateNoValue {
+		if currentTopology.Spec.ApiGateway.UserPassword == "" || currentTopology.Spec.ApiGateway.UserPassword == framework.TemplateNoValue {
 			return nil, fmt.Errorf("spec.apiGateway.userPassword is emmpty, please provide the value for the password")
 		}
 	}
 
-	err := checkCmdEnvFolderExists(resolvedSpecificTopology.Metadata, eks.CmdEnvNginxHelmChart)
+	err := checkCmdEnvFolderExists(currentTopology.Metadata, eks.CmdEnvNginxHelmChart)
 	if err != nil {
 		return nil, err
 	}
 
-	err = checkCmdEnvFolderExists(resolvedSpecificTopology.Metadata, CmdEnvSparkOperatorHelmChart)
+	err = checkCmdEnvFolderExists(currentTopology.Metadata, CmdEnvSparkOperatorHelmChart)
 	if err != nil {
 		return nil, err
 	}
 
-	if resolvedSpecificTopology.Spec.EksSpec.AutoScaling.EnableClusterAutoscaler {
-		err = checkCmdEnvFolderExists(resolvedSpecificTopology.Metadata, eks.CmdEnvClusterAutoscalerHelmChart)
+	if currentTopology.Spec.EksSpec.AutoScaling.EnableClusterAutoscaler {
+		err = checkCmdEnvFolderExists(currentTopology.Metadata, eks.CmdEnvClusterAutoscalerHelmChart)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	if resolvedSpecificTopology.Spec.EksSpec.AutoScaling.EnableClusterAutoscaler {
+	if currentTopology.Spec.EksSpec.AutoScaling.EnableClusterAutoscaler {
 		err = awslib.CheckEksCtlCmd("eksctl")
 		if err != nil {
 			return nil, err
@@ -94,11 +94,11 @@ func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (f
 }
 
 func (t *TopologyHandler) Install(topology framework.Topology) (framework.DeploymentOutput, error) {
-	specificTopology := topology.(*SparkOnEksTopology)
+	currentTopology := topology.(*SparkOnEksTopology)
 
-	commandEnvironment := framework.CreateCommandEnvironment(specificTopology.Metadata.CommandEnvironment)
+	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
 
-	deployment, err := BuildInstallDeployment(specificTopology.Spec, commandEnvironment)
+	deployment, err := BuildInstallDeployment(currentTopology.Spec, commandEnvironment)
 	if err != nil {
 		return deployment.GetOutput(), err
 	}
@@ -108,11 +108,11 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 }
 
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
-	specificTopology := topology.(*SparkOnEksTopology)
+	currentTopology := topology.(*SparkOnEksTopology)
 
-	commandEnvironment := framework.CreateCommandEnvironment(specificTopology.Metadata.CommandEnvironment)
+	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
 
-	deployment, err := BuildUninstallDeployment(specificTopology.Spec, commandEnvironment)
+	deployment, err := BuildUninstallDeployment(currentTopology.Spec, commandEnvironment)
 	if err != nil {
 		return deployment.GetOutput(), err
 	}
@@ -122,14 +122,14 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 }
 
 func (t *TopologyHandler) PrintUsageExample(topology framework.Topology, deploymentOutput framework.DeploymentOutput) {
-	specificTopology := topology.(*SparkOnEksTopology)
+	currentTopology := topology.(*SparkOnEksTopology)
 
 	loadBalancerUrl := deploymentOutput.Output()["deployNginxIngressController"]["loadBalancerPreferredUrl"].(string)
 	if loadBalancerUrl != "" {
 		if _, ok := deploymentOutput.Output()["minikubeStart"]; ok {
-			printExampleCommandToRunSparkOnMinikube(loadBalancerUrl, *specificTopology)
+			printExampleCommandToRunSparkOnMinikube(loadBalancerUrl, *currentTopology)
 		} else {
-			printExampleCommandToRunSparkOnAws(loadBalancerUrl, *specificTopology)
+			printExampleCommandToRunSparkOnAws(loadBalancerUrl, *currentTopology)
 		}
 	} else {
 		log.Printf("Did not find load balancer url, cannot print usage example command")
