@@ -19,5 +19,5 @@ spec:
               name: strimzi-kafka-bridge
               port:
                 number: 80
-          path: /topics
+          path: /topic
           pathType: Prefix
