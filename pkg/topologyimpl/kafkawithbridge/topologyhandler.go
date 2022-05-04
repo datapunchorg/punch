@@ -63,7 +63,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 	currentTopology := topology.(*KafkaWithBridgeTopology)
 	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
 	deployment := kafkaonmsk.CreateInstallDeployment(currentTopology.Spec.KafkaOnMskSpec)
-	deployment2, err := eks.BuildInstallDeployment(currentTopology.Spec.EksSpec, commandEnvironment)
+	deployment2, err := eks.CreateInstallDeployment(currentTopology.Spec.EksSpec, commandEnvironment)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
 	currentTopology := topology.(*KafkaWithBridgeTopology)
 	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
-	deployment, err := eks.BuildUninstallDeployment(currentTopology.Spec.EksSpec, commandEnvironment)
+	deployment, err := eks.CreateUninstallDeployment(currentTopology.Spec.EksSpec, commandEnvironment)
 	if err != nil {
 		return nil, err
 	}

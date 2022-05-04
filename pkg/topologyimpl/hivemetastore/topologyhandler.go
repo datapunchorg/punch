@@ -75,7 +75,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 	if commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
 		commandEnvironment.Set(CmdEnvKubeConfig, kubelib.GetKubeConfigPath())
 	}
-	deployment, err := eks.BuildInstallDeployment(specificTopology.Spec.EksSpec, commandEnvironment)
+	deployment, err := eks.CreateInstallDeployment(specificTopology.Spec.EksSpec, commandEnvironment)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +142,7 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 	specificTopology := topology.(*HiveMetastoreTopology)
 	commandEnvironment := framework.CreateCommandEnvironment(specificTopology.Metadata.CommandEnvironment)
 
-	deployment, err := eks.BuildUninstallDeployment(specificTopology.Spec.EksSpec, commandEnvironment)
+	deployment, err := eks.CreateUninstallDeployment(specificTopology.Spec.EksSpec, commandEnvironment)
 	if err != nil {
 		return nil, err
 	}

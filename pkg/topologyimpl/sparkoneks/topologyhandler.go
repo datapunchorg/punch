@@ -211,7 +211,7 @@ func checkCmdEnvFolderExists(metadata framework.TopologyMetadata, cmdEnvKey stri
 }
 
 func BuildInstallDeployment(topologySpec SparkTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
-	deployment, err := eks.BuildInstallDeployment(topologySpec.EksSpec, commandEnvironment)
+	deployment, err := eks.CreateInstallDeployment(topologySpec.EksSpec, commandEnvironment)
 	if err != nil {
 		return nil, err
 	}
@@ -230,6 +230,6 @@ func BuildInstallDeployment(topologySpec SparkTopologySpec, commandEnvironment f
 }
 
 func BuildUninstallDeployment(topologySpec SparkTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
-	deployment, err := eks.BuildUninstallDeployment(topologySpec.EksSpec, commandEnvironment)
+	deployment, err := eks.CreateUninstallDeployment(topologySpec.EksSpec, commandEnvironment)
 	return deployment, err
 }

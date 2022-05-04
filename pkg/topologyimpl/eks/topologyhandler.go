@@ -79,7 +79,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 
 	commandEnvironment := framework.CreateCommandEnvironment(specificTopology.Metadata.CommandEnvironment)
 
-	deployment, err := BuildInstallDeployment(specificTopology.Spec, commandEnvironment)
+	deployment, err := CreateInstallDeployment(specificTopology.Spec, commandEnvironment)
 	if err != nil {
 		return deployment.GetOutput(), err
 	}
@@ -93,7 +93,7 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 
 	commandEnvironment := framework.CreateCommandEnvironment(specificTopology.Metadata.CommandEnvironment)
 
-	deployment, err := BuildUninstallDeployment(specificTopology.Spec, commandEnvironment)
+	deployment, err := CreateUninstallDeployment(specificTopology.Spec, commandEnvironment)
 	if err != nil {
 		return deployment.GetOutput(), err
 	}
@@ -114,7 +114,7 @@ Step 2: run: kubectl get pods -A`
 	log.Printf(str, specificTopology.Spec.Region, specificTopology.Spec.Eks.ClusterName)
 }
 
-func BuildInstallDeployment(topologySpec EksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
+func CreateInstallDeployment(topologySpec EksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
 	deployment := framework.NewDeployment()
 
 	if topologySpec.AutoScaling.EnableClusterAutoscaler && commandEnvironment.Get(CmdEnvClusterAutoscalerHelmChart) == "" {
@@ -234,7 +234,7 @@ func BuildInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fra
 	return deployment, nil
 }
 
-func BuildUninstallDeployment(topologySpec EksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
+func CreateUninstallDeployment(topologySpec EksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
 	deployment := framework.NewDeployment()
 
 	if commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
