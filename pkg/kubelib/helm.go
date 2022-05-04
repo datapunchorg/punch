@@ -19,6 +19,7 @@ package kubelib
 import (
 	"log"
 	"os/exec"
+	"strings"
 )
 
 func CheckHelmOrFatal(helmExeLocation string) {
@@ -57,4 +58,12 @@ func InstallHelm(helmExeLocation string, helmChartLocation string, kubeConfig Ku
 	} else {
 		log.Printf("Finished running helm\n%s", string(helmOut))
 	}
+}
+
+func EscapeHelmSetValue(str string) string {
+	if strings.Contains(str, ",") {
+		str = strings.ReplaceAll(str, ",", "\\,")
+		return str
+	}
+	return str
 }

@@ -84,7 +84,7 @@ func CreateDefaultTopology(namePrefix string, s3BucketName string) KafkaWithBrid
 				HelmInstallName: "strimzi-kafka-bridge",
 				Namespace: "kafka-01",
 				Image: "ghcr.io/datapunchorg/strimzi-kafka-bridge:0.22.0-SNAPSHOT-1651610846",
-				KafkaBootstrapServers: "localhost:9098",
+				KafkaBootstrapServers: "",
 			},
 		},
 	}

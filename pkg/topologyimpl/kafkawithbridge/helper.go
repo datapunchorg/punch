@@ -62,7 +62,7 @@ func InstallKafkaBridgeHelm(commandEnvironment framework.CommandEnvironment, spe
 
 	arguments := []string{
 		"--set", fmt.Sprintf("image.name=%s", spec.KafkaBridge.Image),
-		"--set", fmt.Sprintf("kafka.bootstrapServers=%s", spec.KafkaBridge.KafkaBootstrapServers),
+		"--set", fmt.Sprintf("kafka.bootstrapServers=%s", kubelib.EscapeHelmSetValue(spec.KafkaBridge.KafkaBootstrapServers)),
 	}
 
 	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvKafkaBridgeHelmChart), kubeConfig, arguments, installName, installNamespace)

@@ -29,7 +29,7 @@ type HostPort struct {
 	Port int32
 }
 
-func RetryUntilTrue(run func() (bool, error), maxWait time.Duration, sleepTime time.Duration) error {
+func RetryUntilTrue(run func() (bool, error), maxWait time.Duration, retryInterval time.Duration) error {
 	currentTime := time.Now()
 	startTime := currentTime
 	endTime := currentTime.Add(maxWait)
@@ -42,7 +42,7 @@ func RetryUntilTrue(run func() (bool, error), maxWait time.Duration, sleepTime t
 			return nil
 		}
 		if !currentTime.After(endTime) {
-			time.Sleep(sleepTime)
+			time.Sleep(retryInterval)
 		}
 		currentTime = time.Now()
 	}
