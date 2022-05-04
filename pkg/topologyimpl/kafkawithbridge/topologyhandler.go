@@ -19,6 +19,7 @@ package kafkawithbridge
 import (
 	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
+	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	"github.com/datapunchorg/punch/pkg/topologyimpl/kafkaonmsk"
 	"gopkg.in/yaml.v3"
 	"regexp"
@@ -54,20 +55,40 @@ func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) 
 }
 
 func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (framework.Topology, error) {
+	// TODO
 	return topology, nil
 }
 
 func (t *TopologyHandler) Install(topology framework.Topology) (framework.DeploymentOutput, error) {
-	kafkaTopology := topology.(*KafkaTopology)
-	deployment := kafkaonmsk.CreateInstallDeployment(kafkaTopology.Spec.KafkaOnMskSpec)
-	err := deployment.Run()
+	currentTopology := topology.(*KafkaWithBridgeTopology)
+	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
+	deployment := kafkaonmsk.CreateInstallDeployment(currentTopology.Spec.KafkaOnMskSpec)
+	deployment2, err := eks.BuildInstallDeployment(currentTopology.Spec.EksSpec, commandEnvironment)
+	if err != nil {
+		return nil, err
+	}
+	for _, step := range deployment2.GetSteps() {
+		deployment.AddStep(step.Name(), step.Description(), step.StepFunc())
+	}
+	err = deployment.Run()
+	if err != nil {
+		return nil, err
+	}
 	return deployment.GetOutput(), err
 }
 
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
-	kafkaTopology := topology.(*KafkaTopology)
-	deployment := kafkaonmsk.CreateUninstallDeployment(kafkaTopology.Spec.KafkaOnMskSpec)
-	err := deployment.Run()
+	currentTopology := topology.(*KafkaWithBridgeTopology)
+	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
+	deployment, err := eks.BuildUninstallDeployment(currentTopology.Spec.EksSpec, commandEnvironment)
+	if err != nil {
+		return nil, err
+	}
+	deployment2 := kafkaonmsk.CreateUninstallDeployment(currentTopology.Spec.KafkaOnMskSpec)
+	for _, step := range deployment2.GetSteps() {
+		deployment.AddStep(step.Name(), step.Description(), step.StepFunc())
+	}
+	err = deployment.Run()
 	return deployment.GetOutput(), err
 }
 

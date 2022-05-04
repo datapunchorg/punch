@@ -19,6 +19,7 @@ package kafkawithbridge
 import (
 	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
+	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	"github.com/datapunchorg/punch/pkg/topologyimpl/kafkaonmsk"
 )
 
@@ -34,27 +35,29 @@ const (
 	CmdEnvKafkaBridgeHelmChart = "kafkaBridgeHelmChart"
 )
 
-type KafkaTopology struct {
+type KafkaWithBridgeTopology struct {
 	framework.TopologyBase `json:",inline" yaml:",inline"`
-	Spec                   KafkaWithBridgeSpec `json:"spec" yaml:"spec"`
+	Spec                   KafkaWithBridgeTopologySpec `json:"spec" yaml:"spec"`
 }
 
-type KafkaWithBridgeSpec struct {
+type KafkaWithBridgeTopologySpec struct {
 	KafkaOnMskSpec    kafkaonmsk.KafkaTopologySpec   `json:"kafkaOnMskSpec" yaml:"kafkaOnMskSpec"`
+	EksSpec           eks.EksTopologySpec `json:"eksSpec" yaml:"eksSpec"`
 }
 
-func GenerateDefaultTopology() KafkaTopology {
+func GenerateDefaultTopology() KafkaWithBridgeTopology {
 	namePrefix := "{{ or .Values.namePrefix `my` }}"
 	s3BucketName := "{{ or .Values.s3BucketName .DefaultS3BucketName }}"
 	return CreateDefaultTopology(namePrefix, s3BucketName)
 }
 
-func CreateDefaultTopology(namePrefix string, s3BucketName string) KafkaTopology {
+func CreateDefaultTopology(namePrefix string, s3BucketName string) KafkaWithBridgeTopology {
 	topologyName := fmt.Sprintf("%s-kafka-01", namePrefix)
 
-	kafkaOnMskTopology := kafkaonmsk.CreateDefaultKafkaTopology(namePrefix)
+	kafkaOnMskTopology := kafkaonmsk.CreateDefaultKafkaOnMskTopology(namePrefix)
+	eksTopology := eks.CreateDefaultEksTopology(namePrefix, s3BucketName)
 
-	topology := KafkaTopology{
+	topology := KafkaWithBridgeTopology{
 		TopologyBase: framework.TopologyBase{
 			ApiVersion: DefaultVersion,
 			Kind:       KindKafkaTopology,
@@ -64,20 +67,22 @@ func CreateDefaultTopology(namePrefix string, s3BucketName string) KafkaTopology
 				Notes:              map[string]string{},
 			},
 		},
-		Spec: KafkaWithBridgeSpec{
+		Spec: KafkaWithBridgeTopologySpec{
 			KafkaOnMskSpec: kafkaOnMskTopology.Spec,
+			EksSpec: eksTopology.Spec,
 		},
 	}
 
 	framework.CopyMissingKeyValuesFromStringMap(topology.Metadata.CommandEnvironment, kafkaOnMskTopology.Metadata.CommandEnvironment)
+	framework.CopyMissingKeyValuesFromStringMap(topology.Metadata.CommandEnvironment, eksTopology.Metadata.CommandEnvironment)
 
 	return topology
 }
 
-func (t *KafkaTopology) GetKind() string {
+func (t *KafkaWithBridgeTopology) GetKind() string {
 	return t.Kind
 }
 
-func (t *KafkaTopology) GetMetadata() *framework.TopologyMetadata {
+func (t *KafkaWithBridgeTopology) GetMetadata() *framework.TopologyMetadata {
 	return &t.Metadata
 }

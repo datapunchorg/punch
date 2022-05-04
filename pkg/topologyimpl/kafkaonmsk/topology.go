@@ -49,7 +49,7 @@ type KafkaTopologySpec struct {
 	BrokerStorageGB   int64    `json:"brokerStorageGB" yaml:"brokerStorageGB"`
 }
 
-func CreateDefaultKafkaTopology(namePrefix string) KafkaTopology {
+func CreateDefaultKafkaOnMskTopology(namePrefix string) KafkaTopology {
 	topologyName := fmt.Sprintf("%s-msk-01", namePrefix)
 	securityGroupName := fmt.Sprintf("%s-msk-sg-01", namePrefix)
 	region := DefaultRegion
