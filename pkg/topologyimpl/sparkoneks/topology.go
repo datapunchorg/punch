@@ -41,9 +41,6 @@ const (
 
 	CmdEnvSparkOperatorHelmChart = "sparkOperatorHelmChart"
 	CmdEnvHistoryServerHelmChart = "historyServerHelmChart"
-
-	DefaultVersion    = "datapunch.org/v1alpha1"
-	DefaultNamePrefix = "my"
 )
 
 type SparkOnEksTopology struct {
@@ -92,7 +89,7 @@ func CreateDefaultSparkEksTopology(namePrefix string, s3BucketName string) Spark
 	eksTopology := eks.CreateDefaultEksTopology(namePrefix, s3BucketName)
 	topology := SparkOnEksTopology{
 		TopologyBase: framework.TopologyBase{
-			ApiVersion: DefaultVersion,
+			ApiVersion: framework.DefaultVersion,
 			Kind:       KindSparkTopology,
 			Metadata: framework.TopologyMetadata{
 				Name: topologyName,

@@ -28,8 +28,6 @@ const (
 
 	FieldMaskValue = "***"
 
-	DefaultNamePrefix = "my"
-
 	CmdEnvPostgresqlHelmChart = "postgresqlHelmChart"
 	CmdEnvHiveMetastoreCreateDatabaseHelmChart = "hiveMetastoreCreateDatabaseHelmChart"
 	CmdEnvHiveMetastoreInitHelmChart = "hiveMetastoreInitHelmChart"

@@ -46,7 +46,7 @@ func (t *TopologyHandler) Generate() (framework.Topology, error) {
 }
 
 func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) {
-	result := CreateDefaultRdsDatabaseTopology(DefaultNamePrefix)
+	result := CreateDefaultRdsDatabaseTopology(framework.DefaultNamePrefix)
 	err := yaml.Unmarshal(yamlContent, &result)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse YAML (%s): \n%s", err.Error(), string(yamlContent))

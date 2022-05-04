@@ -47,7 +47,7 @@ func (t *TopologyHandler) Generate() (framework.Topology, error) {
 }
 
 func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) {
-	result := CreateDefaultHiveMetastoreTopology(DefaultNamePrefix, eks.ToBeReplacedS3BucketName)
+	result := CreateDefaultHiveMetastoreTopology(framework.DefaultNamePrefix, eks.ToBeReplacedS3BucketName)
 	err := yaml.Unmarshal(yamlContent, &result)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse YAML (%s): \n%s", err.Error(), string(yamlContent))

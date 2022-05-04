@@ -29,10 +29,6 @@ const (
 	KindDatabaseTopology = "RdsDatabase"
 
 	FieldMaskValue = "***"
-
-	DefaultVersion    = "datapunch.org/v1alpha1"
-	DefaultRegion     = "us-west-1"
-	DefaultNamePrefix = "my"
 )
 
 type RdsDatabaseTopology struct {
@@ -62,7 +58,7 @@ func CreateDefaultRdsDatabaseTopology(namePrefix string) RdsDatabaseTopology {
 	securityGroupName := fmt.Sprintf("%s-sg-01", namePrefix)
 	topology := RdsDatabaseTopology{
 		TopologyBase: framework.TopologyBase{
-			ApiVersion: DefaultVersion,
+			ApiVersion: framework.DefaultVersion,
 			Kind: KindDatabaseTopology,
 			Metadata: framework.TopologyMetadata{
 				Name:               topologyName,
@@ -72,7 +68,7 @@ func CreateDefaultRdsDatabaseTopology(namePrefix string) RdsDatabaseTopology {
 		},
 		Spec: RdsDatabaseTopologySpec{
 			NamePrefix:         namePrefix,
-			Region:             DefaultRegion,
+			Region:             framework.DefaultRegion,
 			VpcId:              "{{ or .Values.vpcId .DefaultVpcId }}",
 			AvailabilityZones:  []string{"us-west-1a"},
 			DatabaseId:         topologyName,
