@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package kafkaonmsk
+package kafkawithbridge
 
 import (
 	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
+	"github.com/datapunchorg/punch/pkg/topologyimpl/kafkaonmsk"
 	"gopkg.in/yaml.v3"
-	"log"
 	"regexp"
 )
 
@@ -40,18 +40,17 @@ type TopologyHandler struct {
 }
 
 func (t *TopologyHandler) Generate() (framework.Topology, error) {
-	namePrefix := "{{ or .Values.namePrefix `my` }}"
-	topology := CreateDefaultKafkaTopology(namePrefix)
+	topology := GenerateDefaultTopology()
 	return &topology, nil
 }
 
 func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) {
-	result := CreateDefaultKafkaTopology(DefaultNamePrefix)
-	err := yaml.Unmarshal(yamlContent, &result)
+	topology := GenerateDefaultTopology()
+	err := yaml.Unmarshal(yamlContent, &topology)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse YAML (%s): \n%s", err.Error(), string(yamlContent))
 	}
-	return &result, nil
+	return &topology, nil
 }
 
 func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (framework.Topology, error) {
@@ -60,45 +59,15 @@ func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (f
 
 func (t *TopologyHandler) Install(topology framework.Topology) (framework.DeploymentOutput, error) {
 	kafkaTopology := topology.(*KafkaTopology)
-	deployment := CreateInstallDeployment(kafkaTopology.Spec)
+	deployment := kafkaonmsk.CreateInstallDeployment(kafkaTopology.Spec.KafkaOnMskSpec)
 	err := deployment.Run()
 	return deployment.GetOutput(), err
 }
 
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
 	kafkaTopology := topology.(*KafkaTopology)
-	deployment := CreateUninstallDeployment(kafkaTopology.Spec)
+	deployment := kafkaonmsk.CreateUninstallDeployment(kafkaTopology.Spec.KafkaOnMskSpec)
 	err := deployment.Run()
 	return deployment.GetOutput(), err
 }
 
-func CreateInstallDeployment(spec KafkaTopologySpec) framework.Deployment {
-	deployment := framework.NewDeployment()
-	deployment.AddStep("createKafkaCluster", "Create Kafka cluster", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
-		cluster, err := CreateKafkaCluster(spec)
-		if err != nil {
-			return framework.NewDeploymentStepOutput(), err
-		}
-		bootstrap, err := GetBootstrapBrokerString(spec.Region, *cluster.ClusterArn)
-		if err != nil {
-			return framework.NewDeploymentStepOutput(), err
-		}
-		return framework.DeploymentStepOutput{
-			"kafkaClusterArn": cluster.ClusterArn,
-			"bootstrapServerString": *bootstrap.BootstrapBrokerStringSaslIam,
-		}, nil
-	})
-	return deployment
-}
-
-func CreateUninstallDeployment(spec KafkaTopologySpec) framework.Deployment {
-	deployment := framework.NewDeployment()
-	deployment.AddStep("deleteKafkaCluster", "Delete Kafka cluster", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
-		err := DeleteKafkaCluster(spec.Region, spec.ClusterName)
-		if err != nil {
-			log.Printf("[WARN] Cannot delete Kafka cluster %s in region %s: %s", spec.ClusterName, spec.Region, err.Error())
-		}
-		return framework.NewDeploymentStepOutput(), nil
-	})
-	return deployment
-}

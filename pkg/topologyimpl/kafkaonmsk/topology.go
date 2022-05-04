@@ -50,8 +50,8 @@ type KafkaTopologySpec struct {
 }
 
 func CreateDefaultKafkaTopology(namePrefix string) KafkaTopology {
-	topologyName := fmt.Sprintf("%s-kafka-01", namePrefix)
-	securityGroupName := fmt.Sprintf("%s-kafka-sg-01", namePrefix)
+	topologyName := fmt.Sprintf("%s-msk-01", namePrefix)
+	securityGroupName := fmt.Sprintf("%s-msk-sg-01", namePrefix)
 	region := DefaultRegion
 	vpcId, err := awslib.GetDefaultVpcId(region)
 	if err != nil {

@@ -21,6 +21,7 @@ import (
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/hivemetastore"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/kafkaonmsk"
+	_ "github.com/datapunchorg/punch/pkg/topologyimpl/kafkawithbridge"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/rdsdatabase"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/sparkoneks"
 	"github.com/spf13/cobra"
