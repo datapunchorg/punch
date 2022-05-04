@@ -41,12 +41,12 @@ type TopologyHandler struct {
 
 func (t *TopologyHandler) Generate() (framework.Topology, error) {
 	namePrefix := "{{ or .Values.namePrefix `my` }}"
-	topology := CreateDefaultDatabaseTopology(namePrefix)
+	topology := CreateDefaultRdsDatabaseTopology(namePrefix)
 	return &topology, nil
 }
 
 func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) {
-	result := CreateDefaultDatabaseTopology(DefaultNamePrefix)
+	result := CreateDefaultRdsDatabaseTopology(DefaultNamePrefix)
 	err := yaml.Unmarshal(yamlContent, &result)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse YAML (%s): \n%s", err.Error(), string(yamlContent))
@@ -55,7 +55,7 @@ func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) 
 }
 
 func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (framework.Topology, error) {
-	resolvedDatabaseTopology := topology.(*DatabaseTopology)
+	resolvedDatabaseTopology := topology.(*RdsDatabaseTopology)
 
 	if strings.EqualFold(phase, framework.PhaseBeforeInstall) {
 		if resolvedDatabaseTopology.Spec.MasterUserPassword == "" || resolvedDatabaseTopology.Spec.MasterUserPassword == framework.TemplateNoValue {
@@ -67,7 +67,7 @@ func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (f
 }
 
 func (t *TopologyHandler) Install(topology framework.Topology) (framework.DeploymentOutput, error) {
-	databaseTopology := topology.(*DatabaseTopology)
+	databaseTopology := topology.(*RdsDatabaseTopology)
 	deployment := framework.NewDeployment()
 	deployment.AddStep("createDatabase", "Create database", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
 		result, err := CreateDatabase(databaseTopology.Spec)
@@ -81,7 +81,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 }
 
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
-	databaseTopology := topology.(*DatabaseTopology)
+	databaseTopology := topology.(*RdsDatabaseTopology)
 	deployment := framework.NewDeployment()
 	deployment.AddStep("deleteDatabase", "Delete database", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
 		region := databaseTopology.Spec.Region

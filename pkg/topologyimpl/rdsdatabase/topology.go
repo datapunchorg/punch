@@ -35,12 +35,12 @@ const (
 	DefaultNamePrefix = "my"
 )
 
-type DatabaseTopology struct {
-	framework.TopologyBase               `json:",inline" yaml:",inline"`
-	Spec       DatabaseTopologySpec      `json:"spec"`
+type RdsDatabaseTopology struct {
+	framework.TopologyBase `json:",inline" yaml:",inline"`
+	Spec                   RdsDatabaseTopologySpec `json:"spec"`
 }
 
-type DatabaseTopologySpec struct {
+type RdsDatabaseTopologySpec struct {
 	NamePrefix        string   `json:"namePrefix" yaml:"namePrefix"`
 	Region            string   `json:"region" yaml:"region"`
 	VpcId             string   `json:"vpcId" yaml:"vpcId"`
@@ -57,10 +57,10 @@ type DatabaseTopologySpec struct {
 	SecurityGroups     []resource.SecurityGroup `json:"securityGroups" yaml:"securityGroups"`
 }
 
-func CreateDefaultDatabaseTopology(namePrefix string) DatabaseTopology {
+func CreateDefaultRdsDatabaseTopology(namePrefix string) RdsDatabaseTopology {
 	topologyName := fmt.Sprintf("%s-db-01", namePrefix)
 	securityGroupName := fmt.Sprintf("%s-sg-01", namePrefix)
-	topology := DatabaseTopology{
+	topology := RdsDatabaseTopology{
 		TopologyBase: framework.TopologyBase{
 			ApiVersion: DefaultVersion,
 			Kind: KindDatabaseTopology,
@@ -70,7 +70,7 @@ func CreateDefaultDatabaseTopology(namePrefix string) DatabaseTopology {
 				Notes:              map[string]string{},
 			},
 		},
-		Spec: DatabaseTopologySpec{
+		Spec: RdsDatabaseTopologySpec{
 			NamePrefix:         namePrefix,
 			Region:             DefaultRegion,
 			VpcId:              "{{ or .Values.vpcId .DefaultVpcId }}",
@@ -99,20 +99,20 @@ func CreateDefaultDatabaseTopology(namePrefix string) DatabaseTopology {
 	return topology
 }
 
-func (t *DatabaseTopology) GetKind() string {
+func (t *RdsDatabaseTopology) GetKind() string {
 	return t.Kind
 }
 
-func (t *DatabaseTopology) GetMetadata() *framework.TopologyMetadata {
+func (t *RdsDatabaseTopology) GetMetadata() *framework.TopologyMetadata {
 	return &t.Metadata
 }
 
-func (t *DatabaseTopology) String() string {
+func (t *RdsDatabaseTopology) String() string {
 	topologyBytes, err := yaml.Marshal(t)
 	if err != nil {
 		return fmt.Sprintf("(Failed to serialize topology: %s)", err.Error())
 	}
-	var copy DatabaseTopology
+	var copy RdsDatabaseTopology
 	err = yaml.Unmarshal(topologyBytes, &copy)
 	if err != nil {
 		return fmt.Sprintf("(Failed to deserialize topology in ToYamlString(): %s)", err.Error())

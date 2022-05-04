@@ -30,7 +30,7 @@ import (
 	"time"
 )
 
-func CreateDatabase(databaseSpec DatabaseTopologySpec) (*rds.DBCluster, error) {
+func CreateDatabase(databaseSpec RdsDatabaseTopologySpec) (*rds.DBCluster, error) {
 	databaseId := databaseSpec.DatabaseId
 	session := awslib.CreateSession(databaseSpec.Region)
 
