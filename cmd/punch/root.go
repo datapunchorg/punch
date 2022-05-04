@@ -45,11 +45,11 @@ func AddFileNameCommandFlag(command *cobra.Command) {
 }
 
 func AddKeyValueCommandFlags(command *cobra.Command) {
-	command.Flags().StringSliceVarP(&CommandEnv, "env", "", []string{},
+	command.Flags().StringArrayVarP(&CommandEnv, "env", "", []string{},
 		"Command environment, e.g. key1=value1")
-	command.Flags().StringSliceVarP(&TemplateValues, "set", "", []string{},
+	command.Flags().StringArrayVarP(&TemplateValues, "set", "", []string{},
 		"Template value, e.g. key1=value1")
-	command.Flags().StringSliceVarP(&PatchValues, "patch", "", []string{},
+	command.Flags().StringArrayVarP(&PatchValues, "patch", "", []string{},
 		"Patching value on spec fields, e.g. field1=value1")
 }
 
