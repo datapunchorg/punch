@@ -69,12 +69,12 @@ func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (f
 func (t *TopologyHandler) Install(topology framework.Topology) (framework.DeploymentOutput, error) {
 	databaseTopology := topology.(*RdsDatabaseTopology)
 	deployment := framework.NewDeployment()
-	deployment.AddStep("createDatabase", "Create database", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
+	deployment.AddStep("createDatabase", "Create database", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 		result, err := CreateDatabase(databaseTopology.Spec)
 		if err != nil {
 			return framework.NewDeploymentStepOutput(), err
 		}
-		return framework.DeploymentStepOutput{"endpoint": *result.Endpoint}, nil
+		return framework.DeployableOutput{"endpoint": *result.Endpoint}, nil
 	})
 	err := deployment.Run()
 	return deployment.GetOutput(), err
@@ -83,7 +83,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
 	databaseTopology := topology.(*RdsDatabaseTopology)
 	deployment := framework.NewDeployment()
-	deployment.AddStep("deleteDatabase", "Delete database", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
+	deployment.AddStep("deleteDatabase", "Delete database", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 		region := databaseTopology.Spec.Region
 		databaseId := databaseTopology.Spec.DatabaseId
 		err := DeleteDatabase(region, databaseId)

@@ -68,9 +68,9 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		return nil, err
 	}
 	for _, step := range deployment2.GetSteps() {
-		deployment.AddStep(step.Name(), step.Description(), step.StepFunc())
+		deployment.AddStep(step.GetName(), step.GetDescription(), step.GetDeployable())
 	}
-	deployment.AddStep("deployStrimziKafkaBridge", "Deploy Spark History Server", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
+	deployment.AddStep("deployStrimziKafkaBridge", "Deploy Spark History Server", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 		DeployKafkaBridge(commandEnvironment, currentTopology.Spec)
 		return framework.NewDeploymentStepOutput(), nil
 	})
@@ -90,7 +90,7 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 	}
 	deployment2 := kafkaonmsk.CreateUninstallDeployment(currentTopology.Spec.KafkaOnMskSpec)
 	for _, step := range deployment2.GetSteps() {
-		deployment.AddStep(step.Name(), step.Description(), step.StepFunc())
+		deployment.AddStep(step.GetName(), step.GetDescription(), step.GetDeployable())
 	}
 	err = deployment.Run()
 	return deployment.GetOutput(), err

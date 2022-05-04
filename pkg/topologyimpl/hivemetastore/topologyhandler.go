@@ -80,15 +80,15 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		return nil, err
 	}
 	if !currentTopology.Spec.Database.ExternalDb {
-		deployment.AddStep("createHiveMetastoreDatabase", "Create Hive Metastore database", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
+		deployment.AddStep("createHiveMetastoreDatabase", "Create Hive Metastore database", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 			databaseInfo, err := CreatePostgresqlDatabase(commandEnvironment, currentTopology.Spec)
 			if err != nil {
 				return framework.NewDeploymentStepOutput(), err
 			}
-			return framework.DeploymentStepOutput{"databaseInfo": databaseInfo}, nil
+			return framework.DeployableOutput{"databaseInfo": databaseInfo}, nil
 		})
 	}
-	deployment.AddStep("initHiveMetastoreDatabase", "Init Hive Metastore database", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
+	deployment.AddStep("initHiveMetastoreDatabase", "Init Hive Metastore database", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 		var databaseInfo DatabaseInfo
 		if !currentTopology.Spec.Database.ExternalDb {
 			databaseInfo = c.GetStepOutput("createHiveMetastoreDatabase")["databaseInfo"].(DatabaseInfo)
@@ -105,7 +105,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		}
 		return framework.NewDeploymentStepOutput(), nil
 	})
-	deployment.AddStep("installHiveMetastoreServer", "Install Hive Metastore server", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
+	deployment.AddStep("installHiveMetastoreServer", "Install Hive Metastore server", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 		spec := currentTopology.Spec
 		var databaseInfo DatabaseInfo
 		if !spec.Database.ExternalDb {
@@ -128,7 +128,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		if commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
 			metastoreWarehouseDir = WAREHOUSE_DIR_LOCAL_FILE_TEMP_DIRECTORY
 		}
-		return framework.DeploymentStepOutput{
+		return framework.DeployableOutput{
 			"metastoreInClusterUrl": fmt.Sprintf("thrift://hive-metastore.%s.svc.cluster.local:9083", spec.Namespace),
 			"metastoreLoadBalancerUrls": urls,
 			"metastoreWarehouseDir": metastoreWarehouseDir,

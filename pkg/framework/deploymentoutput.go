@@ -24,12 +24,12 @@ import (
 
 type DeploymentOutput interface {
 	Steps() []string
-	Output() map[string]DeploymentStepOutput
+	Output() map[string]DeployableOutput
 }
 
 type DeploymentOutputImpl struct {
 	steps  []string
-	output map[string]DeploymentStepOutput
+	output map[string]DeployableOutput
 }
 
 func (t *DeploymentOutputImpl) Steps() []string {
@@ -37,8 +37,8 @@ func (t *DeploymentOutputImpl) Steps() []string {
 	result = append(result, t.steps...)
 	return result
 }
-func (t *DeploymentOutputImpl) Output() map[string]DeploymentStepOutput {
-	result := map[string]DeploymentStepOutput{}
+func (t *DeploymentOutputImpl) Output() map[string]DeployableOutput {
+	result := map[string]DeployableOutput{}
 	for key, value := range t.output {
 		result[key] = value
 	}
@@ -80,6 +80,6 @@ type DeploymentOutputStruct struct {
 }
 
 type DeploymentStepOutputStruct struct {
-	Step   string                         `json:"step" yaml:"step"`
-	Output DeploymentStepOutput `json:"output" yaml:"output"`
+	Step   string           `json:"step" yaml:"step"`
+	Output DeployableOutput `json:"output" yaml:"output"`
 }

@@ -216,12 +216,12 @@ func BuildInstallDeployment(topologySpec SparkOnEksTopologySpec, commandEnvironm
 		return nil, err
 	}
 
-	deployment.AddStep("deploySparkOperator", "Deploy Spark Operator", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
+	deployment.AddStep("deploySparkOperator", "Deploy Spark Operator", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 		DeploySparkOperator(commandEnvironment, topologySpec)
 		return framework.NewDeploymentStepOutput(), nil
 	})
 
-	deployment.AddStep("deploySparkHistoryServer", "Deploy Spark History Server", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
+	deployment.AddStep("deploySparkHistoryServer", "Deploy Spark History Server", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 		DeployHistoryServer(commandEnvironment, topologySpec)
 		return framework.NewDeploymentStepOutput(), nil
 	})

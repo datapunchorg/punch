@@ -74,7 +74,7 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 
 func CreateInstallDeployment(spec KafkaTopologySpec) framework.Deployment {
 	deployment := framework.NewDeployment()
-	deployment.AddStep("createKafkaCluster", "Create Kafka cluster", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
+	deployment.AddStep("createKafkaCluster", "Create Kafka cluster", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 		cluster, err := CreateKafkaCluster(spec)
 		if err != nil {
 			return framework.NewDeploymentStepOutput(), err
@@ -83,7 +83,7 @@ func CreateInstallDeployment(spec KafkaTopologySpec) framework.Deployment {
 		if err != nil {
 			return framework.NewDeploymentStepOutput(), err
 		}
-		return framework.DeploymentStepOutput{
+		return framework.DeployableOutput{
 			"kafkaClusterArn": cluster.ClusterArn,
 			"bootstrapServerString": *bootstrap.BootstrapBrokerStringSaslIam,
 		}, nil
@@ -93,7 +93,7 @@ func CreateInstallDeployment(spec KafkaTopologySpec) framework.Deployment {
 
 func CreateUninstallDeployment(spec KafkaTopologySpec) framework.Deployment {
 	deployment := framework.NewDeployment()
-	deployment.AddStep("deleteKafkaCluster", "Delete Kafka cluster", func(c framework.DeploymentContext) (framework.DeploymentStepOutput, error) {
+	deployment.AddStep("deleteKafkaCluster", "Delete Kafka cluster", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 		err := DeleteKafkaCluster(spec.Region, spec.ClusterName)
 		if err != nil {
 			log.Printf("[WARN] Cannot delete Kafka cluster %s in region %s: %s", spec.ClusterName, spec.Region, err.Error())

@@ -17,38 +17,33 @@ limitations under the License.
 package framework
 
 type DeploymentStep interface {
-	Name() string
-	Description() string
-	StepFunc() DeploymentStepFunc
-	Run(context DeploymentContext) (DeploymentStepOutput, error)
+	GetName() string
+	GetDescription() string
+	GetDeployable() DeployableFunction
 }
 
-type deploymentStepWrapper struct {
+type deploymentStepStruct struct {
 	name        string
 	description string
-	run         DeploymentStepFunc
+	run         DeployableFunction
 }
 
-func (d deploymentStepWrapper) Name() string {
+func (d deploymentStepStruct) GetName() string {
 	return d.name
 }
 
-func (d deploymentStepWrapper) Description() string {
+func (d deploymentStepStruct) GetDescription() string {
 	return d.description
 }
 
-func (d deploymentStepWrapper) StepFunc() DeploymentStepFunc {
+func (d deploymentStepStruct) GetDeployable() DeployableFunction {
 	return d.run
 }
 
-func (d deploymentStepWrapper) Run(context DeploymentContext) (DeploymentStepOutput, error) {
-	return d.run(context)
-}
+type DeployableFunction func(context DeploymentContext) (DeployableOutput, error)
 
-type DeploymentStepFunc func(context DeploymentContext) (DeploymentStepOutput, error)
+type DeployableOutput map[string]interface{}
 
-type DeploymentStepOutput map[string]interface{}
-
-func NewDeploymentStepOutput() DeploymentStepOutput {
-	return DeploymentStepOutput{}
+func NewDeploymentStepOutput() DeployableOutput {
+	return DeployableOutput{}
 }

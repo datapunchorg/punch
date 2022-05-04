@@ -23,7 +23,7 @@ import (
 
 type Deployment interface {
 	GetContext() DeploymentContext
-	AddStep(name string, description string, run DeploymentStepFunc)
+	AddStep(name string, description string, run DeployableFunction)
 	GetSteps() []DeploymentStep
 	Run() error
 	GetOutput() DeploymentOutput
@@ -45,8 +45,8 @@ func (d *deploymentImpl) GetContext() DeploymentContext {
 	return d.context
 }
 
-func (d *deploymentImpl) AddStep(name string, description string, run DeploymentStepFunc) {
-	step := deploymentStepWrapper{
+func (d *deploymentImpl) AddStep(name string, description string, run DeployableFunction) {
+	step := deploymentStepStruct{
 		name:        name,
 		description: description,
 		run:         run,
@@ -60,13 +60,14 @@ func (d *deploymentImpl) GetSteps() []DeploymentStep {
 
 func (d *deploymentImpl) Run() error {
 	for _, step := range d.steps {
-		log.Printf("[StepBegin] %s: %s", step.Name(), step.Description())
-		output, err := step.Run(d.context)
+		log.Printf("[StepBegin] %s: %s", step.GetName(), step.GetDescription())
+		deployable := step.GetDeployable()
+		output, err := deployable(d.context)
 		if err != nil {
-			return fmt.Errorf("failed to run step %s: %s", step.Name(), err.Error())
+			return fmt.Errorf("failed to run step %s: %s", step.GetName(), err.Error())
 		}
-		d.context.AddStepOutput(step.Name(), output)
-		log.Printf("[StepEnd] %s: %s", step.Name(), step.Description())
+		d.context.AddStepOutput(step.GetName(), output)
+		log.Printf("[StepEnd] %s: %s", step.GetName(), step.GetDescription())
 	}
 	return nil
 }
@@ -74,7 +75,7 @@ func (d *deploymentImpl) Run() error {
 func (d *deploymentImpl) GetOutput() DeploymentOutput {
 	result := DeploymentOutputImpl{
 		steps:  []string{},
-		output: map[string]DeploymentStepOutput{},
+		output: map[string]DeployableOutput{},
 	}
 	names := d.getStepNames()
 	for _, name := range names {
@@ -87,7 +88,7 @@ func (d *deploymentImpl) GetOutput() DeploymentOutput {
 func (d *deploymentImpl) getStepNames() []string {
 	var result []string
 	for _, entry := range d.steps {
-		result = append(result, entry.Name())
+		result = append(result, entry.GetName())
 	}
 	return result
 }
