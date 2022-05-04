@@ -21,7 +21,6 @@ import (
 	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/kubelib"
-	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	v1 "k8s.io/api/core/v1"
 	"log"
 )
@@ -29,7 +28,7 @@ import (
 func DeployKafkaBridge(commandEnvironment framework.CommandEnvironment, spec KafkaWithBridgeTopologySpec) error {
 	region := spec.EksSpec.Region
 	clusterName := spec.EksSpec.Eks.ClusterName
-	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(eks.CmdEnvKubeConfig), clusterName)
+	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), clusterName)
 	if err != nil {
 		return fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
 	}
@@ -50,7 +49,7 @@ func DeployKafkaBridge(commandEnvironment framework.CommandEnvironment, spec Kaf
 }
 
 func InstallKafkaBridgeHelm(commandEnvironment framework.CommandEnvironment, spec KafkaWithBridgeTopologySpec) error {
-	kubeConfig, err := awslib.CreateKubeConfig(spec.EksSpec.Region, commandEnvironment.Get(eks.CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
+	kubeConfig, err := awslib.CreateKubeConfig(spec.EksSpec.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
 	if err != nil {
 		log.Fatalf("Failed to get kube config: %s", err)
 	}
@@ -65,7 +64,7 @@ func InstallKafkaBridgeHelm(commandEnvironment framework.CommandEnvironment, spe
 		"--set", fmt.Sprintf("kafka.bootstrapServers=%s", kubelib.EscapeHelmSetValue(spec.KafkaBridge.KafkaBootstrapServers)),
 	}
 
-	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvKafkaBridgeHelmChart), kubeConfig, arguments, installName, installNamespace)
+	kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvKafkaBridgeHelmChart), kubeConfig, arguments, installName, installNamespace)
 
 	return nil
 }

@@ -26,8 +26,6 @@ import (
 
 const (
 	TemplateNoValue   = "<no value>"
-	DefaultNamePrefix = "my"
-	DefaultRegion     = "us-west-1"
 )
 
 type TemplateData interface {

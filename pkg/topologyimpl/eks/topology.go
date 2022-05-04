@@ -34,16 +34,8 @@ const (
 
 	KindEksTopology = "Eks"
 
-	CmdEnvHelmExecutable             = "helmExecutable"
-	CmdEnvWithMinikube               = "withMinikube"
 	CmdEnvNginxHelmChart             = "nginxHelmChart"
 	CmdEnvClusterAutoscalerHelmChart = "ClusterAutoscalerHelmChart"
-	CmdEnvKubeConfig                 = "kubeConfig"
-
-	DefaultVersion        = "datapunch.org/v1alpha1"
-	DefaultRegion         = "us-west-1"
-	DefaultNamePrefix     = "my"
-	DefaultHelmExecutable = "helm"
 )
 
 type EksTopology struct {
@@ -86,23 +78,23 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 	nodeGroupName := fmt.Sprintf("%s-ng-01", k8sClusterName)
 	topology := EksTopology{
 		TopologyBase: framework.TopologyBase{
-			ApiVersion: DefaultVersion,
+			ApiVersion: framework.DefaultVersion,
 			Kind:       KindEksTopology,
 			Metadata: framework.TopologyMetadata{
 				Name: topologyName,
 				CommandEnvironment: map[string]string{
-					CmdEnvHelmExecutable: DefaultHelmExecutable,
-					CmdEnvWithMinikube: "false",
+					framework.CmdEnvHelmExecutable: framework.DefaultHelmExecutable,
+					framework.CmdEnvWithMinikube: "false",
 					CmdEnvNginxHelmChart: "third-party/helm-charts/ingress-nginx/charts/ingress-nginx",
 					CmdEnvClusterAutoscalerHelmChart: "third-party/helm-charts/cluster-autoscaler/charts/cluster-autoscaler",
-					CmdEnvKubeConfig: "",
+					framework.CmdEnvKubeConfig: "",
 				},
 				Notes: map[string]string{},
 			},
 		},
 		Spec: EksTopologySpec{
 			NamePrefix:   namePrefix,
-			Region:       fmt.Sprintf("{{ or .Values.region `%s` }}", DefaultRegion),
+			Region:       fmt.Sprintf("{{ or .Values.region `%s` }}", framework.DefaultRegion),
 			VpcId:        "{{ or .Values.vpcId .DefaultVpcId }}",
 			S3BucketName: s3BucketName,
 			S3Policy:     resource.IamPolicy{

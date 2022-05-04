@@ -107,7 +107,7 @@ func WaitEksServiceAccount(commandEnvironment framework.CommandEnvironment, topo
 	region := topology.Region
 	clusterName := topology.Eks.ClusterName
 
-	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(CmdEnvKubeConfig), clusterName)
+	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), clusterName)
 	if err != nil {
 		return fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
 	}
@@ -138,7 +138,7 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 	serviceName := "ingress-nginx-controller"
 	region := topology.Region
 	eksClusterName := topology.Eks.ClusterName
-	kubeConfig, err := awslib.CreateKubeConfig(region, commandEnvironment.Get(CmdEnvKubeConfig), eksClusterName)
+	kubeConfig, err := awslib.CreateKubeConfig(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
 	if err != nil {
 		log.Fatalf("Failed to get kube config: %s", err)
 	}
@@ -150,15 +150,15 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 		"--set", fmt.Sprintf("controller.service.enableHttps=%t", topology.NginxIngress.EnableHttps),
 	}
 
-	if commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
+	if commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
 		arguments = append(arguments, "--set", "controller.service.type=NodePort")
 		arguments = append(arguments, "--set", fmt.Sprintf("controller.service.nodePorts.http=%d", NodePortLocalHttp))
 		arguments = append(arguments, "--set", fmt.Sprintf("controller.service.nodePorts.https=%d", NodePortLocalHttps))
 	}
 
-	kubelib.InstallHelm(commandEnvironment.Get(CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvNginxHelmChart), kubeConfig, arguments, helmInstallName, nginxNamespace)
+	kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvNginxHelmChart), kubeConfig, arguments, helmInstallName, nginxNamespace)
 
-	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(CmdEnvKubeConfig), eksClusterName)
+	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
 	if err != nil {
 		log.Fatalf("Failed to create Kubernetes client: %s", err.Error())
 	}
@@ -167,7 +167,7 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 		log.Fatalf("Pod %s*** in namespace %s is not in phase %s", serviceName, nginxNamespace, v1.PodRunning)
 	}
 
-	hostPorts, err := awslib.GetLoadBalancerHostPorts(region, commandEnvironment.Get(CmdEnvKubeConfig), eksClusterName, nginxNamespace, serviceName)
+	hostPorts, err := awslib.GetLoadBalancerHostPorts(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName, nginxNamespace, serviceName)
 	if err != nil {
 		log.Fatalf("Failed to get load balancer urls for nginx controller service %s in namespace %s", serviceName, nginxNamespace)
 	}
@@ -181,7 +181,7 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 		dnsNames = append(dnsNames, k)
 	}
 
-	if !commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
+	if !commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
 		err = awslib.WaitLoadBalancersReadyByDnsNames(region, dnsNames)
 		if err != nil {
 			log.Fatalf("Failed to wait and get load balancer urls: %s", err.Error())

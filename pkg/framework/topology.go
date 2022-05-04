@@ -22,7 +22,16 @@ import (
 )
 
 const (
-	PunchTopologyTagName = "punch-topology"
+	DefaultVersion    = "datapunch.org/v1alpha1"
+
+	CmdEnvHelmExecutable             = "helmExecutable"
+	CmdEnvWithMinikube               = "withMinikube"
+	CmdEnvKubeConfig                 = "kubeConfig"
+
+	DefaultRegion         = "us-west-1"
+	DefaultNamePrefix     = "my"
+
+	DefaultHelmExecutable = "helm"
 
 	DefaultEKSAssumeRolePolicyDocument = `{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":["eks.amazonaws.com"]},"Action":["sts:AssumeRole"]}]}`
 	DefaultEC2AssumeRolePolicyDocument = `{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":["ec2.amazonaws.com"]},"Action":["sts:AssumeRole"]}]}`

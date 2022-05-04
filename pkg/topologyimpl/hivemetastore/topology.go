@@ -28,11 +28,8 @@ const (
 
 	FieldMaskValue = "***"
 
-	DefaultVersion    = "datapunch.org/v1alpha1"
 	DefaultNamePrefix = "my"
 
-	CmdEnvWithMinikube               = "withMinikube"
-	CmdEnvKubeConfig                 = "kubeConfig"
 	CmdEnvPostgresqlHelmChart = "postgresqlHelmChart"
 	CmdEnvHiveMetastoreCreateDatabaseHelmChart = "hiveMetastoreCreateDatabaseHelmChart"
 	CmdEnvHiveMetastoreInitHelmChart = "hiveMetastoreInitHelmChart"
@@ -73,7 +70,7 @@ func CreateDefaultHiveMetastoreTopology(namePrefix string, s3BucketName string) 
 
 	topology := HiveMetastoreTopology{
 		TopologyBase: framework.TopologyBase{
-			ApiVersion: DefaultVersion,
+			ApiVersion: framework.DefaultVersion,
 			Kind: KindHiveMetastoreTopology,
 			Metadata: framework.TopologyMetadata{
 				Name:               topologyName,

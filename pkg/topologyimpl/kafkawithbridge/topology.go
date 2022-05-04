@@ -28,9 +28,6 @@ const (
 	KindKafkaTopology = "KafkaWithBridge"
 
 	DefaultVersion    = "datapunch.org/v1alpha1"
-	DefaultRegion     = "us-west-1"
-	DefaultNamePrefix = "my"
-	DefaultInstanceType                = "kafka.m5.large"
 
 	CmdEnvKafkaBridgeHelmChart = "kafkaBridgeHelmChart"
 )

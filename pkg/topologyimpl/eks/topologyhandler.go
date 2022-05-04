@@ -41,7 +41,7 @@ func (t *TopologyHandler) Generate() (framework.Topology, error) {
 }
 
 func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) {
-	result := CreateDefaultEksTopology(DefaultNamePrefix, ToBeReplacedS3BucketName)
+	result := CreateDefaultEksTopology(framework.DefaultNamePrefix, ToBeReplacedS3BucketName)
 	err := yaml.Unmarshal(yamlContent, &result)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse YAML (%s): \n%s", err.Error(), string(yamlContent))
@@ -121,9 +121,9 @@ func CreateInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fr
 		return framework.NewDeployment(), fmt.Errorf("please provide helm chart file location for Cluster Autoscaler")
 	}
 
-	kubelib.CheckHelmOrFatal(commandEnvironment.Get(CmdEnvHelmExecutable))
-	if commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
-		commandEnvironment.Set(CmdEnvKubeConfig, kubelib.GetKubeConfigPath())
+	kubelib.CheckHelmOrFatal(commandEnvironment.Get(framework.CmdEnvHelmExecutable))
+	if commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
+		commandEnvironment.Set(framework.CmdEnvKubeConfig, kubelib.GetKubeConfigPath())
 		deployment.AddStep("minikubeProfile", "Set Minikube Profile", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 			_, err := resource.MinikubeExec("profile", topologySpec.Eks.ClusterName)
 			return framework.NewDeploymentStepOutput(), err
@@ -237,7 +237,7 @@ func CreateInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fr
 func CreateUninstallDeployment(topologySpec EksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
 	deployment := framework.NewDeployment()
 
-	if commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
+	if commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
 		deployment.AddStep("minikubeProfile", "Set Minikube Profile", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 			_, err := resource.MinikubeExec("profile", topologySpec.Eks.ClusterName)
 			return framework.NewDeploymentStepOutput(), err

@@ -24,7 +24,6 @@ import (
 	"github.com/datapunchorg/punch/pkg/common"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/kubelib"
-	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	"k8s.io/api/core/v1"
 	v13 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -58,7 +57,7 @@ func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, topolo
 		}
 	}
 
-	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(eks.CmdEnvKubeConfig), clusterName)
+	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), clusterName)
 	if err != nil {
 		log.Fatalf("Failed to create Kubernetes client: %s", err.Error())
 	}
@@ -175,7 +174,7 @@ func CreateApiGatewayService(clientset *kubernetes.Clientset, namespace string, 
 func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, topology SparkOnEksTopologySpec) {
 	// helm install my-release spark-operator/spark-operator --namespace spark-operator --create-namespace --set sparkJobNamespace=default
 
-	kubeConfig, err := awslib.CreateKubeConfig(topology.EksSpec.Region, commandEnvironment.Get(eks.CmdEnvKubeConfig), topology.EksSpec.Eks.ClusterName)
+	kubeConfig, err := awslib.CreateKubeConfig(topology.EksSpec.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), topology.EksSpec.Eks.ClusterName)
 	if err != nil {
 		log.Fatalf("Failed to get kube config: %s", err)
 	}
@@ -199,7 +198,7 @@ func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, t
 		// "--set", "webhook.enable=true",
 	}
 
-	if !commandEnvironment.GetBoolOrElse(eks.CmdEnvWithMinikube, false) {
+	if !commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
 		arguments = append(arguments, "--set")
 		arguments = append(arguments, "apiGateway.sparkEventLogEnabled=true")
 		arguments = append(arguments, "--set")
@@ -215,7 +214,7 @@ func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, t
 		arguments = append(arguments, "apiGateway.sparkSqlWarehouseDir=" + topology.ApiGateway.SparkSqlWarehouseDir)
 	}
 
-	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvSparkOperatorHelmChart), kubeConfig, arguments, installName, operatorNamespace)
+	kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvSparkOperatorHelmChart), kubeConfig, arguments, installName, operatorNamespace)
 }
 
 func CreateSparkServiceAccount(clientset *kubernetes.Clientset, sparkOperatorNamespace string, sparkApplicationNamespace string, sparkServiceAccountName string) {

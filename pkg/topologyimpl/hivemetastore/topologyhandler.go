@@ -72,8 +72,8 @@ func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (f
 func (t *TopologyHandler) Install(topology framework.Topology) (framework.DeploymentOutput, error) {
 	currentTopology := topology.(*HiveMetastoreTopology)
 	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
-	if commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
-		commandEnvironment.Set(CmdEnvKubeConfig, kubelib.GetKubeConfigPath())
+	if commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
+		commandEnvironment.Set(framework.CmdEnvKubeConfig, kubelib.GetKubeConfigPath())
 	}
 	deployment, err := eks.CreateInstallDeployment(currentTopology.Spec.EksSpec, commandEnvironment)
 	if err != nil {
@@ -125,7 +125,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 			return framework.NewDeploymentStepOutput(), fmt.Errorf("did not get any load balancer url for hive metastore")
 		}
 		metastoreWarehouseDir := spec.WarehouseDir
-		if commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
+		if commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
 			metastoreWarehouseDir = WAREHOUSE_DIR_LOCAL_FILE_TEMP_DIRECTORY
 		}
 		return framework.DeployableOutput{

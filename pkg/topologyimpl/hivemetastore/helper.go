@@ -22,7 +22,6 @@ import (
 	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/kubelib"
-	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	"gopkg.in/yaml.v3"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -50,7 +49,7 @@ func (t DatabaseInfo) String() string {
 }
 
 func CreatePostgresqlDatabase(commandEnvironment framework.CommandEnvironment, spec HiveMetastoreTopologySpec) (DatabaseInfo, error) {
-	kubeConfig, err := awslib.CreateKubeConfig(spec.EksSpec.Region, commandEnvironment.Get(eks.CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
+	kubeConfig, err := awslib.CreateKubeConfig(spec.EksSpec.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
 	if err != nil {
 		return DatabaseInfo{}, fmt.Errorf("failed to get kube config: %s", err)
 	}
@@ -66,9 +65,9 @@ func CreatePostgresqlDatabase(commandEnvironment framework.CommandEnvironment, s
 
 	arguments := []string{}
 	postgresqlHelmChart := commandEnvironment.Get(CmdEnvPostgresqlHelmChart)
-	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), postgresqlHelmChart, kubeConfig, arguments, installName, namespace)
+	kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), postgresqlHelmChart, kubeConfig, arguments, installName, namespace)
 
-	_, clientset, err := awslib.CreateKubernetesClient(spec.EksSpec.Region, commandEnvironment.Get(CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
+	_, clientset, err := awslib.CreateKubernetesClient(spec.EksSpec.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
 	if err != nil {
 		return DatabaseInfo{}, fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
 	}
@@ -99,7 +98,7 @@ func CreatePostgresqlDatabase(commandEnvironment framework.CommandEnvironment, s
 		fmt.Sprintf("dbUserPassword=%s", password),
 	}
 	hiveMetastoreCreateDatabaseHelmChart := commandEnvironment.Get(CmdEnvHiveMetastoreCreateDatabaseHelmChart)
-	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), hiveMetastoreCreateDatabaseHelmChart, kubeConfig, arguments, installName, namespace)
+	kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), hiveMetastoreCreateDatabaseHelmChart, kubeConfig, arguments, installName, namespace)
 
 	podNamePrefix = "hive-metastore-postgresql-create-db"
 	waitPosStatus = []v1.PodPhase{v1.PodSucceeded}
@@ -117,7 +116,7 @@ func CreatePostgresqlDatabase(commandEnvironment framework.CommandEnvironment, s
 }
 
 func InitDatabase(commandEnvironment framework.CommandEnvironment, spec HiveMetastoreTopologySpec, databaseInfo DatabaseInfo) error {
-	kubeConfig, err := awslib.CreateKubeConfig(spec.EksSpec.Region, commandEnvironment.Get(eks.CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
+	kubeConfig, err := awslib.CreateKubeConfig(spec.EksSpec.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
 	if err != nil {
 		return fmt.Errorf("Failed to get kube config: %s", err)
 	}
@@ -135,9 +134,9 @@ func InitDatabase(commandEnvironment framework.CommandEnvironment, spec HiveMeta
 		"--set", fmt.Sprintf("dbUserPassword=%s", databaseInfo.Password),
 	}
 
-	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvHiveMetastoreInitHelmChart), kubeConfig, arguments, installName, namespace)
+	kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvHiveMetastoreInitHelmChart), kubeConfig, arguments, installName, namespace)
 
-	_, clientset, err := awslib.CreateKubernetesClient(spec.EksSpec.Region, commandEnvironment.Get(CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
+	_, clientset, err := awslib.CreateKubernetesClient(spec.EksSpec.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
 	if err != nil {
 		return fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
 	}
@@ -153,7 +152,7 @@ func InitDatabase(commandEnvironment framework.CommandEnvironment, spec HiveMeta
 }
 
 func InstallMetastoreServer(commandEnvironment framework.CommandEnvironment, spec HiveMetastoreTopologySpec, databaseInfo DatabaseInfo) ([]string, error) {
-	kubeConfig, err := awslib.CreateKubeConfig(spec.EksSpec.Region, commandEnvironment.Get(eks.CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
+	kubeConfig, err := awslib.CreateKubeConfig(spec.EksSpec.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get kube config: %s", err)
 	}
@@ -171,7 +170,7 @@ func InstallMetastoreServer(commandEnvironment framework.CommandEnvironment, spe
 		"--set", fmt.Sprintf("dbUserPassword=%s", databaseInfo.Password),
 	}
 
-	if !commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
+	if !commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
 		arguments = append(arguments, "--set")
 		arguments = append(arguments, fmt.Sprintf("metastoreWarehouseDir=%s", spec.WarehouseDir))
 	} else {
@@ -181,9 +180,9 @@ func InstallMetastoreServer(commandEnvironment framework.CommandEnvironment, spe
 		arguments = append(arguments, "--set", fmt.Sprintf("service.nodePorts.thrift=%d", NODE_PORT_LOCAL_THRIFT_PORT))
 	}
 
-	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvHiveMetastoreServerHelmChart), kubeConfig, arguments, installName, namespace)
+	kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvHiveMetastoreServerHelmChart), kubeConfig, arguments, installName, namespace)
 
-	_, clientset, err := awslib.CreateKubernetesClient(spec.EksSpec.Region, commandEnvironment.Get(CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
+	_, clientset, err := awslib.CreateKubernetesClient(spec.EksSpec.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
 	}
@@ -197,7 +196,7 @@ func InstallMetastoreServer(commandEnvironment framework.CommandEnvironment, spe
 
 	serviceName := "hive-metastore"
 
-	hostPorts, err := awslib.GetLoadBalancerHostPorts(spec.EksSpec.Region, commandEnvironment.Get(CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName, namespace, serviceName)
+	hostPorts, err := awslib.GetLoadBalancerHostPorts(spec.EksSpec.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName, namespace, serviceName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get load balancer urls for nginx controller service %s in namespace %s", serviceName, namespace)
 	}
@@ -211,7 +210,7 @@ func InstallMetastoreServer(commandEnvironment framework.CommandEnvironment, spe
 		dnsNames = append(dnsNames, k)
 	}
 
-	if !commandEnvironment.GetBoolOrElse(CmdEnvWithMinikube, false) {
+	if !commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
 		err = awslib.WaitLoadBalancersReadyByDnsNames(spec.EksSpec.Region, dnsNames)
 		if err != nil {
 			return nil, fmt.Errorf("failed to wait and get load balancer urls: %s", err.Error())

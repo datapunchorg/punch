@@ -21,7 +21,6 @@ import (
 	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/kubelib"
-	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	"k8s.io/api/core/v1"
 	"log"
 )
@@ -29,7 +28,7 @@ import (
 func DeployHistoryServer(commandEnvironment framework.CommandEnvironment, topology SparkOnEksTopologySpec) error {
 	region := topology.EksSpec.Region
 	clusterName := topology.EksSpec.Eks.ClusterName
-	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(eks.CmdEnvKubeConfig), clusterName)
+	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), clusterName)
 	if err != nil {
 		return fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
 	}
@@ -54,7 +53,7 @@ func DeployHistoryServer(commandEnvironment framework.CommandEnvironment, topolo
 func InstallHistoryServerHelm(commandEnvironment framework.CommandEnvironment, topology SparkOnEksTopologySpec) error {
 	// helm install spark-history-server third-party/helm-charts/spark-history-server/charts/spark-history-server --namespace spark-history-server --create-namespace
 
-	kubeConfig, err := awslib.CreateKubeConfig(topology.EksSpec.Region, commandEnvironment.Get(eks.CmdEnvKubeConfig), topology.EksSpec.Eks.ClusterName)
+	kubeConfig, err := awslib.CreateKubeConfig(topology.EksSpec.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), topology.EksSpec.Eks.ClusterName)
 	if err != nil {
 		log.Fatalf("Failed to get kube config: %s", err)
 	}
@@ -69,12 +68,12 @@ func InstallHistoryServerHelm(commandEnvironment framework.CommandEnvironment, t
 		"--set", fmt.Sprintf("image.tag=%s", topology.HistoryServer.ImageTag),
 	}
 
-	if !commandEnvironment.GetBoolOrElse(eks.CmdEnvWithMinikube, false) {
+	if !commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
 		arguments = append(arguments, "--set")
 		arguments = append(arguments, fmt.Sprintf("sparkEventLogDir=%s", topology.ApiGateway.SparkEventLogDir))
 	}
 
-	kubelib.InstallHelm(commandEnvironment.Get(eks.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvHistoryServerHelmChart), kubeConfig, arguments, installName, installNamespace)
+	kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvHistoryServerHelmChart), kubeConfig, arguments, installName, installNamespace)
 
 	return nil
 }
