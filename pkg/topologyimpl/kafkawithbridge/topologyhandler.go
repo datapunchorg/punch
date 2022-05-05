@@ -100,16 +100,19 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		if err != nil {
 			return framework.NewDeploymentStepOutput(), fmt.Errorf("kafka bridge url %s is not ready after waiting %d minutes", kafkaBridgeUrl, maxWaitMinutes)
 		}
+		kafkaBridgeTopicProduceUrl := fmt.Sprintf("%s/topics", loadBalancerUrl)
+		kafkaBridgeTopicAdminUrl := fmt.Sprintf("%s/topicAdmin", loadBalancerUrl)
 		return framework.DeployableOutput{
-			"kafkaBridgeUrl": loadBalancerUrl,
+			"kafkaBridgeTopicProduceUrl": kafkaBridgeTopicProduceUrl,
+			"kafkaBridgeTopicAdminUrl": kafkaBridgeTopicAdminUrl,
 		}, nil
 	})
 	deployment.AddStep("createInitTopics", "Create initial topics", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 		spec := currentTopology.Spec
-		kafkaBridgeUrl := c.GetStepOutput("deployStrimziKafkaBridge")["kafkaBridgeUrl"].(string)
-		topicsUrl := fmt.Sprintf("%s/topics", kafkaBridgeUrl)
+		kafkaBridgeTopicProduceUrl := c.GetStepOutput("deployStrimziKafkaBridge")["kafkaBridgeTopicProduceUrl"].(string)
+		kafkaBridgeTopicAdminUrl := c.GetStepOutput("deployStrimziKafkaBridge")["kafkaBridgeTopicAdminUrl"].(string)
 		var existingTopics []string
-		err := common.GetHttpAsJsonWithResponse(topicsUrl, true, &existingTopics)
+		err := common.GetHttpAsJsonWithResponse(kafkaBridgeTopicProduceUrl, true, &existingTopics)
 		if err != nil {
 			return framework.NewDeploymentStepOutput(), err
 		}
@@ -118,7 +121,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 				log.Printf("Topic %s already exists, do not create it again", topicToCreate.Name)
 				continue
 			}
-			url := fmt.Sprintf("%s/topicAdmin/%s", kafkaBridgeUrl, topicToCreate.Name)
+			url := fmt.Sprintf("%s/%s", kafkaBridgeTopicAdminUrl, topicToCreate.Name)
 			request := createTopicRequest{
 				NumPartitions: topicToCreate.NumPartitions,
 				ReplicationFactor: topicToCreate.ReplicationFactor,
