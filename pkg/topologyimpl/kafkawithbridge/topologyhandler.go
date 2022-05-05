@@ -107,7 +107,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 	deployment.AddStep("createInitTopics", "Create initial topics", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 		spec := currentTopology.Spec
 		kafkaBridgeUrl := c.GetStepOutput("deployStrimziKafkaBridge")["kafkaBridgeUrl"].(string)
-		topicsUrl := fmt.Sprintf("%s/topicAdmin/topics", kafkaBridgeUrl)
+		topicsUrl := fmt.Sprintf("%s/topics", kafkaBridgeUrl)
 		var existingTopics []string
 		err := common.GetHttpAsJsonWithResponse(topicsUrl, true, &existingTopics)
 		if err != nil {
@@ -124,7 +124,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 				ReplicationFactor: topicToCreate.ReplicationFactor,
 			}
 			var response createTopicResponse
-			err := common.PostHttpAsJsonWithResponse(url, true, request, response)
+			err := common.PostHttpAsJsonWithResponse(url, true, request, &response)
 			if err != nil {
 				return framework.NewDeploymentStepOutput(), err
 			}
