@@ -40,6 +40,15 @@ func init() {
 	}
 }
 
+type createTopicRequest struct {
+	NumPartitions int64  `json:"numPartitions" yaml:"numPartitions"`
+	ReplicationFactor int64  `json:"replicationFactor" yaml:"replicationFactor"`
+}
+
+type createTopicResponse struct {
+	Name string `json:"name" yaml:"name"`
+}
+
 type TopologyHandler struct {
 }
 
@@ -95,6 +104,33 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 			"kafkaBridgeUrl": loadBalancerUrl,
 		}, nil
 	})
+	deployment.AddStep("createInitTopics", "Create initial topics", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+		spec := currentTopology.Spec
+		kafkaBridgeUrl := c.GetStepOutput("deployStrimziKafkaBridge")["kafkaBridgeUrl"].(string)
+		topicsUrl := fmt.Sprintf("%s/topicAdmin/topics", kafkaBridgeUrl)
+		var existingTopics []string
+		err := common.GetHttpAsJsonWithResponse(topicsUrl, true, &existingTopics)
+		if err != nil {
+			return framework.NewDeploymentStepOutput(), err
+		}
+		for _, topicToCreate := range spec.InitTopics {
+			if stringsContains(existingTopics, topicToCreate.Name) {
+				log.Printf("Topic %s already exists, do not create it again", topicToCreate.Name)
+				continue
+			}
+			url := fmt.Sprintf("%s/topicAdmin/%s", kafkaBridgeUrl, topicToCreate.Name)
+			request := createTopicRequest{
+				NumPartitions: topicToCreate.NumPartitions,
+				ReplicationFactor: topicToCreate.ReplicationFactor,
+			}
+			var response createTopicResponse
+			err := common.PostHttpAsJsonWithResponse(url, true, request, response)
+			if err != nil {
+				return framework.NewDeploymentStepOutput(), err
+			}
+		}
+		return framework.NewDeploymentStepOutput(), nil
+	})
 	err = deployment.Run()
 	if err != nil {
 		return nil, err
@@ -117,3 +153,11 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 	return deployment.GetOutput(), err
 }
 
+func stringsContains(slice []string, value string) bool {
+	for _, entry := range slice {
+		if entry == value {
+			return true
+		}
+	}
+	return false
+}

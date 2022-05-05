@@ -82,7 +82,7 @@ func CreateKafkaCluster(spec KafkaTopologySpec) (kafka.ClusterInfo, error) {
 					Enabled: aws.Bool(false),
 				},
 			},
-			NumberOfBrokerNodes: aws.Int64(int64(len(subnetIds))),
+			NumberOfBrokerNodes: aws.Int64(spec.NumBrokers),
 		},
 		/* Serverless: &kafka.ServerlessRequest{
 			ClientAuthentication: &kafka.ServerlessClientAuthentication{

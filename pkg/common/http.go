@@ -19,7 +19,9 @@ package common
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"time"
@@ -37,21 +39,80 @@ func WaitHttpUrlReady(url string, maxWait time.Duration, retryInterval time.Dura
 	return finalErr
 }
 
-func checkHttpUrl(url string) error {
+func PostHttpAsJsonWithResponse(url string, skipVerifyTlsCertificate bool, request interface{}, response interface{}) error {
+	responseBytes, err := PostHttpAsJson(url, skipVerifyTlsCertificate, request)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(responseBytes, response)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal response from url %s: %s, response body: %s", url, err.Error(), string(responseBytes))
+	}
+	return nil
+}
+
+func PostHttpAsJson(url string, skipVerifyTlsCertificate bool, request interface{}) ([]byte, error) {
+	requestBytes, err := json.Marshal(request)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request as json: %s", err.Error())
+	}
+	return PostHttp(url, skipVerifyTlsCertificate, requestBytes)
+}
+
+func PostHttp(url string, skipVerifyTlsCertificate bool, requestBytes []byte) ([]byte, error) {
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(requestBytes))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create post request for url %s: %s", url, err.Error())
+	}
+	return sendHttpRequest(url, skipVerifyTlsCertificate, req)
+}
+
+func GetHttpAsJsonWithResponse(url string, skipVerifyTlsCertificate bool, response interface{}) error {
+	responseBytes, err := GetHttp(url, skipVerifyTlsCertificate)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(responseBytes, response)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal response from url %s: %s, response body: %s", url, err.Error(), string(responseBytes))
+	}
+	return nil
+}
+
+func GetHttp(url string, skipVerifyTlsCertificate bool) ([]byte, error) {
 	req, err := http.NewRequest(http.MethodGet, url, bytes.NewReader([]byte{}))
 	if err != nil {
-		return fmt.Errorf("failed to create get http request for %s: %s", url, err.Error())
+		return nil, fmt.Errorf("failed to create get request for url %s: %s", url, err.Error())
 	}
+	return sendHttpRequest(url, skipVerifyTlsCertificate, req)
+}
+
+func sendHttpRequest(url string, skipVerifyTlsCertificate bool, req *http.Request) ([]byte, error) {
 	transport := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: skipVerifyTlsCertificate},
 	}
 	client := &http.Client{Transport: transport}
 	response, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to get http %s: %s", url, err.Error())
+		return nil, fmt.Errorf("failed to send request to url %s: %s", url, err.Error())
+	}
+	defer response.Body.Close()
+	responseBytes, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response data from url %s: %s", url, err.Error())
 	}
 	if response.StatusCode != http.StatusOK {
-		return fmt.Errorf("got bad response from http %s: %d", url, response.StatusCode)
+		return nil, fmt.Errorf("got bad response status %d from url %s, response body: %s", response.StatusCode, url, string(responseBytes))
 	}
-	return nil
+	return responseBytes, nil
+}
+
+func checkHttpUrl(url string) error {
+	req, err := http.NewRequest(http.MethodGet, url, bytes.NewReader([]byte{}))
+	if err != nil {
+		return fmt.Errorf("failed to create get request for url %s: %s", url, err.Error())
+	}
+	req.Close = true
+	_, err = sendHttpRequest(url, true, req)
+	return err
 }

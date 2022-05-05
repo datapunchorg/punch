@@ -38,6 +38,7 @@ type KafkaWithBridgeTopologySpec struct {
 	KafkaOnMskSpec    kafkaonmsk.KafkaTopologySpec   `json:"kafkaOnMskSpec" yaml:"kafkaOnMskSpec"`
 	EksSpec           eks.EksTopologySpec `json:"eksSpec" yaml:"eksSpec"`
 	KafkaBridge   KafkaBridgeSpec  `json:"kafkaBridge" yaml:"kafkaBridge"`
+	InitTopics    []KafkaTopic  `json:"initTopics" yaml:"initTopics"`
 }
 
 type KafkaBridgeSpec struct {
@@ -45,6 +46,12 @@ type KafkaBridgeSpec struct {
 	Namespace  string `json:"namespace" yaml:"namespace"`
 	Image string `json:"image" yaml:"image"`
 	KafkaBootstrapServers string `json:"kafkaBootstrapServers" yaml:"kafkaBootstrapServers"`
+}
+
+type KafkaTopic struct {
+	Name string `json:"name" yaml:"name"`
+	NumPartitions int64  `json:"numPartitions" yaml:"numPartitions"`
+	ReplicationFactor int64  `json:"replicationFactor" yaml:"replicationFactor"`
 }
 
 func GenerateDefaultTopology() KafkaWithBridgeTopology {
@@ -79,6 +86,13 @@ func CreateDefaultTopology(namePrefix string, s3BucketName string) KafkaWithBrid
 				Namespace: "kafka-01",
 				Image: "ghcr.io/datapunchorg/strimzi-kafka-bridge:0.22.0-snapshot-1651702291",
 				KafkaBootstrapServers: "",
+			},
+			InitTopics: []KafkaTopic {
+				{
+					Name: "topic-01",
+					NumPartitions: 2,
+					ReplicationFactor: 2,
+				},
 			},
 		},
 	}

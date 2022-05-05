@@ -46,6 +46,7 @@ type KafkaTopologySpec struct {
 	SubnetIds         []string                  `json:"subnetIds" yaml:"subnetIds"`
 	KafkaVersion      string   `json:"kafkaVersion" yaml:"kafkaVersion"`
 	SecurityGroups    []resource.SecurityGroup `json:"securityGroups" yaml:"securityGroups"`
+	NumBrokers        int64   `json:"numBrokers" yaml:"numBrokers"`
 	BrokerStorageGB   int64    `json:"brokerStorageGB" yaml:"brokerStorageGB"`
 }
 
@@ -91,6 +92,7 @@ func CreateDefaultKafkaOnMskTopology(namePrefix string) KafkaTopology {
 					},
 				},
 			},
+			NumBrokers: int64(len(subnetIds)),
 			BrokerStorageGB: 20,
 		},
 	}

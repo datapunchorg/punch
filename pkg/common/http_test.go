@@ -33,3 +33,12 @@ func TestWaitHttpUrlReady(t *testing.T) {
 	err = WaitHttpUrlReady("https://www.google.com", 10 * time.Millisecond, 1 * time.Millisecond)
 	assert.Nil(t, err)
 }
+
+func TestGetHttp(t *testing.T) {
+	bytes, err := GetHttp("http://not_exist_url_abc_123", true)
+	assert.NotNil(t, err)
+	assert.Nil(t, bytes)
+	bytes, err = GetHttp("https://www.google.com", true)
+	assert.Nil(t, err)
+	assert.NotNil(t, bytes)
+}
