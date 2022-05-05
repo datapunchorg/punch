@@ -19,6 +19,6 @@ if __name__ == "__main__":
 
   spark.sql("SHOW DATABASES").show()
   spark.sql("CREATE DATABASE IF NOT EXISTS punch_test_db_01").show()
-  spark.sql("CREATE TABLE IF NOT EXISTS punch_test_db_01.table01 (word string, count bigint)").show()
-  spark.sql("INSERT INTO punch_test_db_01.table01 SELECT * FROM view_data").show()
-  spark.sql("SELECT * FROM punch_test_db_01.table01").show()
+  spark.sql("CREATE TABLE IF NOT EXISTS punch_test_db_01.table_01 (word string, count bigint)").show()
+  spark.sql("INSERT INTO punch_test_db_01.table_01 SELECT * FROM view_data").show()
+  spark.sql("SELECT * FROM punch_test_db_01.table_01").show()

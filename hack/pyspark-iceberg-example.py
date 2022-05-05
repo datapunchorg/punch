@@ -15,7 +15,7 @@ if __name__ == "__main__":
   df.createOrReplaceTempView("view_data")
 
   spark.sql("SHOW DATABASES").show()
-  # spark.sql("CREATE DATABASE my_catalog.db01").show()
-  spark.sql("CREATE TABLE IF NOT EXISTS my_catalog.db01.table01 (word string, count bigint) USING iceberg").show()
-  spark.sql("INSERT INTO my_catalog.db01.table01 SELECT * FROM view_data").show()
-  spark.sql("SELECT * FROM my_catalog.db01.table01").show()
+  # spark.sql("CREATE DATABASE my_catalog.db_01").show()
+  spark.sql("CREATE TABLE IF NOT EXISTS my_catalog.db_01.table_01 (word string, count bigint) USING iceberg").show()
+  spark.sql("INSERT INTO my_catalog.db_01.table_01 SELECT * FROM view_data").show()
+  spark.sql("SELECT * FROM my_catalog.db_01.table_01").show()

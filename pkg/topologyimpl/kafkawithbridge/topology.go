@@ -89,12 +89,12 @@ func CreateDefaultTopology(namePrefix string, s3BucketName string) KafkaWithBrid
 			},
 			InitTopics: []KafkaTopic {
 				{
-					Name: "topic-01",
+					Name: "topic_01",
 					NumPartitions: 1,
 					ReplicationFactor: 1,
 				},
 				{
-					Name: "topic-02",
+					Name: "topic_02",
 					NumPartitions: 2,
 					ReplicationFactor: 2,
 				},
