@@ -32,12 +32,12 @@ func CreateOrUpdateClusterAutoscalerTagsOnNodeGroup(region string, eksClusterNam
 		NodegroupName: &nodeGroupName,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to describe node group %s in Eks cluster %s: %s", nodeGroupName, eksClusterName, err.Error())
+		return fmt.Errorf("failed to describe node group %s in EKS cluster %s: %s", nodeGroupName, eksClusterName, err.Error())
 	}
 
 	autoScalingGroups := describeNodegroupOutput.Nodegroup.Resources.AutoScalingGroups
 	if len(autoScalingGroups) != 1 {
-		return fmt.Errorf("invalid result, describe node group %s in Eks cluster %s: AutoScalingGroups has size %d (expected 1)", nodeGroupName, eksClusterName, len(autoScalingGroups))
+		return fmt.Errorf("invalid result, describe node group %s in EKS cluster %s: AutoScalingGroups has size %d (expected 1)", nodeGroupName, eksClusterName, len(autoScalingGroups))
 	}
 
 	resourceId := autoScalingGroups[0].Name

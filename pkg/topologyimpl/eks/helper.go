@@ -118,7 +118,7 @@ func WaitEksServiceAccount(commandEnvironment framework.CommandEnvironment, topo
 			v12.GetOptions{},
 		)
 		if err != nil {
-			fmt.Sprintf("Failed to get service account %s in namespace %s in Eks cluster %s", serviceAccount, namespace, clusterName)
+			fmt.Sprintf("Failed to get service account %s in namespace %s in EKS cluster %s", serviceAccount, namespace, clusterName)
 			return false, nil
 		}
 		return true, nil
@@ -126,7 +126,7 @@ func WaitEksServiceAccount(commandEnvironment framework.CommandEnvironment, topo
 		5*time.Minute,
 		10*time.Second)
 	if err != nil {
-		return fmt.Errorf("failed to wait service account %s in namespace %s in Eks cluster %s", serviceAccount, namespace, clusterName)
+		return fmt.Errorf("failed to wait service account %s in namespace %s in EKS cluster %s", serviceAccount, namespace, clusterName)
 	}
 	return nil
 }
@@ -222,7 +222,7 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 func DeleteEksCluster(region string, clusterName string) {
 	err := awslib.DeleteEKSCluster(region, clusterName)
 	if err != nil {
-		fmt.Sprintf("Failed to delete Eks cluster: %s", err.Error())
+		fmt.Sprintf("Failed to delete EKS cluster: %s", err.Error())
 	}
 	err = awslib.CheckEksCtlCmd("eksctl")
 	if err == nil {

@@ -177,7 +177,7 @@ func DeleteSecurityGroupByIdIgnoreError(ec2Client *ec2.EC2, securityGroupId stri
 func DeleteNodeGroup(region string, clusterName string, nodeGroupName string) error {
 	session := CreateSession(region)
 
-	log.Printf("Deleting node group %s from Eks cluster %s in AWS region: %v", nodeGroupName, clusterName, region)
+	log.Printf("Deleting node group %s from EKS cluster %s in AWS region: %v", nodeGroupName, clusterName, region)
 
 	eksClient := eks.New(session)
 
@@ -198,7 +198,7 @@ func DeleteNodeGroup(region string, clusterName string, nodeGroupName string) er
 		NodegroupName: aws.String(nodeGroupName),
 	})
 	if err != nil {
-		return fmt.Errorf("failed to delete node group %s from Eks cluster %s: %s", nodeGroupName, clusterName, err.Error())
+		return fmt.Errorf("failed to delete node group %s from EKS cluster %s: %s", nodeGroupName, clusterName, err.Error())
 	}
 
 	waitDeletedErr := common.RetryUntilTrue(func() (bool, error) {

@@ -144,12 +144,12 @@ func CreateInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fr
 			return framework.DeployableOutput{"bucketName": topologySpec.S3BucketName}, err
 		})
 
-		deployment.AddStep("createInstanceIamRole", "Create Eks instance IAM role", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+		deployment.AddStep("createInstanceIamRole", "Create EKS instance IAM role", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 			roleName := CreateInstanceIamRole(topologySpec)
 			return framework.DeployableOutput{"roleName": roleName}, nil
 		})
 
-		deployment.AddStep("createEksCluster", "Create Eks cluster", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+		deployment.AddStep("createEksCluster", "Create EKS cluster", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 			err := resource.CreateEksCluster(topologySpec.Region, topologySpec.VpcId, topologySpec.Eks)
 			if err != nil {
 				return framework.NewDeploymentStepOutput(), err
@@ -256,7 +256,7 @@ func CreateUninstallDeployment(topologySpec EksTopologySpec, commandEnvironment 
 		deployment.AddStep("deleteOidcProvider", "Delete OIDC Provider", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 			clusterSummary, err := resource.DescribeEksCluster(topologySpec.Region, topologySpec.Eks.ClusterName)
 			if err != nil {
-				log.Printf("[WARN] Cannot delete OIDC provider, failed to get Eks cluster %s in regsion %s: %s", topologySpec.Eks.ClusterName, topologySpec.Region, err.Error())
+				log.Printf("[WARN] Cannot delete OIDC provider, failed to get EKS cluster %s in regsion %s: %s", topologySpec.Eks.ClusterName, topologySpec.Region, err.Error())
 				return framework.NewDeploymentStepOutput(), nil
 			}
 			if clusterSummary.OidcIssuer != "" {
@@ -285,7 +285,7 @@ func CreateUninstallDeployment(topologySpec EksTopologySpec, commandEnvironment 
 			return framework.NewDeploymentStepOutput(), err
 		})
 
-		deployment.AddStep("deleteEksCluster", "Delete Eks Cluster", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+		deployment.AddStep("deleteEksCluster", "Delete EKS Cluster", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 			DeleteEksCluster(topologySpec.Region, topologySpec.Eks.ClusterName)
 			return framework.NewDeploymentStepOutput(), nil
 		})

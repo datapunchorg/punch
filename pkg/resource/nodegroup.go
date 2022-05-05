@@ -36,7 +36,7 @@ type NodeGroup struct {
 }
 
 func CreateNodeGroup(region string, clusterName string, nodeGroup NodeGroup, nodeRoleArn string) error {
-	log.Printf("Adding node group to Eks cluster %s in AWS region: %v", clusterName, region)
+	log.Printf("Adding node group to EKS cluster %s in AWS region: %v", clusterName, region)
 
 	_, eksClient := awslib.GetEksClient(region)
 
@@ -45,7 +45,7 @@ func CreateNodeGroup(region string, clusterName string, nodeGroup NodeGroup, nod
 	})
 
 	if err != nil {
-		return fmt.Errorf("failed to get Eks cluster %s: %s", clusterName, err.Error())
+		return fmt.Errorf("failed to get EKS cluster %s: %s", clusterName, err.Error())
 	}
 
 	cluster := describeClusterOutput.Cluster
@@ -65,12 +65,12 @@ func CreateNodeGroup(region string, clusterName string, nodeGroup NodeGroup, nod
 
 	if createNodeGroupErr != nil {
 		if !awslib.AlreadyExistsMessage(createNodeGroupErr.Error()) {
-			return fmt.Errorf("failed to create node group %s in Eks cluster %s: %s", nodeGroup.Name, clusterName, createNodeGroupErr.Error())
+			return fmt.Errorf("failed to create node group %s in EKS cluster %s: %s", nodeGroup.Name, clusterName, createNodeGroupErr.Error())
 		} else {
-			log.Printf("Node group %s already in Eks cluster %s, do not add the node group again", nodeGroup.Name, clusterName)
+			log.Printf("Node group %s already in EKS cluster %s, do not add the node group again", nodeGroup.Name, clusterName)
 		}
 	} else {
-		log.Printf("Added node group %s in Eks cluster %s", nodeGroup.Name, clusterName)
+		log.Printf("Added node group %s in EKS cluster %s", nodeGroup.Name, clusterName)
 	}
 
 	waitReadyErr := common.RetryUntilTrue(func() (bool, error) {

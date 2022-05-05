@@ -121,7 +121,7 @@ func CreateKafkaCluster(spec KafkaTopologySpec) (kafka.ClusterInfo, error) {
 			result = clusterInfo
 			return true, nil
 		}
-		log.Printf("Kafka cluster %s is not ready (current state: %s), waiting...", clusterName, *clusterInfo.State)
+		log.Printf("Kafka cluster %s is not ready (current state: %s), waiting for AWS to finish provision... (may take 30+ minutes, thanks for your patience)", clusterName, *clusterInfo.State)
 		return false, nil
 	}, 60*time.Minute, 30*time.Second)
 
