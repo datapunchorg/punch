@@ -18,6 +18,7 @@ package hivemetastore
 
 import (
 	"fmt"
+	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/kubelib"
 	"github.com/datapunchorg/punch/pkg/resource"
@@ -151,7 +152,13 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 }
 
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
+	currentTopology := topology.(*HiveMetastoreTopology)
+	spec := currentTopology.Spec
 	deployment := framework.NewDeployment()
+	deployment.AddStep("deleteLoadBalancer", "Delete Load Balancer", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+		err := awslib.DeleteLoadBalancersOnEks(spec.Region, spec.EksVpcId, spec.EksClusterName, spec.Namespace)
+		return framework.NewDeploymentStepOutput(), err
+	})
 	// TODO delete HIVE metastore service
 	err := deployment.Run()
 	return deployment.GetOutput(), err

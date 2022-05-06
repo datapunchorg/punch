@@ -1,37 +1,41 @@
 #!/bin/bash
 
-export databaseUser=user1
-export databasePassword=password1
-export sparkApiGatewayUser=user1
-export sparkApiGatewayPassword=password1
-
 # echo commands to the terminal output
 set -ex
 
-./punch install RdsDatabase --patch spec.masterUserName=$databaseUser --patch spec.masterUserPassword=$databasePassword \
+namePrefix=my
+
+databaseUser=user1
+databasePassword=password1
+sparkApiGatewayUser=user1
+sparkApiGatewayPassword=password1
+
+./punch install RdsDatabase --value namePrefix=$namePrefix \
+  --patch spec.masterUserName=$databaseUser --patch spec.masterUserPassword=$databasePassword \
   -o RdsDatabase.output.json
 
-export databaseEndpoint=$(jq -r '.output[] | select(.step=="createDatabase").output.endpoint' RdsDatabase.output.json)
+databaseEndpoint=$(jq -r '.output[] | select(.step=="createDatabase").output.endpoint' RdsDatabase.output.json)
 
-./punch install Eks \
-  -o Eks.output.json
+./punch install Eks --value namePrefix=$namePrefix -o Eks.output.json
 
-./punch install HiveMetastore --patch spec.database.externalDb=true \
+./punch install HiveMetastore --value namePrefix=$namePrefix \
+  --patch spec.database.externalDb=true \
   --patch spec.database.connectionString=jdbc:postgresql://${databaseEndpoint}:5432/postgres \
   --patch spec.database.user=$databaseUser --patch spec.database.password=$databasePassword \
   -o HiveMetastore.output.json
 
-export metastoreUri=$(jq -r '.output[] | select(.step=="installHiveMetastoreServer").output.metastoreLoadBalancerUrls[0]' HiveMetastore.output.json)
-export metastoreWarehouseDir=$(jq -r '.output[] | select(.step=="installHiveMetastoreServer").output.metastoreWarehouseDir' HiveMetastore.output.json)
+metastoreUri=$(jq -r '.output[] | select(.step=="installHiveMetastoreServer").output.metastoreLoadBalancerUrls[0]' HiveMetastore.output.json)
+metastoreWarehouseDir=$(jq -r '.output[] | select(.step=="installHiveMetastoreServer").output.metastoreWarehouseDir' HiveMetastore.output.json)
 
-./punch install SparkOnEks --patch spec.apiGateway.userName=$sparkApiGatewayUser \
+./punch install SparkOnEks --value namePrefix=$namePrefix \
+  --patch spec.apiGateway.userName=$sparkApiGatewayUser \
   --patch spec.apiGateway.userPassword=$sparkApiGatewayPassword \
   --patch spec.apiGateway.hiveMetastoreUris=$metastoreUri \
   --patch spec.apiGateway.sparkSqlWarehouseDir=$metastoreWarehouseDir \
   --print-usage-example \
   -o SparkOnEks.output.json
 
-export apiGatewayLoadBalancerUrl=$(jq -r '.output[] | select(.step=="deployNginxIngressController").output.loadBalancerPreferredUrl' SparkOnEks.output.json)
+apiGatewayLoadBalancerUrl=$(jq -r '.output[] | select(.step=="deployNginxIngressController").output.loadBalancerPreferredUrl' SparkOnEks.output.json)
 
 ./sparkcli --user $sparkApiGatewayUser --password $sparkApiGatewayPassword --insecure \
   --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi \
@@ -39,7 +43,7 @@ export apiGatewayLoadBalancerUrl=$(jq -r '.output[] | select(.step=="deployNginx
   --driver-memory 512m --executor-memory 512m \
   local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar
 
-export metastoreWarehouseDirS3Url=$(echo $metastoreWarehouseDir | sed -e "s/^s3a/s3/")
+metastoreWarehouseDirS3Url=$(echo $metastoreWarehouseDir | sed -e "s/^s3a/s3/")
 
 aws s3 ls $metastoreWarehouseDirS3Url/
 aws s3 rm --recursive $metastoreWarehouseDirS3Url/punch_test_db_01.db
@@ -51,14 +55,12 @@ aws s3 ls $metastoreWarehouseDirS3Url/
   --driver-memory 512m --executor-memory 512m \
   examples/pyspark-hive-example.py
 
+# Install Kafka Bridge which is a REST service to produce Kafka messages
 
+./punch install KafkaBridge --value namePrefix=$namePrefix -o KafkaBridge.output.json
 
-# Install Kafka with Bridge
-
-./punch install KafkaBridge -o KafkaBridge.output.json
-
-export bootstrapServerString=$(jq -r '.output[] | select(.step=="createKafkaCluster").output.bootstrapServerString' KafkaBridge.output.json)
-export kafkaBridgeTopicProduceUrl=$(jq -r '.output[] | select(.step=="deployStrimziKafkaBridge").output.kafkaBridgeTopicProduceUrl' KafkaBridge.output.json)
+bootstrapServerString=$(jq -r '.output[] | select(.step=="createKafkaCluster").output.bootstrapServerString' KafkaBridge.output.json)
+kafkaBridgeTopicProduceUrl=$(jq -r '.output[] | select(.step=="deployStrimziKafkaBridge").output.kafkaBridgeTopicProduceUrl' KafkaBridge.output.json)
 
 curl -k $kafkaBridgeTopicProduceUrl
 
@@ -70,7 +72,7 @@ curl -k -X POST $kafkaBridgeTopicProduceUrl/topic_01 -H 'Content-Type: applicati
   --class org.datapunch.sparkapp.SparkSql s3a://datapunch-public-01/sparkapp/sparkapp-1.0.2.jar \
   --sql "show databases"
 
-echo Submitting Spark application to ingest Kafka data
+echo Submitting Spark steaming application to ingest Kafka data
 
 ./sparkcli --user $sparkApiGatewayUser --password $sparkApiGatewayPassword --insecure \
   --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 submit --class org.datapunch.sparkapp.KafkaIngestion \

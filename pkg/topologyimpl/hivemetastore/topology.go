@@ -43,6 +43,7 @@ type HiveMetastoreTopologySpec struct {
 	NamePrefix        string                   `json:"namePrefix" yaml:"namePrefix"`
 	Region            string                   `json:"region" yaml:"region"`
 	EksClusterName    string                   `json:"eksClusterName" yaml:"eksClusterName"`
+	EksVpcId          string                          `json:"eksVpcId" yaml:"eksVpcId"`
     Namespace        string `json:"namespace" yaml:"namespace"`
 	ImageRepository  string `json:"imageRepository" yaml:"imageRepository"`
 	ImageTag string `json:"imageTag" yaml:"imageTag"`
@@ -88,6 +89,7 @@ func CreateDefaultHiveMetastoreTopology(namePrefix string, s3BucketName string) 
 			NamePrefix:   namePrefix,
 			Region:       fmt.Sprintf("{{ or .Values.region `%s` }}", framework.DefaultRegion),
 			EksClusterName:                eksTopology.Spec.Eks.ClusterName,
+			EksVpcId:                      eksTopology.Spec.VpcId,
 			Namespace: "hive-01",
 			ImageRepository: "ghcr.io/datapunchorg/helm-hive-metastore",
 			ImageTag: "main-1650942144",
