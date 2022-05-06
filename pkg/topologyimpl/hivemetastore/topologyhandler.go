@@ -23,6 +23,7 @@ import (
 	"github.com/datapunchorg/punch/pkg/resource"
 	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	"gopkg.in/yaml.v3"
+	"log"
 	"regexp"
 	"strings"
 )
@@ -78,8 +79,17 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 	}
 	deployment := framework.NewDeployment()
 	deployment.AddStep("checkEksCluster", "Check EKS cluster", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-		err := resource.CheckEksCluster(currentTopology.Spec.Region, currentTopology.Spec.EksClusterName)
-		return framework.NewDeploymentStepOutput(), err
+		if commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
+			log.Printf("Using minikube")
+			return framework.NewDeploymentStepOutput(), nil
+		}
+		result, err := resource.DescribeEksCluster(currentTopology.Spec.Region, currentTopology.Spec.EksClusterName)
+		if err != nil {
+			return framework.NewDeploymentStepOutput(), err
+		} else {
+			log.Printf("Found EKS cluster %s in region %s", result.ClusterName, currentTopology.Spec.Region)
+			return framework.NewDeploymentStepOutput(), nil
+		}
 	})
 	if !currentTopology.Spec.Database.ExternalDb {
 		deployment.AddStep("createHiveMetastoreDatabase", "Create Hive Metastore database", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
