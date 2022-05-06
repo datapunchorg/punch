@@ -24,6 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/common"
+	"github.com/datapunchorg/punch/pkg/framework"
 	"log"
 	"strings"
 	"time"
@@ -220,4 +221,56 @@ func CheckEksCluster(region string, clusterName string) error {
 		return fmt.Errorf("failed to get EKS cluster %s, %s", clusterName, err.Error())
 	}
 	return nil
+}
+
+func GetEksNginxLoadBalancerUrls(commandEnvironment framework.CommandEnvironment, region string, eksClusterName string, nginxNamespace string, nginxServiceName string, explicitHttpsPort int32) ([]string, error) {
+	hostPorts, err := awslib.GetLoadBalancerHostPorts(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName, nginxNamespace, nginxServiceName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get load balancer urls for nginx controller service %s in namespace %s: %s", nginxServiceName, nginxNamespace, err.Error())
+	}
+
+	dnsNamesMap := make(map[string]bool, len(hostPorts))
+	for _, entry := range hostPorts {
+		dnsNamesMap[entry.Host] = true
+	}
+	dnsNames := make([]string, 0, len(dnsNamesMap))
+	for k := range dnsNamesMap {
+		dnsNames = append(dnsNames, k)
+	}
+
+	if !commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
+		err = awslib.WaitLoadBalancersReadyByDnsNames(region, dnsNames)
+		if err != nil {
+			return nil, fmt.Errorf("failed to wait and get load balancer urls: %s", err.Error())
+		}
+	}
+
+	urls := make([]string, 0, len(hostPorts))
+	for _, entry := range hostPorts {
+		if entry.Port == 443 {
+			urls = append(urls, fmt.Sprintf("https://%s", entry.Host))
+		} else if entry.Port == explicitHttpsPort {
+			urls = append(urls, fmt.Sprintf("https://%s:%d", entry.Host, entry.Port))
+		} else if entry.Port == 80 {
+			urls = append(urls, fmt.Sprintf("http://%s", entry.Host))
+		} else {
+			urls = append(urls, fmt.Sprintf("http://%s:%d", entry.Host, entry.Port))
+		}
+	}
+
+	return urls, nil
+}
+
+func GetLoadBalancerPreferredUrl(urls []string) string {
+	preferredUrl := ""
+	if len(urls) > 0 {
+		preferredUrl = urls[0]
+		for _, entry := range urls {
+			// Use https url if possible
+			if strings.HasPrefix(strings.ToLower(entry), "https") {
+				preferredUrl = entry
+			}
+		}
+	}
+	return preferredUrl
 }

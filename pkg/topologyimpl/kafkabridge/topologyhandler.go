@@ -21,6 +21,7 @@ import (
 	"github.com/datapunchorg/punch/pkg/common"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/resource"
+	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	"github.com/datapunchorg/punch/pkg/topologyimpl/kafkaonmsk"
 	"gopkg.in/yaml.v3"
 	"log"
@@ -91,16 +92,23 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 			spec.KafkaBridge.KafkaBootstrapServers = bootstrapServerString
 			log.Printf("Set spec.KafkaBridge.KafkaBootstrapServers: %s", bootstrapServerString)
 		}
-		loadBalancerUrl := c.GetStepOutput("deployNginxIngressController")["loadBalancerPreferredUrl"].(string)
+		urls, err := resource.GetEksNginxLoadBalancerUrls(commandEnvironment, spec.Region, spec.EksClusterName, spec.NginxNamespace, spec.NginxServiceName, eks.NodePortLocalHttps)
+		if err != nil {
+			log.Fatalf("Failed to get NGINX load balancer urls: %s", err.Error())
+		}
+		loadBalancerUrl := resource.GetLoadBalancerPreferredUrl(urls)
 		if loadBalancerUrl == "" {
 			return framework.NewDeploymentStepOutput(), fmt.Errorf("did not find load balancer url")
 		}
-		DeployKafkaBridge(commandEnvironment, spec)
+		err = DeployKafkaBridge(commandEnvironment, spec)
+		if err != nil {
+			return framework.NewDeploymentStepOutput(), fmt.Errorf("failed to install kafka bridge service: %s", err.Error())
+		}
 		kafkaBridgeUrl := fmt.Sprintf("%s/topics", loadBalancerUrl)
 		maxWaitMinutes := 10
-		err := common.WaitHttpUrlReady(kafkaBridgeUrl, time.Duration(maxWaitMinutes) * time.Minute, 10 * time.Second)
+		err = common.WaitHttpUrlReady(kafkaBridgeUrl, time.Duration(maxWaitMinutes) * time.Minute, 10 * time.Second)
 		if err != nil {
-			return framework.NewDeploymentStepOutput(), fmt.Errorf("kafka bridge url %s is not ready after waiting %d minutes", kafkaBridgeUrl, maxWaitMinutes)
+			return framework.NewDeploymentStepOutput(), fmt.Errorf("kafka bridge url %s is not ready after waiting %d minutes: %s", kafkaBridgeUrl, maxWaitMinutes, err.Error())
 		}
 		kafkaBridgeTopicProduceUrl := fmt.Sprintf("%s/topics", loadBalancerUrl)
 		kafkaBridgeTopicAdminUrl := fmt.Sprintf("%s/topicAdmin", loadBalancerUrl)

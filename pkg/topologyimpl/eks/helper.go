@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/datapunchorg/punch/pkg/awslib"
@@ -34,6 +33,7 @@ import (
 
 var NodePortLocalHttp int32 = 32080
 var NodePortLocalHttps int32 = 32443
+var DefaultNginxServiceName = "ingress-nginx-controller"
 
 func CreateInstanceIamRole(topology EksTopologySpec) string {
 	region := topology.Region
@@ -135,7 +135,7 @@ func WaitEksServiceAccount(commandEnvironment framework.CommandEnvironment, topo
 func DeployNginxIngressController(commandEnvironment framework.CommandEnvironment, topology EksTopologySpec) map[string]interface{} {
 	nginxNamespace := topology.NginxIngress.Namespace
 	helmInstallName := topology.NginxIngress.HelmInstallName
-	serviceName := "ingress-nginx-controller"
+	nginxServiceName := DefaultNginxServiceName
 	region := topology.Region
 	eksClusterName := topology.Eks.ClusterName
 	kubeConfig, err := awslib.CreateKubeConfig(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
@@ -162,58 +162,20 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 	if err != nil {
 		log.Fatalf("Failed to create Kubernetes client: %s", err.Error())
 	}
-	err = kubelib.WaitPodsInPhases(clientset, nginxNamespace, serviceName, []v1.PodPhase{v1.PodRunning})
+	err = kubelib.WaitPodsInPhases(clientset, nginxNamespace, nginxServiceName, []v1.PodPhase{v1.PodRunning})
 	if err != nil {
-		log.Fatalf("Pod %s*** in namespace %s is not in phase %s", serviceName, nginxNamespace, v1.PodRunning)
+		log.Fatalf("Pod %s*** in namespace %s is not in phase %s", nginxServiceName, nginxNamespace, v1.PodRunning)
 	}
 
-	hostPorts, err := awslib.GetLoadBalancerHostPorts(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName, nginxNamespace, serviceName)
+	urls, err := resource.GetEksNginxLoadBalancerUrls(commandEnvironment, region, eksClusterName, nginxNamespace, nginxServiceName, NodePortLocalHttps)
 	if err != nil {
-		log.Fatalf("Failed to get load balancer urls for nginx controller service %s in namespace %s", serviceName, nginxNamespace)
+		log.Fatalf("Failed to get NGINX load balancer urls: %s", err.Error())
 	}
 
-	dnsNamesMap := make(map[string]bool, len(hostPorts))
-	for _, entry := range hostPorts {
-		dnsNamesMap[entry.Host] = true
-	}
-	dnsNames := make([]string, 0, len(dnsNamesMap))
-	for k := range dnsNamesMap {
-		dnsNames = append(dnsNames, k)
-	}
-
-	if !commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
-		err = awslib.WaitLoadBalancersReadyByDnsNames(region, dnsNames)
-		if err != nil {
-			log.Fatalf("Failed to wait and get load balancer urls: %s", err.Error())
-		}
-	}
-
-	urls := make([]string, 0, len(hostPorts))
-	for _, entry := range hostPorts {
-		if entry.Port == 443 {
-			urls = append(urls, fmt.Sprintf("https://%s", entry.Host))
-		} else if entry.Port == NodePortLocalHttps {
-			urls = append(urls, fmt.Sprintf("https://%s:%d", entry.Host, entry.Port))
-		} else if entry.Port == 80 {
-			urls = append(urls, fmt.Sprintf("http://%s", entry.Host))
-		} else {
-			urls = append(urls, fmt.Sprintf("http://%s:%d", entry.Host, entry.Port))
-		}
-	}
 	output := make(map[string]interface{})
 	output["loadBalancerUrls"] = urls
 
-	preferredUrl := ""
-	if len(urls) > 0 {
-		preferredUrl = urls[0]
-		for _, entry := range urls {
-			// Use https url if possible
-			if strings.HasPrefix(strings.ToLower(entry), "https") {
-				preferredUrl = entry
-			}
-		}
-	}
-
+	preferredUrl := resource.GetLoadBalancerPreferredUrl(urls)
 	output["loadBalancerPreferredUrl"] = preferredUrl
 
 	return output
