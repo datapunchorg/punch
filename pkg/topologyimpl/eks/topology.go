@@ -24,8 +24,8 @@ import (
 
 const (
 	ToBeReplacedS3BucketName           = "todo_use_your_own_bucket_name"
-	DefaultInstanceType                = "t3.large"
-	DefaultNodeGroupSize               = 3
+	DefaultInstanceType                = "t3.xlarge"
+	DefaultNodeGroupSize               = 2
 	DefaultMaxNodeGroupSize            = 10
 	DefaultNginxIngressHelmInstallName = "ingress-nginx"
 	DefaultNginxIngressNamespace       = "ingress-nginx"
