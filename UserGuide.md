@@ -145,7 +145,7 @@ copy/paste to run your own application):
 --url https://xxx.us-west-1.elb.amazonaws.com/sparkapi/v1 \
 submit --spark-version 3.1 \
 --driver-memory 512m --executor-memory 512m \
---conf spark.jars=s3a://datapunch-public-01/jars/iceberg-spark3-runtime-0.12.1.jar,s3a://datapunch-public-01/jars/awssdk-url-connection-client-2.17.105.jar,s3a://datapunch-public-01/jars/awssdk-bundle-2.17.105.jar,s3a://datapunch-public-01/jars/mariadb-java-client-2.7.4.jar \
+--conf spark.jars=s3a://datapunch-public-01/jars/iceberg-spark3-runtime-0.12.1.jar,s3a://datapunch-public-01/jars/awssdk-url-connection-client-2.17.105.jar,s3a://datapunch-public-01/jars/awssdk-bundle-2.17.105.jar,s3a://xxx/mariadb-java-client-2.7.4.jar \
 --conf spark.sql.warehouse.dir=s3a://xxx/warehouse \
 --conf spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions \
 --conf spark.sql.catalog.my_catalog=org.apache.iceberg.spark.SparkCatalog \

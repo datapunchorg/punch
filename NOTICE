@@ -35,5 +35,25 @@ This product includes and may modify software developed at
 strimzi-kafka-bridge (https://github.com/strimzi/strimzi-kafka-bridge).
 Licensed under the Apache License 2.0.
 
+This product may include or depend software developed at
+https://github.com/aws/aws-sdk-java.
+Licensed under the Apache License 2.0.
+
+This product may include or depend software developed at
+https://github.com/aws/aws-sdk-java-v2.
+Licensed under the Apache License 2.0.
+
+This product may include or depend software developed at
+https://github.com/apache/iceberg.
+Licensed under the Apache License 2.0.
+
+This product may include or depend software developed at
+https://github.com/aws/aws-msk-iam-auth.
+Licensed under the Apache License 2.0.
+
+This product may include or depend software developed at
+https://github.com/maropu/spark-tpcds-datagen.
+Licensed under the Apache License 2.0.
+
 II. License Summary
 - Apache License 2.0
