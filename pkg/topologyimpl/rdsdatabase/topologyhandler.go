@@ -40,7 +40,7 @@ type TopologyHandler struct {
 }
 
 func (t *TopologyHandler) Generate() (framework.Topology, error) {
-	namePrefix := "{{ or .Values.namePrefix `my` }}"
+	namePrefix := framework.DefaultNamePrefixTemplate
 	topology := CreateDefaultRdsDatabaseTopology(namePrefix)
 	return &topology, nil
 }

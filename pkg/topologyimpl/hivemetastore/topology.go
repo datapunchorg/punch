@@ -58,8 +58,8 @@ type HiveMetastoreDatabaseSpec struct {
 }
 
 func GenerateHiveMetastoreTopology() HiveMetastoreTopology {
-	namePrefix := "{{ or .Values.namePrefix `my` }}"
-	s3BucketName := "{{ or .Values.s3BucketName .DefaultS3BucketName }}"
+	namePrefix := framework.DefaultNamePrefixTemplate
+	s3BucketName := framework.DefaultS3BucketNameTemplate
 	return CreateDefaultHiveMetastoreTopology(namePrefix, s3BucketName)
 }
 

@@ -79,8 +79,8 @@ type SparkHistoryServer struct {
 }
 
 func GenerateSparkOnEksTopology() SparkOnEksTopology {
-	namePrefix := "{{ or .Values.namePrefix `my` }}"
-	s3BucketName := "{{ or .Values.s3BucketName .DefaultS3BucketName }}"
+	namePrefix := framework.DefaultNamePrefixTemplate
+	s3BucketName := framework.DefaultS3BucketNameTemplate
 	return CreateDefaultSparkEksTopology(namePrefix, s3BucketName)
 }
 

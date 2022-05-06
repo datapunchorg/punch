@@ -30,6 +30,9 @@ const (
 
 	DefaultRegion         = "us-west-1"
 	DefaultNamePrefix     = "my"
+	DefaultNamePrefixTemplate     = "{{ or .Values.namePrefix `my` }}"
+
+	DefaultS3BucketNameTemplate = "{{ or .Values.s3BucketName .DefaultS3BucketName }}"
 
 	DefaultHelmExecutable = "helm"
 
