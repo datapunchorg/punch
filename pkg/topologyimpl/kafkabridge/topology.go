@@ -35,8 +35,10 @@ type KafkaBridgeTopology struct {
 }
 
 type KafkaBridgeTopologySpec struct {
+	NamePrefix        string                   `json:"namePrefix" yaml:"namePrefix"`
+	Region            string                   `json:"region" yaml:"region"`
 	KafkaOnMskSpec    kafkaonmsk.KafkaTopologySpec   `json:"kafkaOnMskSpec" yaml:"kafkaOnMskSpec"`
-	EksSpec           eks.EksTopologySpec `json:"eksSpec" yaml:"eksSpec"`
+	EksClusterName    string                   `json:"eksClusterName" yaml:"eksClusterName"`
 	KafkaBridge   KafkaBridgeSpec  `json:"kafkaBridge" yaml:"kafkaBridge"`
 	InitTopics    []KafkaTopic  `json:"initTopics" yaml:"initTopics"`
 }
@@ -73,14 +75,17 @@ func CreateDefaultTopology(namePrefix string, s3BucketName string) KafkaBridgeTo
 			Metadata: framework.TopologyMetadata{
 				Name:               topologyName,
 				CommandEnvironment: map[string]string{
+					framework.CmdEnvHelmExecutable: framework.DefaultHelmExecutable,
 					CmdEnvKafkaBridgeHelmChart: "third-party/helm-charts/strimzi/charts/strimzi-kafka-bridge-chart",
 				},
 				Notes:              map[string]string{},
 			},
 		},
 		Spec: KafkaBridgeTopologySpec{
+			NamePrefix:   namePrefix,
+			Region:       fmt.Sprintf("{{ or .Values.region `%s` }}", framework.DefaultRegion),
 			KafkaOnMskSpec: kafkaOnMskTopology.Spec,
-			EksSpec: eksTopology.Spec,
+			EksClusterName:                eksTopology.Spec.Eks.ClusterName,
 			KafkaBridge: KafkaBridgeSpec{
 				HelmInstallName: "strimzi-kafka-bridge",
 				Namespace: "kafka-01",

@@ -26,8 +26,8 @@ import (
 )
 
 func DeployKafkaBridge(commandEnvironment framework.CommandEnvironment, spec KafkaBridgeTopologySpec) error {
-	region := spec.EksSpec.Region
-	clusterName := spec.EksSpec.Eks.ClusterName
+	region := spec.Region
+	clusterName := spec.EksClusterName
 	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), clusterName)
 	if err != nil {
 		return fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
@@ -49,7 +49,7 @@ func DeployKafkaBridge(commandEnvironment framework.CommandEnvironment, spec Kaf
 }
 
 func InstallKafkaBridgeHelm(commandEnvironment framework.CommandEnvironment, spec KafkaBridgeTopologySpec) error {
-	kubeConfig, err := awslib.CreateKubeConfig(spec.EksSpec.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
+	kubeConfig, err := awslib.CreateKubeConfig(spec.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), spec.EksClusterName)
 	if err != nil {
 		log.Fatalf("Failed to get kube config: %s", err)
 	}

@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"github.com/datapunchorg/punch/pkg/common"
 	"github.com/datapunchorg/punch/pkg/framework"
-	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
+	"github.com/datapunchorg/punch/pkg/resource"
 	"github.com/datapunchorg/punch/pkg/topologyimpl/kafkaonmsk"
 	"gopkg.in/yaml.v3"
 	"log"
@@ -75,13 +75,15 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 	currentTopology := topology.(*KafkaBridgeTopology)
 	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
 	deployment := kafkaonmsk.CreateInstallDeployment(currentTopology.Spec.KafkaOnMskSpec)
-	deployment2, err := eks.CreateInstallDeployment(currentTopology.Spec.EksSpec, commandEnvironment)
-	if err != nil {
-		return nil, err
-	}
-	for _, step := range deployment2.GetSteps() {
-		deployment.AddStep(step.GetName(), step.GetDescription(), step.GetDeployable())
-	}
+	deployment.AddStep("checkEksCluster", "Check EKS cluster", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+		result, err := resource.DescribeEksCluster(currentTopology.Spec.Region, currentTopology.Spec.EksClusterName)
+		if err != nil {
+			return framework.NewDeploymentStepOutput(), err
+		} else {
+			log.Printf("Found EKS cluster %s in region %s", result.ClusterName, currentTopology.Spec.Region)
+			return framework.NewDeploymentStepOutput(), nil
+		}
+	})
 	deployment.AddStep("deployStrimziKafkaBridge", "Deploy Strimzi Kafka Bridge", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 		spec := currentTopology.Spec
 		if spec.KafkaBridge.KafkaBootstrapServers == "" {
@@ -134,7 +136,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		}
 		return framework.NewDeploymentStepOutput(), nil
 	})
-	err = deployment.Run()
+	err := deployment.Run()
 	if err != nil {
 		return nil, err
 	}
@@ -143,16 +145,9 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
 	currentTopology := topology.(*KafkaBridgeTopology)
-	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
-	deployment, err := eks.CreateUninstallDeployment(currentTopology.Spec.EksSpec, commandEnvironment)
-	if err != nil {
-		return nil, err
-	}
-	deployment2 := kafkaonmsk.CreateUninstallDeployment(currentTopology.Spec.KafkaOnMskSpec)
-	for _, step := range deployment2.GetSteps() {
-		deployment.AddStep(step.GetName(), step.GetDescription(), step.GetDeployable())
-	}
-	err = deployment.Run()
+	// TODO delete kafka bridge service
+	deployment := kafkaonmsk.CreateUninstallDeployment(currentTopology.Spec.KafkaOnMskSpec)
+	err := deployment.Run()
 	return deployment.GetOutput(), err
 }
 
