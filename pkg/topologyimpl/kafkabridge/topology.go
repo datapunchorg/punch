@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package kafkawithbridge
+package kafkabridge
 
 import (
 	"fmt"
@@ -24,17 +24,17 @@ import (
 )
 
 const (
-	KindKafkaTopology = "KafkaWithBridge"
+	KindKafkaTopology = "KafkaBridge"
 
 	CmdEnvKafkaBridgeHelmChart = "kafkaBridgeHelmChart"
 )
 
-type KafkaWithBridgeTopology struct {
+type KafkaBridgeTopology struct {
 	framework.TopologyBase `json:",inline" yaml:",inline"`
-	Spec                   KafkaWithBridgeTopologySpec `json:"spec" yaml:"spec"`
+	Spec                   KafkaBridgeTopologySpec `json:"spec" yaml:"spec"`
 }
 
-type KafkaWithBridgeTopologySpec struct {
+type KafkaBridgeTopologySpec struct {
 	KafkaOnMskSpec    kafkaonmsk.KafkaTopologySpec   `json:"kafkaOnMskSpec" yaml:"kafkaOnMskSpec"`
 	EksSpec           eks.EksTopologySpec `json:"eksSpec" yaml:"eksSpec"`
 	KafkaBridge   KafkaBridgeSpec  `json:"kafkaBridge" yaml:"kafkaBridge"`
@@ -54,19 +54,19 @@ type KafkaTopic struct {
 	ReplicationFactor int64  `json:"replicationFactor" yaml:"replicationFactor"`
 }
 
-func GenerateDefaultTopology() KafkaWithBridgeTopology {
+func GenerateDefaultTopology() KafkaBridgeTopology {
 	namePrefix := "{{ or .Values.namePrefix `my` }}"
 	s3BucketName := "{{ or .Values.s3BucketName .DefaultS3BucketName }}"
 	return CreateDefaultTopology(namePrefix, s3BucketName)
 }
 
-func CreateDefaultTopology(namePrefix string, s3BucketName string) KafkaWithBridgeTopology {
+func CreateDefaultTopology(namePrefix string, s3BucketName string) KafkaBridgeTopology {
 	topologyName := fmt.Sprintf("%s-kafka-01", namePrefix)
 
 	kafkaOnMskTopology := kafkaonmsk.CreateDefaultKafkaOnMskTopology(namePrefix)
 	eksTopology := eks.CreateDefaultEksTopology(namePrefix, s3BucketName)
 
-	topology := KafkaWithBridgeTopology{
+	topology := KafkaBridgeTopology{
 		TopologyBase: framework.TopologyBase{
 			ApiVersion: framework.DefaultVersion,
 			Kind:       KindKafkaTopology,
@@ -78,7 +78,7 @@ func CreateDefaultTopology(namePrefix string, s3BucketName string) KafkaWithBrid
 				Notes:              map[string]string{},
 			},
 		},
-		Spec: KafkaWithBridgeTopologySpec{
+		Spec: KafkaBridgeTopologySpec{
 			KafkaOnMskSpec: kafkaOnMskTopology.Spec,
 			EksSpec: eksTopology.Spec,
 			KafkaBridge: KafkaBridgeSpec{
@@ -108,10 +108,10 @@ func CreateDefaultTopology(namePrefix string, s3BucketName string) KafkaWithBrid
 	return topology
 }
 
-func (t *KafkaWithBridgeTopology) GetKind() string {
+func (t *KafkaBridgeTopology) GetKind() string {
 	return t.Kind
 }
 
-func (t *KafkaWithBridgeTopology) GetMetadata() *framework.TopologyMetadata {
+func (t *KafkaBridgeTopology) GetMetadata() *framework.TopologyMetadata {
 	return &t.Metadata
 }

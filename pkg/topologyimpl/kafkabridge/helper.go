@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package kafkawithbridge
+package kafkabridge
 
 import (
 	"fmt"
@@ -25,7 +25,7 @@ import (
 	"log"
 )
 
-func DeployKafkaBridge(commandEnvironment framework.CommandEnvironment, spec KafkaWithBridgeTopologySpec) error {
+func DeployKafkaBridge(commandEnvironment framework.CommandEnvironment, spec KafkaBridgeTopologySpec) error {
 	region := spec.EksSpec.Region
 	clusterName := spec.EksSpec.Eks.ClusterName
 	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), clusterName)
@@ -48,7 +48,7 @@ func DeployKafkaBridge(commandEnvironment framework.CommandEnvironment, spec Kaf
 	return nil
 }
 
-func InstallKafkaBridgeHelm(commandEnvironment framework.CommandEnvironment, spec KafkaWithBridgeTopologySpec) error {
+func InstallKafkaBridgeHelm(commandEnvironment framework.CommandEnvironment, spec KafkaBridgeTopologySpec) error {
 	kubeConfig, err := awslib.CreateKubeConfig(spec.EksSpec.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), spec.EksSpec.Eks.ClusterName)
 	if err != nil {
 		log.Fatalf("Failed to get kube config: %s", err)

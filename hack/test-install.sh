@@ -52,10 +52,10 @@ aws s3 ls $metastoreWarehouseDirS3Url/
 
 # Install Kafka with Bridge
 
-./punch install KafkaWithBridge -o KafkaWithBridge.output.json
+./punch install KafkaBridge -o KafkaBridge.output.json
 
-export bootstrapServerString=$(jq -r '.output[] | select(.step=="createKafkaCluster").output.bootstrapServerString' KafkaWithBridge.output.json)
-export kafkaBridgeTopicProduceUrl=$(jq -r '.output[] | select(.step=="deployStrimziKafkaBridge").output.kafkaBridgeTopicProduceUrl' KafkaWithBridge.output.json)
+export bootstrapServerString=$(jq -r '.output[] | select(.step=="createKafkaCluster").output.bootstrapServerString' KafkaBridge.output.json)
+export kafkaBridgeTopicProduceUrl=$(jq -r '.output[] | select(.step=="deployStrimziKafkaBridge").output.kafkaBridgeTopicProduceUrl' KafkaBridge.output.json)
 
 curl -k $kafkaBridgeTopicProduceUrl
 

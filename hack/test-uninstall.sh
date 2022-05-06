@@ -6,7 +6,7 @@ set -x
 # Disable exit on non zero exit
 set +e
 
-./punch uninstall KafkaWithBridge
+./punch uninstall KafkaBridge
 
 ./punch uninstall SparkOnEks
 

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package kafkawithbridge
+package kafkabridge
 
 import (
 	"fmt"
@@ -72,7 +72,7 @@ func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (f
 }
 
 func (t *TopologyHandler) Install(topology framework.Topology) (framework.DeploymentOutput, error) {
-	currentTopology := topology.(*KafkaWithBridgeTopology)
+	currentTopology := topology.(*KafkaBridgeTopology)
 	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
 	deployment := kafkaonmsk.CreateInstallDeployment(currentTopology.Spec.KafkaOnMskSpec)
 	deployment2, err := eks.CreateInstallDeployment(currentTopology.Spec.EksSpec, commandEnvironment)
@@ -142,7 +142,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 }
 
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
-	currentTopology := topology.(*KafkaWithBridgeTopology)
+	currentTopology := topology.(*KafkaBridgeTopology)
 	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
 	deployment, err := eks.CreateUninstallDeployment(currentTopology.Spec.EksSpec, commandEnvironment)
 	if err != nil {
