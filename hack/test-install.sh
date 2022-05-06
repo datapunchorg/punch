@@ -47,3 +47,34 @@ aws s3 ls $metastoreWarehouseDirS3Url/
   --spark-version 3.2 \
   --driver-memory 512m --executor-memory 512m \
   examples/pyspark-hive-example.py
+
+
+
+# Install Kafka with Bridge
+
+./punch install KafkaWithBridge -o KafkaWithBridge.output.json
+
+export bootstrapServerString=$(jq -r '.output[] | select(.step=="createKafkaCluster").output.bootstrapServerString' KafkaWithBridge.output.json)
+export kafkaBridgeTopicProduceUrl=$(jq -r '.output[] | select(.step=="deployStrimziKafkaBridge").output.kafkaBridgeTopicProduceUrl' KafkaWithBridge.output.json)
+
+curl -k $kafkaBridgeTopicProduceUrl
+
+curl -k -X POST $kafkaBridgeTopicProduceUrl/topic_01 -H 'Content-Type: application/vnd.kafka.json.v2+json' -d '{"records":[{"key":"key1","value":"value1"},{"key":"key2","value":"value2"}]}'
+
+./sparkcli --user $sparkApiGatewayUser --password $sparkApiGatewayPassword --insecure \
+  --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 submit --class org.datapunch.sparkapp.KafkaIngestion \
+  --spark-version 3.2 \
+  --driver-memory 1g --executor-memory 1g \
+  --conf spark.jars=s3a://datapunch-public-01/jars/aws-msk-iam-auth-1.1.0-all.jar \
+  s3a://datapunch-public-01/sparkapp/sparkapp-1.0.5-shaded.jar \
+  --bootstrapServers b-1.my-msk-01.i5lvjr.c2.kafka.us-west-1.amazonaws.com:9098,b-2.my-msk-01.i5lvjr.c2.kafka.us-west-1.amazonaws.com:9098 \
+  --database my_msk_01 --topic topic_01 --triggerSeconds 20 --printTableData true \
+  --kafkaOption kafka.security.protocol=SASL_SSL --kafkaOption kafka.sasl.mechanism=AWS_MSK_IAM \
+  --kafkaOption kafka.sasl.jaas.config="software.amazon.msk.auth.iam.IAMLoginModule required;" \
+  --kafkaOption kafka.sasl.client.callback.handler.class=software.amazon.msk.auth.iam.IAMClientCallbackHandler
+
+./sparkcli --user $sparkApiGatewayUser --password $sparkApiGatewayPassword --insecure \
+  --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 submit --class org.datapunch.sparkapp.KafkaIngestion \
+  --spark-version 3.2 \
+  --class org.datapunch.sparkapp.SparkSql s3a://datapunch-public-01/sparkapp/sparkapp-1.0.2.jar \
+  --sql "show databases"
