@@ -70,7 +70,7 @@ release: build
 	cp hack/pyspark-hive-example.py dist/examples/
 	cp hack/test-install.sh dist/test/
 	cp hack/test-uninstall.sh dist/test/
-	curl -L -o dist/sparkcli.tar.gz https://github.com/datapunchorg/spark-on-k8s-operator/releases/download/0.2.0/sparkcli.tar.gz
+	curl -L -o dist/sparkcli.tar.gz https://github.com/datapunchorg/spark-on-k8s-operator/releases/download/0.3.0/sparkcli.tar.gz
 	tar xzvf dist/sparkcli.tar.gz -C dist
 	rm dist/sparkcli.tar.gz
 	zip -r dist.zip dist
