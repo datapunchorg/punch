@@ -39,6 +39,7 @@ type KafkaBridgeTopologySpec struct {
 	Region            string                   `json:"region" yaml:"region"`
 	KafkaOnMskSpec    kafkaonmsk.KafkaTopologySpec   `json:"kafkaOnMskSpec" yaml:"kafkaOnMskSpec"`
 	EksClusterName    string                   `json:"eksClusterName" yaml:"eksClusterName"`
+	EksVpcId    string                          `json:"eksVpcId" yaml:"eksVpcId"`
 	NginxNamespace    string                    `json:"nginxNamespace" yaml:"nginxNamespace"`
 	NginxServiceName    string                    `json:"nginxServiceName" yaml:"nginxServiceName"`
 	KafkaBridge   KafkaBridgeSpec  `json:"kafkaBridge" yaml:"kafkaBridge"`
@@ -88,6 +89,7 @@ func CreateDefaultTopology(namePrefix string, s3BucketName string) KafkaBridgeTo
 			Region:       fmt.Sprintf("{{ or .Values.region `%s` }}", framework.DefaultRegion),
 			KafkaOnMskSpec: kafkaOnMskTopology.Spec,
 			EksClusterName: eksTopology.Spec.Eks.ClusterName,
+			EksVpcId: eksTopology.Spec.VpcId,
 			NginxNamespace: eks.DefaultNginxIngressNamespace,
 			NginxServiceName: eks.DefaultNginxServiceName,
 			KafkaBridge: KafkaBridgeSpec{
