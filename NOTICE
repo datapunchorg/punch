@@ -8,6 +8,10 @@ The Apache Software Foundation (https://www.apache.org/).
 Licensed under the Apache License.
 
 This product includes and may modify software developed at
+Apache Spark (https://github.com/apache/spark).
+Licensed under the Apache License 2.0.
+
+This product includes and may modify software developed at
 Ingress Nginx (https://github.com/kubernetes/ingress-nginx).
 Licensed under the Apache License 2.0.
 

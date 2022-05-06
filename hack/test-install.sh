@@ -77,7 +77,7 @@ echo Submitting Spark application to ingest Kafka data
   --conf spark.kubernetes.submission.waitAppCompletion=false \
   s3a://datapunch-public-01/sparkapp/sparkapp-1.0.5-shaded.jar \
   --bootstrapServers $bootstrapServerString \
-  --database my_msk_01 --topic topic_01 --triggerSeconds 20 --printTableData true \
+  --database my_msk_01_kafka_ingestion --topic topic_01 --triggerSeconds 20 --printTableData true \
   --kafkaOption kafka.security.protocol=SASL_SSL --kafkaOption kafka.sasl.mechanism=AWS_MSK_IAM \
   --kafkaOption kafka.sasl.jaas.config="software.amazon.msk.auth.iam.IAMLoginModule required;" \
   --kafkaOption kafka.sasl.client.callback.handler.class=software.amazon.msk.auth.iam.IAMClientCallbackHandler
