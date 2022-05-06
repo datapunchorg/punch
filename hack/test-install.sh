@@ -13,6 +13,9 @@ set -ex
 
 export databaseEndpoint=$(jq -r '.output[] | select(.step=="createDatabase").output.endpoint' RdsDatabase.output.json)
 
+./punch install Eks \
+  -o Eks.output.json
+
 ./punch install HiveMetastore --patch spec.database.externalDb=true \
   --patch spec.database.connectionString=jdbc:postgresql://${databaseEndpoint}:5432/postgres \
   --patch spec.database.user=$databaseUser --patch spec.database.password=$databasePassword \
