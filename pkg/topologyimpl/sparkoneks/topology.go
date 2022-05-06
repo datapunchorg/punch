@@ -105,6 +105,8 @@ func CreateDefaultSparkEksTopology(namePrefix string, s3BucketName string) Spark
 			ApiGateway: SparkApiGateway{
 				UserName: DefaultApiUserName,
 				SparkEventLogDir: fmt.Sprintf("s3a://%s/punch/%s/sparkEventLog", s3BucketName, namePrefix),
+				HiveMetastoreUris: "",
+				SparkSqlWarehouseDir: "",
 			},
 			SparkOperator: SparkOperator{
 				HelmInstallName:           DefaultSparkOperatorHelmInstallName,

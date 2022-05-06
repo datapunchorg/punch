@@ -23,8 +23,22 @@ import (
 	"strings"
 )
 
+type pathSegmentType byte
+
+var pathSegmentTypeField = pathSegmentType(0)
+var pathSegmentTypeArray = pathSegmentType(1)
+
+type pathSegment struct {
+	segmentType pathSegmentType
+	name string
+	arrayIndex int
+}
+
 func PatchValuePathByString(target interface{}, path string, value string) error {
-	parts := strings.Split(path, ".")
+	parts, err := parsePath(path)
+	if err != nil {
+		return err
+	}
 	return patchStructPathArrayByStringValue(target, parts, value)
 }
 
@@ -119,16 +133,132 @@ func getSettableField(target interface{}, field string) (reflect.Value, error) {
 	}
 }
 
-func patchStructPathArrayByStringValue(target interface{}, path []string, value string) error {
+func patchStructPathArrayByStringValue(target interface{}, path []pathSegment, value string) error {
 	if len(path) == 0 {
 		return fmt.Errorf("invalid path (zero length)")
-	} else if len(path) == 1 {
-		return PatchValueFieldByString(target, path[0], value)
 	}
-	fieldV, err := getSettableField(target, path[0])
-	if err != nil {
-		return err
+	segment := path[0]
+	if len(path) == 1 {
+		if segment.segmentType == pathSegmentTypeField {
+			return PatchValueFieldByString(target, segment.name, value)
+		} else {
+			return fmt.Errorf("TODO unsupported path segment type %d", segment.segmentType)
+		}
 	}
-	p := fieldV.Addr().Interface()
-	return patchStructPathArrayByStringValue(p, path[1:], value)
+	if segment.segmentType == pathSegmentTypeField {
+		fieldV, err := getSettableField(target, segment.name)
+		if err != nil {
+			return err
+		}
+		p := fieldV.Addr().Interface()
+		return patchStructPathArrayByStringValue(p, path[1:], value)
+	} else {
+		return fmt.Errorf("TODO unsupported path segment type %d", segment.segmentType)
+	}
+}
+
+
+func parsePath(path string) ([]pathSegment, error) {
+	segments := make([]pathSegment, 0, 100)
+	stateSegmentStart := 0
+	statePlainField := 1
+	stateQuotedField := 2
+	stateSliceBracketStart := 3
+	stateSliceBracketEnd := 4
+	stateQuotedFieldEnd := 5
+	state := stateSegmentStart
+	nameCollector := make([]rune, 0, 100)
+	arrayIndexCollector := make([]rune, 0, 100)
+	quote := '\''
+	characters := make([]rune, 0, len(path))
+	for _, ch := range path {
+		characters = append(characters, ch)
+	}
+	characters = append(characters, -1)
+	for position, ch := range characters {
+		switch state {
+		case stateSegmentStart:
+			if ch == '\'' || ch == '"' {
+				state = stateQuotedField
+				quote = ch
+			} else if ch == '.' {
+				return nil, fmt.Errorf("invalid path %s (unexpected .) at position (starting from 0) %d", path, position)
+			} else if ch == -1 {
+				return nil, fmt.Errorf("invalid path %s (unexpected string end) at position (starting from 0) %d", path, position)
+			} else {
+				state = statePlainField
+				nameCollector = append(nameCollector, ch)
+			}
+		case statePlainField:
+			if ch == '.' || ch == -1 {
+				if len(nameCollector) == 0 {
+					return nil, fmt.Errorf("invalid path %s (empty segment name) at position (starting from 0) %d", path, position)
+				}
+				segments = append(segments, pathSegment{
+					segmentType: pathSegmentTypeField,
+					name: string(nameCollector),
+				})
+				state = stateSegmentStart
+				nameCollector = make([]rune, 0, 100)
+			} else if ch == '[' {
+				state = stateSliceBracketStart
+				arrayIndexCollector = make([]rune, 0, 100)
+			} else {
+				nameCollector = append(nameCollector, ch)
+			}
+		case stateSliceBracketStart:
+			if ch == ']' {
+				state = stateSliceBracketEnd
+			} else if ch == -1 {
+				return nil, fmt.Errorf("invalid path %s (unexpected string end) at position (starting from 0) %d", path, position)
+			} else {
+				arrayIndexCollector = append(arrayIndexCollector, ch)
+			}
+		case stateSliceBracketEnd:
+			if ch == '.' || ch == -1 {
+				if len(nameCollector) == 0 {
+					return nil, fmt.Errorf("invalid path %s (empty segment name) at position (starting from 0) %d", path, position)
+				}
+				indexStr := string(arrayIndexCollector)
+				index, err := strconv.Atoi(indexStr)
+				if err != nil {
+					return nil, fmt.Errorf("invalid path %s (invalid array index %s) at position (starting from 0) %d", path, indexStr, position)
+				}
+				segments = append(segments, pathSegment{
+					segmentType: pathSegmentTypeArray,
+					name: string(nameCollector),
+					arrayIndex: index,
+				})
+				state = stateSegmentStart
+				nameCollector = make([]rune, 0, 100)
+			} else {
+				return nil, fmt.Errorf("invalid path %s (unexpected character after array bracket end) at position (starting from 0) %d", path, position)
+			}
+		case stateQuotedField:
+			if ch == quote {
+				state = stateQuotedFieldEnd
+			} else if ch == -1 {
+				return nil, fmt.Errorf("invalid path %s (unexpected string end) at position (starting from 0) %d", path, position)
+			} else {
+				nameCollector = append(nameCollector, ch)
+			}
+		case stateQuotedFieldEnd:
+			if ch == '.' || ch == -1 {
+				if len(nameCollector) == 0 {
+					return nil, fmt.Errorf("invalid path %s (empty segment name) at position (starting from 0) %d", path, position)
+				}
+				segments = append(segments, pathSegment{
+					segmentType: pathSegmentTypeField,
+					name: string(nameCollector),
+				})
+				state = stateSegmentStart
+				nameCollector = make([]rune, 0, 100)
+			} else {
+				return nil, fmt.Errorf("invalid path %s (unexpected character after quoted field end) at position (starting from 0) %d", path, position)
+			}
+		default:
+			return nil, fmt.Errorf("invalid state %d when parsing path %s", state, path)
+		}
+	}
+	return segments, nil
 }

@@ -87,6 +87,14 @@ func TestPatchStructPathByString(t *testing.T) {
 	err = PatchValuePathByString(pointer, "S1.Count", "100")
 	assert.Nil(t, err)
 	assert.Equal(t, 100, s2.S1.Count)
+
+	err = PatchValuePathByString(pointer, "'S1'.'Count'", "200")
+	assert.Nil(t, err)
+	assert.Equal(t, 200, s2.S1.Count)
+
+	err = PatchValuePathByString(pointer, "\"S1\".\"Count\"", "300")
+	assert.Nil(t, err)
+	assert.Equal(t, 300, s2.S1.Count)
 }
 
 func TestPatchStructMapFieldByString(t *testing.T) {
@@ -94,6 +102,7 @@ func TestPatchStructMapFieldByString(t *testing.T) {
 		MapField1: map[string]string{
 			"key1": "value1",
 			"key2": "value2",
+			"key 3": "value3",
 		},
 	}
 	var pointer interface{} = &s3
@@ -105,4 +114,16 @@ func TestPatchStructMapFieldByString(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "new_value", s3.MapField1["key1"])
 	assert.Equal(t, "value2", s3.MapField1["key2"])
+
+	err = PatchValuePathByString(pointer, "MapField1.'key 3'", "new_value_3'")
+	assert.Nil(t, err)
+	assert.Equal(t, "new_value", s3.MapField1["key1"])
+	assert.Equal(t, "value2", s3.MapField1["key2"])
+	assert.Equal(t, "new_value_3'", s3.MapField1["key 3"])
+
+	err = PatchValuePathByString(pointer, "MapField1.'key 3'", "new_value_3\"")
+	assert.Nil(t, err)
+	assert.Equal(t, "new_value", s3.MapField1["key1"])
+	assert.Equal(t, "value2", s3.MapField1["key2"])
+	assert.Equal(t, "new_value_3\"", s3.MapField1["key 3"])
 }

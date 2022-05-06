@@ -12,4 +12,6 @@ set +e
 
 ./punch uninstall HiveMetastore
 
+./punch uninstall Eks
+
 ./punch uninstall RdsDatabase
