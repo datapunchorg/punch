@@ -34,6 +34,15 @@ type struct2 struct {
 
 type struct3 struct {
 	MapField1 map[string]string
+	AnyMapField1 map[string]interface{}
+}
+
+type struct4 struct {
+	ArrayField []struct3
+}
+
+type struct5 struct {
+	Field1 struct4
 }
 
 func TestPatchStructFieldByString(t *testing.T) {
@@ -126,4 +135,37 @@ func TestPatchStructMapFieldByString(t *testing.T) {
 	assert.Equal(t, "new_value", s3.MapField1["key1"])
 	assert.Equal(t, "value2", s3.MapField1["key2"])
 	assert.Equal(t, "new_value_3\"", s3.MapField1["key 3"])
+}
+
+func TestPatchArrayFieldByString(t *testing.T) {
+	s5 := struct5{
+		Field1: struct4{
+			ArrayField: []struct3 {
+				{
+					MapField1: map[string]string{
+						"key.1": "value1",
+						"key-2": "value2",
+					},
+				},
+				{
+					MapField1: map[string]string{
+						"key.11": "value11",
+						"key-22": "value22",
+					},
+					AnyMapField1: map[string]interface{}{
+						"keyA": 9,
+					},
+				},
+			},
+		},
+	}
+
+	err := PatchValuePathByString(&s5, "field1.arrayField[1].MapField1.'key.11'", "new_value_111")
+	assert.Nil(t, err)
+	assert.Equal(t, "value1", s5.Field1.ArrayField[0].MapField1["key.1"])
+	assert.Equal(t, "new_value_111", s5.Field1.ArrayField[1].MapField1["key.11"])
+
+	err = PatchValuePathByString(&s5, "field1.arrayField[1].AnyMapField1.keyA", "99999")
+	assert.Nil(t, err)
+	assert.Equal(t, 99999, s5.Field1.ArrayField[1].AnyMapField1["keyA"])
 }

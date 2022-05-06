@@ -54,7 +54,7 @@ func PatchValueFieldByString(target interface{}, field string, value string) err
 }
 
 func patchStructFieldByStringValue(target interface{}, field string, value string) error {
-	fieldV, err := getSettableField(target, field)
+	fieldV, err := getFieldByName(target, field)
 	if err != nil {
 		return err
 	}
@@ -85,28 +85,82 @@ func patchStructFieldByStringValue(target interface{}, field string, value strin
 	return nil
 }
 
+func convertStringValue(value string, kind reflect.Kind) (reflect.Value, error) {
+	switch kind {
+	case reflect.String:
+		return reflect.ValueOf(value), nil
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		intV, err := strconv.ParseInt(value, 10, 64)
+		if err != nil {
+			return reflect.Value{}, fmt.Errorf("kind %s is integer, but value %s cannot be parsed to integer", kind, value)
+		}
+		switch kind {
+		case reflect.Int:
+			return reflect.ValueOf(int(intV)), nil
+		case reflect.Int8:
+			return reflect.ValueOf(int8(intV)), nil
+		case reflect.Int16:
+			return reflect.ValueOf(int16(intV)), nil
+		case reflect.Int32:
+			return reflect.ValueOf(int32(intV)), nil
+		case reflect.Int64:
+			return reflect.ValueOf(int64(intV)), nil
+		default:
+			return reflect.Value{}, fmt.Errorf("kind %s is integer, but not handled", kind)
+		}
+	case reflect.Float32, reflect.Float64:
+		floatV, err := strconv.ParseFloat(value, 64)
+		if err != nil {
+			return reflect.Value{}, fmt.Errorf("kind %s is float, but value %s cannot be parsed to float", kind, value)
+		}
+
+		switch kind {
+		case reflect.Float32:
+			return reflect.ValueOf(float32(floatV)), nil
+		case reflect.Float64:
+			return reflect.ValueOf(float64(floatV)), nil
+		default:
+			return reflect.Value{}, fmt.Errorf("kind %s is float, but not handled", kind)
+		}
+	case reflect.Bool:
+		boolV, err := strconv.ParseBool(value)
+		if err != nil {
+			return reflect.Value{}, fmt.Errorf("kind %s is bool, but value %s cannot be parsed to bool", kind, value)
+		}
+		return reflect.ValueOf(boolV), nil
+	default:
+		return reflect.Value{}, fmt.Errorf("cannot convert value for field %s due to unsupported type: %s", value, kind)
+	}
+}
+
 func patchMapKeyByStringValue(target interface{}, field string, value string) error {
 	valueOfTarget := reflect.ValueOf(target).Elem()
-	newValue := reflect.ValueOf(value)
 	if valueOfTarget.Kind() == reflect.Map {
-		typeOfTarget := valueOfTarget.Type()
-		mapElementType := typeOfTarget.Elem()
-		if mapElementType.Kind() != reflect.String {
-			return fmt.Errorf("target is map, but type for the map value is not string: %s", mapElementType.Kind())
-		}
+		//if mapElementType.Kind() != reflect.String {
+		//	return fmt.Errorf("target is map, but type for the map value is not string: %s", mapElementType.Kind())
+		//}
 		for _, key := range valueOfTarget.MapKeys() {
 			keyStr := key.String()
 			if strings.EqualFold(keyStr, field) {
+				elementValue := valueOfTarget.MapIndex(key)
+				elementValueKind := elementValue.Type().Kind()
+				if elementValueKind == reflect.Interface {
+					elementValueKind = elementValue.Elem().Type().Kind()
+				}
+				newValue, err := convertStringValue(value, elementValueKind)
+				if err != nil {
+					return fmt.Errorf("cannot convert string %s to map element kind %s", value, elementValueKind.String())
+				}
 				valueOfTarget.SetMapIndex(key, newValue)
 				return nil
 			}
 		}
 		return fmt.Errorf("key %s does not exist on target map", field)
 	}
-	return fmt.Errorf("target value is not a pointer to struct")
+	return fmt.Errorf("target value is not a pointer to map")
 }
 
-func getSettableField(target interface{}, field string) (reflect.Value, error) {
+func getFieldByName(target interface{}, field string) (reflect.Value, error) {
 	valueOfTarget := reflect.ValueOf(target).Elem()
 	if valueOfTarget.Kind() == reflect.Struct {
 		typeOfTarget := valueOfTarget.Type()
@@ -124,12 +178,17 @@ func getSettableField(target interface{}, field string) (reflect.Value, error) {
 		if !found {
 			return reflect.Value{}, fmt.Errorf("field %s does not exist on target struct", field)
 		}
-		if !fieldV.CanSet() {
-			return reflect.Value{}, fmt.Errorf("field %s cannot set on target struct", field)
-		}
 		return fieldV, nil
+	} else if valueOfTarget.Kind() == reflect.Map {
+		for _, key := range valueOfTarget.MapKeys() {
+			keyStr := key.String()
+			if strings.EqualFold(keyStr, field) {
+				return valueOfTarget.MapIndex(key), nil
+			}
+		}
+		return reflect.Value{}, fmt.Errorf("key %s does not exist on target map", field)
 	} else {
-		return reflect.Value{}, fmt.Errorf("target value is not a pointer to struct")
+		return reflect.Value{}, fmt.Errorf("target value is not a pointer to struct or map")
 	}
 }
 
@@ -146,14 +205,25 @@ func patchStructPathArrayByStringValue(target interface{}, path []pathSegment, v
 		}
 	}
 	if segment.segmentType == pathSegmentTypeField {
-		fieldV, err := getSettableField(target, segment.name)
+		fieldV, err := getFieldByName(target, segment.name)
 		if err != nil {
 			return err
 		}
 		p := fieldV.Addr().Interface()
 		return patchStructPathArrayByStringValue(p, path[1:], value)
+	} else if segment.segmentType == pathSegmentTypeArray {
+		fieldV, err := getFieldByName(target, segment.name)
+		if err != nil {
+			return err
+		}
+		if fieldV.Kind() == reflect.Slice || fieldV.Kind() == reflect.Array {
+			p := fieldV.Index(segment.arrayIndex).Addr().Interface()
+			return patchStructPathArrayByStringValue(p, path[1:], value)
+		} else {
+			return fmt.Errorf("value is not slice/array, cannot patch by %s[%d]", segment.name, segment.arrayIndex)
+		}
 	} else {
-		return fmt.Errorf("TODO unsupported path segment type %d", segment.segmentType)
+		return fmt.Errorf("unsupported path segment type %d", segment.segmentType)
 	}
 }
 
