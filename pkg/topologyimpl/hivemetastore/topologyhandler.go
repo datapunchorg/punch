@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/kubelib"
+	"github.com/datapunchorg/punch/pkg/resource"
 	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	"gopkg.in/yaml.v3"
 	"regexp"
@@ -75,10 +76,11 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 	if commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
 		commandEnvironment.Set(framework.CmdEnvKubeConfig, kubelib.GetKubeConfigPath())
 	}
-	deployment, err := eks.CreateInstallDeployment(currentTopology.Spec.EksSpec, commandEnvironment)
-	if err != nil {
-		return nil, err
-	}
+	deployment := framework.NewDeployment()
+	deployment.AddStep("checkEksCluster", "Check EKS cluster", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+		err := resource.CheckEksCluster(currentTopology.Spec.Region, currentTopology.Spec.EksClusterName)
+		return framework.NewDeploymentStepOutput(), err
+	})
 	if !currentTopology.Spec.Database.ExternalDb {
 		deployment.AddStep("createHiveMetastoreDatabase", "Create Hive Metastore database", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 			databaseInfo, err := CreatePostgresqlDatabase(commandEnvironment, currentTopology.Spec)
@@ -134,19 +136,13 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 			"metastoreWarehouseDir": metastoreWarehouseDir,
 		}, nil
 	})
-	err = deployment.Run()
+	err := deployment.Run()
 	return deployment.GetOutput(), err
 }
 
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
-	currentTopology := topology.(*HiveMetastoreTopology)
-	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
-
-	deployment, err := eks.CreateUninstallDeployment(currentTopology.Spec.EksSpec, commandEnvironment)
-	if err != nil {
-		return nil, err
-	}
-
-	err = deployment.Run()
+	deployment := framework.NewDeployment()
+	// TODO delete HIVE metastore service
+	err := deployment.Run()
 	return deployment.GetOutput(), err
 }

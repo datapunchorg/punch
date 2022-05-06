@@ -45,7 +45,7 @@ type EksTopology struct {
 
 type EksTopologySpec struct {
 	NamePrefix        string                   `json:"namePrefix" yaml:"namePrefix"`
-	Region            string                   `json:"region"`
+	Region            string                   `json:"region" yaml:"region"`
 	VpcId             string                   `json:"vpcId" yaml:"vpcId"`
 	S3BucketName      string              `json:"s3BucketName" yaml:"s3BucketName"`
 	S3Policy          resource.IamPolicy  `json:"s3Policy" yaml:"s3Policy"`

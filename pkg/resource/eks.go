@@ -182,9 +182,6 @@ func CreateEksCluster(region string, vpcId string, eksCluster EKSCluster) error 
 
 func DescribeEksCluster(region string, clusterName string) (EKSClusterSummary, error) {
 	session := awslib.CreateSession(region)
-
-	log.Printf("Creating EKS cluster in AWS region: %v", region)
-
 	eksClient := eks.New(session)
 
 	describeClusterOutput, err := eksClient.DescribeCluster(&eks.DescribeClusterInput{
@@ -209,4 +206,18 @@ func DescribeEksCluster(region string, clusterName string) (EKSClusterSummary, e
 	}
 
 	return clusterSummary, nil
+}
+
+func CheckEksCluster(region string, clusterName string) error {
+	session := awslib.CreateSession(region)
+	eksClient := eks.New(session)
+
+	_, err := eksClient.DescribeCluster(&eks.DescribeClusterInput{
+		Name: aws.String(clusterName),
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to get EKS cluster %s, %s", clusterName, err.Error())
+	}
+	return nil
 }

@@ -40,7 +40,9 @@ type HiveMetastoreTopology struct {
 }
 
 type HiveMetastoreTopologySpec struct {
-	EksSpec               eks.EksTopologySpec   `json:"eksSpec" yaml:"eksSpec"`
+	NamePrefix        string                   `json:"namePrefix" yaml:"namePrefix"`
+	Region            string                   `json:"region" yaml:"region"`
+	EksClusterName    string                   `json:"eksClusterName" yaml:"eksClusterName"`
     Namespace        string `json:"namespace" yaml:"namespace"`
 	ImageRepository  string `json:"imageRepository" yaml:"imageRepository"`
 	ImageTag string `json:"imageTag" yaml:"imageTag"`
@@ -73,6 +75,7 @@ func CreateDefaultHiveMetastoreTopology(namePrefix string, s3BucketName string) 
 			Metadata: framework.TopologyMetadata{
 				Name:               topologyName,
 				CommandEnvironment: map[string]string{
+					framework.CmdEnvHelmExecutable: framework.DefaultHelmExecutable,
 					CmdEnvPostgresqlHelmChart: "third-party/helm-charts/bitnami/charts/postgresql",
 					CmdEnvHiveMetastoreCreateDatabaseHelmChart: "third-party/helm-charts/hive-metastore/charts/hive-metastore-postgresql-create-db",
 					CmdEnvHiveMetastoreInitHelmChart: "third-party/helm-charts/hive-metastore/charts/hive-metastore-init-postgresql",
@@ -82,7 +85,9 @@ func CreateDefaultHiveMetastoreTopology(namePrefix string, s3BucketName string) 
 			},
 		},
 		Spec: HiveMetastoreTopologySpec{
-			EksSpec:                eksTopology.Spec,
+			NamePrefix:   namePrefix,
+			Region:       fmt.Sprintf("{{ or .Values.region `%s` }}", framework.DefaultRegion),
+			EksClusterName:                eksTopology.Spec.Eks.ClusterName,
 			Namespace: "hive-01",
 			ImageRepository: "ghcr.io/datapunchorg/helm-hive-metastore",
 			ImageTag: "main-1650942144",
@@ -95,8 +100,6 @@ func CreateDefaultHiveMetastoreTopology(namePrefix string, s3BucketName string) 
 			WarehouseDir: fmt.Sprintf("s3a://%s/punch/%s/warehouse", s3BucketName, namePrefix),
 		},
 	}
-
-	framework.CopyMissingKeyValuesFromStringMap(topology.Metadata.CommandEnvironment, eksTopology.Metadata.CommandEnvironment)
 
 	return topology
 }
