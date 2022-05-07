@@ -1,11 +1,16 @@
 
 ## Introduction
 
-This project provides a fully automated one-click experience for people to create Cloud and Kubernetes environment 
-to run their Data Analytics workload like Apache Spark.
+This project provides a fully automated one-click tool to create Data Analytics platform in Cloud and Kubernetes environment:
+
+1. Single script to deploy a full stack data platform: Kafka, Hive Metastore, Spark, and Data Ingestion Job.
+
+2. Spark API Gateway to run Spark platform as a service.
+
+3. Extensible design to support customization and new service deployment.
 
 For example, command like `punch install SparkOnEks` will automatically create an AWS EKS cluster, Ingress Controller, 
-IAM Roles, Cluster AutoScaler, Spark Operator and a Spark REST Service. Then people could use curl or a command line 
+IAM Roles, Cluster AutoScaler, Spark Operator and a Spark REST Service. Then people could use `curl` or the command line 
 tool (`sparkcli`) to run Spark application without any other manual deployment work.
 
 ## How to build (on MacBook)
@@ -36,19 +41,7 @@ See [User Guide](UserGuide.md) for more details in section: `Run punch on AWS`.
 
 You could build this project (`make release`) and use `punch` to crate an AWS EKS cluster and play with it.
 
-See [Quick Start Guide](QuickStart_CreateEks.md) for details.
-
-## TODO
-
-1. Exit 1 in sparkcli on error
-2. Build Spark image with kafka support
-3. Attach tag (e.g. punch-topology=xxx) to AWS resources created by punch
-4. Mask password value in helm output (e.g. --set apiGateway.userPassword=xxx)
-5. Allow set values by file like --values values.yaml
-6. Return HTTP 404 when sparkcli getting a non-existing application
-7. Get application error message from Spark Operator
-8. Set up convenient tool to benchmark Spark TPC-DS
-9. Create public demo (tech news, mailing list)
+See [Quick Start Guide - Create EKS](QuickStart_CreateEks.md) for details.
 
 ## Supported By
 
