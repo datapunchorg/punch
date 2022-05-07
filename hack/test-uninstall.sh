@@ -10,9 +10,9 @@ namePrefix=my
 
 ./punch uninstall KafkaBridge --set namePrefix=$namePrefix
 
-./punch uninstall SparkOnEks --set namePrefix=$namePrefix
-
 ./punch uninstall HiveMetastore --set namePrefix=$namePrefix
+
+./punch uninstall SparkOnEks --set namePrefix=$namePrefix
 
 ./punch uninstall Eks --set namePrefix=$namePrefix
 
