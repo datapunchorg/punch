@@ -39,13 +39,13 @@ Run `make release` in the root of this project, it will generate `dist` folder w
 
 Or download a pre-built zip file and unzip it:
 ```
-curl -L -o dist.zip https://github.com/datapunchorg/punch/releases/download/0.3.0/dist.zip
+curl -L -o dist.zip https://github.com/datapunchorg/punch/releases/download/0.4.0/dist.zip
 unzip dist.zip
 ```
 
 In the terminal, go the `dist` folder.
 
-## Deploy Spark on Kubernetes and Run Spark Application
+## Deploy Spark on Minikube and Run Spark Application
 
 ### Install SparkOnEks on Minikube
 
@@ -56,7 +56,7 @@ Run punch command:
 ```
 
 The upper `punch install` will print out example commands to run Spark application when it finishes.
-Please check the console output. Also see following section for how to run Spark application.
+Please check the console output. Also see following section for example to run Spark application.
 
 ### Run Spark Application
 

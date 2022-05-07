@@ -9,9 +9,25 @@ This project provides a fully automated one-click tool to create Data Analytics 
 
 3. Extensible design to support customization and new service deployment.
 
-For example, command like `punch install SparkOnEks` will automatically create an AWS EKS cluster, Ingress Controller, 
-IAM Roles, Cluster AutoScaler, Spark Operator and a Spark REST Service. Then people could use `curl` or the command line 
-tool (`sparkcli`) to run Spark application without any other manual deployment work.
+## Use Cases
+
+### Deploy Spark as a Service on EKS
+
+Use command like `punch install SparkOnEks` to get a ready-to-use Spark Service within several minutes. That single
+command will do following automatically:
+
+1. Create an AWS EKS cluster and set up required IAM roles
+2. Deploy Nginx Ingress Controller and a Load Balancer
+3. Deploy Spark Operator and a REST API Gateway to accept application submission
+4. Deploy Spark History Server
+5. Enable Cluster AutoScaler
+
+When the `punch` command finish, the Spark Service is ready to use. People could use `curl` or the command line 
+tool (`sparkcli`) to submit Spark application.
+
+### Deploy an E2E Data Ingestion Platform
+
+This project also supports chaining multiple `punch` commands to deploy a Kafka and Data Ingestion platform.
 
 ## How to build (on MacBook)
 
