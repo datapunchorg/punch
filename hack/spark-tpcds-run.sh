@@ -4,6 +4,7 @@
 set -ex
 
 namePrefix=my
+instanceType=t3.xlarge
 instanceCount=4
 
 databaseUser=user1
@@ -18,6 +19,7 @@ sparkApiGatewayPassword=password1
 databaseEndpoint=$(jq -r '.output[] | select(.step=="createDatabase").output.endpoint' RdsDatabase.output.json)
 
 ./punch install Eks --set namePrefix=$namePrefix \
+  --patch Spec.NodeGroups[0].InstanceTypes[0]=$instanceType \
   --patch Spec.NodeGroups[0].MinSize=$instanceCount \
   --patch Spec.NodeGroups[0].MaxSize=$instanceCount \
   --patch Spec.NodeGroups[0].DesiredSize=$instanceCount \
@@ -42,7 +44,7 @@ metastoreWarehouseDir=$(jq -r '.output[] | select(.step=="installHiveMetastoreSe
 
 apiGatewayLoadBalancerUrl=$(jq -r '.output[] | select(.step=="deployNginxIngressController").output.loadBalancerPreferredUrl' SparkOnEks.output.json)
 
-echo Running dummy Spark application to test the system
+echo ******************** Running dummy Spark application to test the system ********************
 
 ./sparkcli --user $sparkApiGatewayUser --password $sparkApiGatewayPassword --insecure \
   --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi \
@@ -50,7 +52,7 @@ echo Running dummy Spark application to test the system
   --driver-memory 512m --executor-memory 512m \
   local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar
 
-echo Running TPC-DS Spark application
+echo ******************** Running TPC-DS Spark application ********************
 
 ./sparkcli --user $sparkApiGatewayUser --password $sparkApiGatewayPassword --insecure \
   --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 submit --class org.apache.spark.sql.execution.benchmark.TPCDSQueryBenchmark \

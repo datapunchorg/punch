@@ -112,7 +112,6 @@ func CreateDefaultTopology(namePrefix string, s3BucketName string) KafkaBridgeTo
 	}
 
 	framework.CopyMissingKeyValuesFromStringMap(topology.Metadata.CommandEnvironment, kafkaOnMskTopology.Metadata.CommandEnvironment)
-	framework.CopyMissingKeyValuesFromStringMap(topology.Metadata.CommandEnvironment, eksTopology.Metadata.CommandEnvironment)
 
 	return topology
 }
