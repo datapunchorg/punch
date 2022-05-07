@@ -34,6 +34,16 @@ type pathSegment struct {
 	arrayIndex int
 }
 
+func (t pathSegment) String() string {
+	if t.segmentType == pathSegmentTypeField {
+		return t.name
+	} else if t.segmentType == pathSegmentTypeArray {
+		return fmt.Sprintf("%s[%d]", t.name, t.arrayIndex)
+	} else {
+		return fmt.Sprintf("%s(type:%d)", t.name, t.segmentType)
+	}
+}
+
 func PatchValuePathByString(target interface{}, path string, value string) error {
 	parts, err := parsePath(path)
 	if err != nil {
@@ -43,6 +53,14 @@ func PatchValuePathByString(target interface{}, path string, value string) error
 }
 
 func PatchValueFieldByString(target interface{}, field string, value string) error {
+	path := pathSegment{
+		name: field,
+		segmentType: pathSegmentTypeField,
+	}
+	return patchValueFieldByString(target, path, value)
+}
+
+func patchValueFieldByString(target interface{}, field pathSegment, value string) error {
 	valueOfTarget := reflect.ValueOf(target).Elem()
 	if valueOfTarget.Kind() == reflect.Struct {
 		return patchStructFieldByStringValue(target, field, value)
@@ -53,8 +71,19 @@ func PatchValueFieldByString(target interface{}, field string, value string) err
 	}
 }
 
-func patchStructFieldByStringValue(target interface{}, field string, value string) error {
-	fieldV, err := getFieldByName(target, field)
+func PatchArrayFieldByString(target interface{}, field pathSegment, value string) error {
+	valueOfTarget := reflect.ValueOf(target).Elem()
+	if valueOfTarget.Kind() == reflect.Struct {
+		return patchStructFieldByStringValue(target, field, value)
+	} else if valueOfTarget.Kind() == reflect.Map {
+		return patchMapKeyByStringValue(target, field, value)
+	} else {
+		return fmt.Errorf("cannot patch due to unsupported target value type: %s", valueOfTarget.Kind())
+	}
+}
+
+func patchStructFieldByStringValue(target interface{}, field pathSegment, value string) error {
+	fieldV, err := getFieldByName(target, field.name)
 	if err != nil {
 		return err
 	}
@@ -79,6 +108,14 @@ func patchStructFieldByStringValue(target interface{}, field string, value strin
 			return fmt.Errorf("field %s is bool, but value %s cannot be parsed to bool", field, value)
 		}
 		fieldV.SetBool(boolV)
+	case reflect.Array | reflect.Slice:
+		v := fieldV.Index(field.arrayIndex)
+		k := v.Type().Kind()
+		newValue, err := convertStringValue(value, k)
+		if err != nil {
+			return fmt.Errorf("failed to set field %s with value %s: %s", field, value, err.Error())
+		}
+		v.Set(newValue)
 	default:
 		return fmt.Errorf("cannot set value for field %s due to unsupported type: %s", field, fieldV.Kind())
 	}
@@ -133,7 +170,7 @@ func convertStringValue(value string, kind reflect.Kind) (reflect.Value, error) 
 	}
 }
 
-func patchMapKeyByStringValue(target interface{}, field string, value string) error {
+func patchMapKeyByStringValue(target interface{}, field pathSegment, value string) error {
 	valueOfTarget := reflect.ValueOf(target).Elem()
 	if valueOfTarget.Kind() == reflect.Map {
 		//if mapElementType.Kind() != reflect.String {
@@ -141,7 +178,7 @@ func patchMapKeyByStringValue(target interface{}, field string, value string) er
 		//}
 		for _, key := range valueOfTarget.MapKeys() {
 			keyStr := key.String()
-			if strings.EqualFold(keyStr, field) {
+			if strings.EqualFold(keyStr, field.name) {
 				elementValue := valueOfTarget.MapIndex(key)
 				elementValueKind := elementValue.Type().Kind()
 				if elementValueKind == reflect.Interface {
@@ -199,7 +236,9 @@ func patchStructPathArrayByStringValue(target interface{}, path []pathSegment, v
 	segment := path[0]
 	if len(path) == 1 {
 		if segment.segmentType == pathSegmentTypeField {
-			return PatchValueFieldByString(target, segment.name, value)
+			return patchValueFieldByString(target, segment, value)
+		} else if segment.segmentType == pathSegmentTypeArray {
+			return PatchArrayFieldByString(target, segment, value)
 		} else {
 			return fmt.Errorf("TODO unsupported path segment type %d", segment.segmentType)
 		}

@@ -43,6 +43,11 @@ type struct4 struct {
 
 type struct5 struct {
 	Field1 struct4
+	StructWithStringArrayField structWithStringArrayField
+}
+
+type structWithStringArrayField struct {
+	StrValues []string
 }
 
 func TestPatchStructFieldByString(t *testing.T) {
@@ -135,6 +140,26 @@ func TestPatchStructMapFieldByString(t *testing.T) {
 	assert.Equal(t, "new_value", s3.MapField1["key1"])
 	assert.Equal(t, "value2", s3.MapField1["key2"])
 	assert.Equal(t, "new_value_3\"", s3.MapField1["key 3"])
+}
+
+func TestPatchStringArray(t *testing.T) {
+	v := struct5{
+		StructWithStringArrayField: structWithStringArrayField{
+			StrValues: []string{"str1", "str2"},
+		},
+	}
+
+	err := PatchValuePathByString(&v, "StructWithStringArrayField.StrValues[0]", "new_value_111")
+	assert.Nil(t, err)
+	assert.Equal(t, 2, len(v.StructWithStringArrayField.StrValues))
+	assert.Equal(t, "new_value_111", v.StructWithStringArrayField.StrValues[0])
+	assert.Equal(t, "str2", v.StructWithStringArrayField.StrValues[1])
+
+	err = PatchValuePathByString(&v, "StructWithStringArrayField.StrValues[1]", "new_value_222")
+	assert.Nil(t, err)
+	assert.Equal(t, 2, len(v.StructWithStringArrayField.StrValues))
+	assert.Equal(t, "new_value_111", v.StructWithStringArrayField.StrValues[0])
+	assert.Equal(t, "new_value_222", v.StructWithStringArrayField.StrValues[1])
 }
 
 func TestPatchArrayFieldByString(t *testing.T) {
