@@ -52,7 +52,7 @@ type HiveMetastoreTopologySpec struct {
 }
 
 type HiveMetastoreDatabaseSpec struct {
-	ExternalDb       bool   `json:"externalDb" yaml:"externalDb	"`
+	ExternalDb       bool   `json:"externalDb" yaml:"externalDb"`
 	ConnectionString string `json:"connectionString" yaml:"connectionString"`
 	User       string `json:"user" yaml:"user"`
 	Password string `json:"password" yaml:"password"`
