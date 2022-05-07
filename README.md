@@ -22,12 +22,26 @@ command will do following automatically:
 4. Deploy Spark History Server
 5. Enable Cluster AutoScaler
 
-When the `punch` command finish, the Spark Service is ready to use. People could use `curl` or the command line 
+When the `punch` command finishes, the Spark Service is ready to use. People could use `curl` or the command line 
 tool (`sparkcli`) to submit Spark application.
 
-### Deploy an E2E Data Ingestion Platform
+### Deploy a Data Ingestion Platform
 
 This project also supports chaining multiple `punch` commands to deploy a Kafka and Data Ingestion platform.
+
+For example, we could create a single script file and chain multiple `punch` commands:
+
+```
+punch install Eks -> punch install KafkaBridge -> punch install HiveMetastore -> punch install SparkOnEks
+```
+
+The script will deploy a data ingestion platform with all the components in the green area in the following diagram:
+
+![Data Ingestion Platform](docs/DataIngestionPlatformDiagram.png)
+
+After it is deployed, user could send data to the REST API. Then the data will get into Kafka and automatically 
+ingested into AWS S3 by the Spark Streaming application. People could write further Spark applications to query 
+Hive table or compute metrics/insights from the table.
 
 ## How to build (on MacBook)
 
