@@ -71,11 +71,11 @@ func GenerateEksTopology() EksTopology {
 
 func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopology {
 	topologyName := fmt.Sprintf("%s-Eks-k8s", namePrefix)
-	k8sClusterName := fmt.Sprintf("%s-eks-01", namePrefix)
+	eksClusterName := fmt.Sprintf("%s-eks-01", namePrefix)
 	controlPlaneRoleName := fmt.Sprintf("%s-eks-control-plane", namePrefix)
 	instanceRoleName := fmt.Sprintf("%s-eks-instance", namePrefix)
 	securityGroupName := fmt.Sprintf("%s-eks-sg-01", namePrefix)
-	nodeGroupName := fmt.Sprintf("%s-ng-01", k8sClusterName)
+	nodeGroupName := fmt.Sprintf("%s-ng-01", eksClusterName)
 	topology := EksTopology{
 		TopologyBase: framework.TopologyBase{
 			ApiVersion: framework.DefaultVersion,
@@ -110,7 +110,7 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 ]}`,
 			},
 			Eks: resource.EKSCluster{
-				ClusterName: k8sClusterName,
+				ClusterName: eksClusterName,
 				// TODO fill in default value for SubnetIds
 				ControlPlaneRole: resource.IamRole{
 					Name:                     controlPlaneRoleName,

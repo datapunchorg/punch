@@ -1,4 +1,5 @@
-Note: this document only for running `punch` on Mac.
+Quick Start Guide: Use `punch` to Create AWS EKS Cluster
+---
 
 ## Pre-requisite (One Time Setting)
 

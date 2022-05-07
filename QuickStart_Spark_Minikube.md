@@ -1,4 +1,5 @@
-Note: this document only for running `punch` on Mac.
+Quick Start Guide: Run Spark with `punch` and Minikube on Your Mac
+---
 
 ## Pre-requisite (One Time Setting)
 
@@ -44,7 +45,7 @@ unzip dist.zip
 
 In the terminal, go the `dist` folder.
 
-## Deploy Spark on K8s and Run Spark Application
+## Deploy Spark on Kubernetes and Run Spark Application
 
 ### Install SparkOnEks on Minikube
 
