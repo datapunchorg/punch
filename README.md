@@ -13,7 +13,7 @@ This project provides a fully automated one-click tool to create Data Analytics 
 
 ### Deploy Spark as a Service on EKS
 
-Use command like `punch install SparkOnEks` to get a ready-to-use Spark Service within several minutes. That single
+Use command like `punch install SparkOnEks` to get a ready-to-use Spark Service within minutes. That single
 command will do following automatically:
 
 1. Create an AWS EKS cluster and set up required IAM roles
@@ -27,9 +27,9 @@ tool (`sparkcli`) to submit Spark application.
 
 ### Deploy a Data Ingestion Platform
 
-This project also supports chaining multiple `punch` commands to deploy a Kafka and Data Ingestion platform.
+`punch` also supports chaining multiple `install` commands to deploy a complex data platform.
 
-For example, we could create a single script file and chain multiple `punch` commands:
+For example, we could create a single script file with multiple commands:
 
 ```
 punch install Eks -> punch install KafkaBridge -> punch install HiveMetastore -> punch install SparkOnEks
