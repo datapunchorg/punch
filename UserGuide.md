@@ -119,9 +119,19 @@ After upper steps, now you could follow below examples to run `sparkcli`:
 
 ### How to run Spark with Apache Hive
 
-You need to set up your own Hive metastore server, and use it for your Spark application.
-[Here](https://techjogging.com/standalone-hive-metastore-presto-docker.html) is an example
-to set up Hive for Presto. It will be similar for Spark.
+Use following `punch` command to install a Hive Metastore server on EKS:
+
+```
+./punch install HiveMetastore
+```
+
+The command will print out metastore server connection URI when it finishes. Use it and add following 
+to your Spark application:
+
+```
+--conf spark.sql.catalogImplementation=hive
+--conf spark.hadoop.hive.metastore.uris=thrift://xxx:9083
+```
 
 If you do not want to set up Hive metastore server, we recommend using [Apache Iceberg](https://iceberg.apache.org)
 to store your metadata and use it in your Spark application.
@@ -132,11 +142,10 @@ There are many ways to set up Apache Iceberg. Following are steps to use a JDBC 
 
 1. Create a database. You could use AWS Web UI to create an RDS database, or just punch command, like following:
 ```
-./punch install Database --set masterUserPassword=password1
+./punch install RdsDatabase --set masterUserPassword=password1
 ```
-The upper punch command will create a serverless RDS database, and print out the endpoint URL. Please write down that URL,
-which will be used later. The serverless RDS database will be paused by AWS automatically if not used for certain duration.
-You might need to modify the capacity for the RDS database in AWS web UI if it is suck in paused state.
+The upper punch command will create an RDS database, and print out the endpoint URL. Please write down that URL,
+which will be used later.
 
 2. Run Spark application with Spark config like following example (please replace xxx with your own values if you
 copy/paste to run your own application):
