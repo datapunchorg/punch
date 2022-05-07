@@ -51,7 +51,7 @@ The following command will create `dist` folder and `dist.zip` file for Punch.
 make release
 ```
 
-Go to `dist` folder, then check [User Guide](UserGuide.md) to see how to run `punch` command.
+Go to `dist` folder, check [User Guide](UserGuide.md) to see how to run `punch` command.
 
 ## Quick Start - Run Spark with Minikube
 
@@ -73,6 +73,7 @@ You could build this project (`make release`) and use `punch` to crate an AWS EK
 
 See [Quick Start Guide - Create EKS](QuickStart_CreateEks.md) for details.
 
-## Supported By
 
+
+---
 Thanks for support from [JetBrains](https://jb.gg/OpenSourceSupport) with the great development tool and licenses.
