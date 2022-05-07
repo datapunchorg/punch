@@ -18,13 +18,13 @@ make release
 
 Go to `dist` folder, then check [User Guide](UserGuide.md) to see how to run `punch` command.
 
-## Quick Start - Run Spark on Minikube
+## Quick Start - Run Spark with Minikube
 
 You could build this project (`make release`) and use `punch` to deploy Spark on [Minikube](https://minikube.sigs.k8s.io/docs/start/), and run Spark application for a quick try.
 
 For example, use one command like `punch install SparkOnEks --env withMinikube=true` to deploy a runnable Spark environment on Minikube.
 
-See [Quick Start Guide](QuickStart_Minikube.md) for details.
+See [Quick Start Guide - Run Spark with Minikube](QuickStart_Spark_Minikube.md) for details.
 
 ## User Guide - Run Spark on AWS EKS
 
