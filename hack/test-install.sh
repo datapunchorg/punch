@@ -45,9 +45,9 @@ apiGatewayLoadBalancerUrl=$(jq -r '.output[] | select(.step=="deployNginxIngress
 
 metastoreWarehouseDirS3Url=$(echo $metastoreWarehouseDir | sed -e "s/^s3a/s3/")
 
-aws s3 ls $metastoreWarehouseDirS3Url/
-aws s3 rm --recursive $metastoreWarehouseDirS3Url/punch_test_db_01.db
-aws s3 ls $metastoreWarehouseDirS3Url/
+#aws s3 ls $metastoreWarehouseDirS3Url/
+#aws s3 rm --recursive $metastoreWarehouseDirS3Url/punch_test_db_01.db
+#aws s3 ls $metastoreWarehouseDirS3Url/
 
 ./sparkcli --user $sparkApiGatewayUser --password $sparkApiGatewayPassword --insecure \
   --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 submit \

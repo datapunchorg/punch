@@ -6,12 +6,14 @@ set -x
 # Disable exit on non zero exit
 set +e
 
-./punch uninstall KafkaBridge
+namePrefix=my
 
-./punch uninstall SparkOnEks
+./punch uninstall KafkaBridge --set namePrefix=$namePrefix
 
-./punch uninstall HiveMetastore
+./punch uninstall SparkOnEks --set namePrefix=$namePrefix
 
-./punch uninstall Eks
+./punch uninstall HiveMetastore --set namePrefix=$namePrefix
 
-./punch uninstall RdsDatabase
+./punch uninstall Eks --set namePrefix=$namePrefix
+
+./punch uninstall RdsDatabase --set namePrefix=$namePrefix
