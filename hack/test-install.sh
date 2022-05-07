@@ -10,15 +10,15 @@ databasePassword=password1
 sparkApiGatewayUser=user1
 sparkApiGatewayPassword=password1
 
-./punch install RdsDatabase --value namePrefix=$namePrefix \
+./punch install RdsDatabase --set namePrefix=$namePrefix \
   --patch spec.masterUserName=$databaseUser --patch spec.masterUserPassword=$databasePassword \
   -o RdsDatabase.output.json
 
 databaseEndpoint=$(jq -r '.output[] | select(.step=="createDatabase").output.endpoint' RdsDatabase.output.json)
 
-./punch install Eks --value namePrefix=$namePrefix -o Eks.output.json
+./punch install Eks --set namePrefix=$namePrefix -o Eks.output.json
 
-./punch install HiveMetastore --value namePrefix=$namePrefix \
+./punch install HiveMetastore --set namePrefix=$namePrefix \
   --patch spec.database.externalDb=true \
   --patch spec.database.connectionString=jdbc:postgresql://${databaseEndpoint}:5432/postgres \
   --patch spec.database.user=$databaseUser --patch spec.database.password=$databasePassword \
@@ -27,7 +27,7 @@ databaseEndpoint=$(jq -r '.output[] | select(.step=="createDatabase").output.end
 metastoreUri=$(jq -r '.output[] | select(.step=="installHiveMetastoreServer").output.metastoreLoadBalancerUrls[0]' HiveMetastore.output.json)
 metastoreWarehouseDir=$(jq -r '.output[] | select(.step=="installHiveMetastoreServer").output.metastoreWarehouseDir' HiveMetastore.output.json)
 
-./punch install SparkOnEks --value namePrefix=$namePrefix \
+./punch install SparkOnEks --set namePrefix=$namePrefix \
   --patch spec.apiGateway.userName=$sparkApiGatewayUser \
   --patch spec.apiGateway.userPassword=$sparkApiGatewayPassword \
   --patch spec.apiGateway.hiveMetastoreUris=$metastoreUri \
@@ -57,7 +57,7 @@ aws s3 ls $metastoreWarehouseDirS3Url/
 
 # Install Kafka Bridge which is a REST service to produce Kafka messages
 
-./punch install KafkaBridge --value namePrefix=$namePrefix -o KafkaBridge.output.json
+./punch install KafkaBridge --set namePrefix=$namePrefix -o KafkaBridge.output.json
 
 bootstrapServerString=$(jq -r '.output[] | select(.step=="createKafkaCluster").output.bootstrapServerString' KafkaBridge.output.json)
 kafkaBridgeTopicProduceUrl=$(jq -r '.output[] | select(.step=="deployStrimziKafkaBridge").output.kafkaBridgeTopicProduceUrl' KafkaBridge.output.json)
