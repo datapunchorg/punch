@@ -14,10 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package rdsdatabase
+package main
 
 import (
 	"fmt"
+	"log"
+	"strings"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -25,9 +29,6 @@ import (
 	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/common"
 	"github.com/datapunchorg/punch/pkg/resource"
-	"log"
-	"strings"
-	"time"
 )
 
 func CreateDatabase(databaseSpec RdsDatabaseTopologySpec) (*rds.DBCluster, error) {
