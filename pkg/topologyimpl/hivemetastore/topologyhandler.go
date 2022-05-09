@@ -14,19 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package hivemetastore
+package main
 
 import (
 	"fmt"
+	"log"
+	"regexp"
+	"strings"
+
 	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/kubelib"
 	"github.com/datapunchorg/punch/pkg/resource"
 	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	"gopkg.in/yaml.v3"
-	"log"
-	"regexp"
-	"strings"
 )
 
 var nonAlphanumericRegexp *regexp.Regexp
@@ -43,6 +44,8 @@ func init() {
 
 type TopologyHandler struct {
 }
+
+var Handler TopologyHandler
 
 func (t *TopologyHandler) Generate() (framework.Topology, error) {
 	topology := GenerateHiveMetastoreTopology()
@@ -142,9 +145,9 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 			metastoreWarehouseDir = WAREHOUSE_DIR_LOCAL_FILE_TEMP_DIRECTORY
 		}
 		return framework.DeployableOutput{
-			"metastoreInClusterUrl": fmt.Sprintf("thrift://hive-metastore.%s.svc.cluster.local:9083", spec.Namespace),
+			"metastoreInClusterUrl":     fmt.Sprintf("thrift://hive-metastore.%s.svc.cluster.local:9083", spec.Namespace),
 			"metastoreLoadBalancerUrls": urls,
-			"metastoreWarehouseDir": metastoreWarehouseDir,
+			"metastoreWarehouseDir":     metastoreWarehouseDir,
 		}, nil
 	})
 	err := deployment.Run()
