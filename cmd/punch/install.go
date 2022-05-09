@@ -17,16 +17,14 @@ limitations under the License.
 package main
 
 import (
-	"github.com/datapunchorg/punch/pkg/framework"
-	_ "github.com/datapunchorg/punch/pkg/topologyimpl/eks"
-	_ "github.com/datapunchorg/punch/pkg/topologyimpl/hivemetastore"
-	_ "github.com/datapunchorg/punch/pkg/topologyimpl/kafkaonmsk"
-	_ "github.com/datapunchorg/punch/pkg/topologyimpl/kafkabridge"
-	_ "github.com/datapunchorg/punch/pkg/topologyimpl/rdsdatabase"
-	_ "github.com/datapunchorg/punch/pkg/topologyimpl/sparkoneks"
-	"github.com/spf13/cobra"
 	"log"
 	"strings"
+
+	"github.com/datapunchorg/punch/pkg/framework"
+	_ "github.com/datapunchorg/punch/pkg/topologyimpl/eks"
+	_ "github.com/datapunchorg/punch/pkg/topologyimpl/kafkabridge"
+	_ "github.com/datapunchorg/punch/pkg/topologyimpl/kafkaonmsk"
+	"github.com/spf13/cobra"
 )
 
 var provisionCmd = &cobra.Command{
@@ -37,7 +35,7 @@ var provisionCmd = &cobra.Command{
 		topology := getTopologyFromArguments(args)
 
 		kind := topology.GetKind()
-		handler := getTopologyHandlerOrFatal(kind)
+		handler := getTopologyHandlerPlugin(kind)
 
 		resolvedTopology, err := handler.Validate(topology, framework.PhaseBeforeInstall)
 		if err != nil {

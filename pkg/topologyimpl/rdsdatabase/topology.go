@@ -14,10 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package rdsdatabase
+package main
 
 import (
 	"fmt"
+
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/resource"
 	"gopkg.in/yaml.v3"
@@ -45,11 +46,11 @@ type RdsDatabaseTopologySpec struct {
 	Engine            string   `json:"engine" yaml:"engine"`
 	EngineVersion     string   `json:"engineVersion" yaml:"engineVersion"`
 	// The DB engine mode of the DB cluster, either provisioned, serverless, parallelquery, global, or multimaster.
-	EngineMode        string   `json:"engineMode" yaml:"engineMode"`
-	MasterUserName    string   `json:"masterUserName" yaml:"masterUserName"`
+	EngineMode     string `json:"engineMode" yaml:"engineMode"`
+	MasterUserName string `json:"masterUserName" yaml:"masterUserName"`
 	// password must not shorter than 8 characters
 	MasterUserPassword string                   `json:"masterUserPassword" yaml:"masterUserPassword"`
-	Port               int64     `json:"port" yaml:"port"`
+	Port               int64                    `json:"port" yaml:"port"`
 	SecurityGroups     []resource.SecurityGroup `json:"securityGroups" yaml:"securityGroups"`
 }
 
@@ -59,7 +60,7 @@ func CreateDefaultRdsDatabaseTopology(namePrefix string) RdsDatabaseTopology {
 	topology := RdsDatabaseTopology{
 		TopologyBase: framework.TopologyBase{
 			ApiVersion: framework.DefaultVersion,
-			Kind: KindDatabaseTopology,
+			Kind:       KindDatabaseTopology,
 			Metadata: framework.TopologyMetadata{
 				Name:               topologyName,
 				CommandEnvironment: map[string]string{},

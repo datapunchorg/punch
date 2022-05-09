@@ -14,10 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package hivemetastore
+package main
 
 import (
 	"fmt"
+
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	"gopkg.in/yaml.v3"
@@ -28,34 +29,34 @@ const (
 
 	FieldMaskValue = "***"
 
-	CmdEnvPostgresqlHelmChart = "postgresqlHelmChart"
+	CmdEnvPostgresqlHelmChart                  = "postgresqlHelmChart"
 	CmdEnvHiveMetastoreCreateDatabaseHelmChart = "hiveMetastoreCreateDatabaseHelmChart"
-	CmdEnvHiveMetastoreInitHelmChart = "hiveMetastoreInitHelmChart"
-	CmdEnvHiveMetastoreServerHelmChart = "hiveMetastoreServerHelmChart"
+	CmdEnvHiveMetastoreInitHelmChart           = "hiveMetastoreInitHelmChart"
+	CmdEnvHiveMetastoreServerHelmChart         = "hiveMetastoreServerHelmChart"
 )
 
 type HiveMetastoreTopology struct {
-	framework.TopologyBase               `json:",inline" yaml:",inline"`
-	Spec       HiveMetastoreTopologySpec      `json:"spec"`
+	framework.TopologyBase `json:",inline" yaml:",inline"`
+	Spec                   HiveMetastoreTopologySpec `json:"spec"`
 }
 
 type HiveMetastoreTopologySpec struct {
-	NamePrefix        string                   `json:"namePrefix" yaml:"namePrefix"`
-	Region            string                   `json:"region" yaml:"region"`
-	EksClusterName    string                   `json:"eksClusterName" yaml:"eksClusterName"`
-	EksVpcId          string                          `json:"eksVpcId" yaml:"eksVpcId"`
-    Namespace        string `json:"namespace" yaml:"namespace"`
-	ImageRepository  string `json:"imageRepository" yaml:"imageRepository"`
-	ImageTag string `json:"imageTag" yaml:"imageTag"`
-	Database  HiveMetastoreDatabaseSpec `json:"database" yaml:"database"`
-	WarehouseDir string `json:"warehouseDir" yaml:"warehouseDir"`
+	NamePrefix      string                    `json:"namePrefix" yaml:"namePrefix"`
+	Region          string                    `json:"region" yaml:"region"`
+	EksClusterName  string                    `json:"eksClusterName" yaml:"eksClusterName"`
+	EksVpcId        string                    `json:"eksVpcId" yaml:"eksVpcId"`
+	Namespace       string                    `json:"namespace" yaml:"namespace"`
+	ImageRepository string                    `json:"imageRepository" yaml:"imageRepository"`
+	ImageTag        string                    `json:"imageTag" yaml:"imageTag"`
+	Database        HiveMetastoreDatabaseSpec `json:"database" yaml:"database"`
+	WarehouseDir    string                    `json:"warehouseDir" yaml:"warehouseDir"`
 }
 
 type HiveMetastoreDatabaseSpec struct {
 	ExternalDb       bool   `json:"externalDb" yaml:"externalDb"`
 	ConnectionString string `json:"connectionString" yaml:"connectionString"`
-	User       string `json:"user" yaml:"user"`
-	Password string `json:"password" yaml:"password"`
+	User             string `json:"user" yaml:"user"`
+	Password         string `json:"password" yaml:"password"`
 }
 
 func GenerateHiveMetastoreTopology() HiveMetastoreTopology {
@@ -72,27 +73,27 @@ func CreateDefaultHiveMetastoreTopology(namePrefix string, s3BucketName string) 
 	topology := HiveMetastoreTopology{
 		TopologyBase: framework.TopologyBase{
 			ApiVersion: framework.DefaultVersion,
-			Kind: KindHiveMetastoreTopology,
+			Kind:       KindHiveMetastoreTopology,
 			Metadata: framework.TopologyMetadata{
-				Name:               topologyName,
+				Name: topologyName,
 				CommandEnvironment: map[string]string{
-					framework.CmdEnvHelmExecutable: framework.DefaultHelmExecutable,
-					CmdEnvPostgresqlHelmChart: "third-party/helm-charts/bitnami/charts/postgresql",
+					framework.CmdEnvHelmExecutable:             framework.DefaultHelmExecutable,
+					CmdEnvPostgresqlHelmChart:                  "third-party/helm-charts/bitnami/charts/postgresql",
 					CmdEnvHiveMetastoreCreateDatabaseHelmChart: "third-party/helm-charts/hive-metastore/charts/hive-metastore-postgresql-create-db",
-					CmdEnvHiveMetastoreInitHelmChart: "third-party/helm-charts/hive-metastore/charts/hive-metastore-init-postgresql",
-					CmdEnvHiveMetastoreServerHelmChart: "third-party/helm-charts/hive-metastore/charts/hive-metastore-server",
+					CmdEnvHiveMetastoreInitHelmChart:           "third-party/helm-charts/hive-metastore/charts/hive-metastore-init-postgresql",
+					CmdEnvHiveMetastoreServerHelmChart:         "third-party/helm-charts/hive-metastore/charts/hive-metastore-server",
 				},
-				Notes:              map[string]string{},
+				Notes: map[string]string{},
 			},
 		},
 		Spec: HiveMetastoreTopologySpec{
-			NamePrefix:   namePrefix,
-			Region:       fmt.Sprintf("{{ or .Values.region `%s` }}", framework.DefaultRegion),
-			EksClusterName:                eksTopology.Spec.Eks.ClusterName,
-			EksVpcId:                      eksTopology.Spec.VpcId,
-			Namespace: "hive-01",
+			NamePrefix:      namePrefix,
+			Region:          fmt.Sprintf("{{ or .Values.region `%s` }}", framework.DefaultRegion),
+			EksClusterName:  eksTopology.Spec.Eks.ClusterName,
+			EksVpcId:        eksTopology.Spec.VpcId,
+			Namespace:       "hive-01",
 			ImageRepository: "ghcr.io/datapunchorg/helm-hive-metastore",
-			ImageTag: "main-1650942144",
+			ImageTag:        "main-1650942144",
 			Database: HiveMetastoreDatabaseSpec{
 				ExternalDb:       false,
 				ConnectionString: "",

@@ -18,13 +18,14 @@ package main
 
 import (
 	"bytes"
-	"github.com/datapunchorg/punch/pkg/common"
-	"github.com/datapunchorg/punch/pkg/framework"
-	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"log"
 	"strings"
 	"text/template"
+
+	"github.com/datapunchorg/punch/pkg/common"
+	"github.com/datapunchorg/punch/pkg/framework"
+	"gopkg.in/yaml.v3"
 )
 
 var Output string
@@ -68,7 +69,7 @@ func getTopologyFromArguments(args []string) framework.Topology {
 			kind = "SparkOnEks"
 		}
 
-		handler := getTopologyHandlerOrFatal(kind)
+		handler := getTopologyHandlerPlugin(kind)
 		generatedTopology, err := handler.Generate()
 		if err != nil {
 			log.Fatalf("Failed to generate topology: %s", err.Error())
@@ -92,7 +93,7 @@ func getTopologyFromArguments(args []string) framework.Topology {
 	transformedTopologyBytes := []byte(transformedTopology)
 
 	kind := getKind(transformedTopologyBytes)
-	handler := getTopologyHandlerOrFatal(kind)
+	handler := getTopologyHandlerPlugin(kind)
 	topology, err := handler.Parse(transformedTopologyBytes)
 	if err != nil {
 		log.Fatalf("Failed to parse topology file %s: %s", fileName, err.Error())
@@ -100,7 +101,7 @@ func getTopologyFromArguments(args []string) framework.Topology {
 
 	commandEnvironment := createKeyValueMap(CommandEnv)
 	for k, v := range commandEnvironment {
-		topology.GetMetadata().CommandEnvironment[k] =v
+		topology.GetMetadata().CommandEnvironment[k] = v
 	}
 
 	if len(PatchValues) > 0 {

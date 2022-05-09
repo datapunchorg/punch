@@ -18,17 +18,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/datapunchorg/punch/pkg/framework"
-	_ "github.com/datapunchorg/punch/pkg/topologyimpl/eks"
-	_ "github.com/datapunchorg/punch/pkg/topologyimpl/hivemetastore"
-	_ "github.com/datapunchorg/punch/pkg/topologyimpl/kafkaonmsk"
-	_ "github.com/datapunchorg/punch/pkg/topologyimpl/kafkabridge"
-	_ "github.com/datapunchorg/punch/pkg/topologyimpl/rdsdatabase"
-	_ "github.com/datapunchorg/punch/pkg/topologyimpl/sparkoneks"
-	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"
 	"os"
+
+	_ "github.com/datapunchorg/punch/pkg/topologyimpl/eks"
+	_ "github.com/datapunchorg/punch/pkg/topologyimpl/kafkabridge"
+	_ "github.com/datapunchorg/punch/pkg/topologyimpl/kafkaonmsk"
+	"github.com/spf13/cobra"
 )
 
 var generateCmd = &cobra.Command{
@@ -43,11 +40,7 @@ var generateCmd = &cobra.Command{
 		}
 
 		kind := args[0]
-		handler := framework.DefaultTopologyHandlerManager.GetHandler(kind)
-		if handler == nil {
-			exitWithError(fmt.Sprintf("Topology kind %s not supported", kind))
-		}
-
+		handler := getTopologyHandlerPlugin(kind)
 		topology, err := handler.Generate()
 		if err != nil {
 			exitWithError(err.Error())

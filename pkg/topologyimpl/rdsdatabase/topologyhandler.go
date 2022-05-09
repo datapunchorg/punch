@@ -14,21 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package rdsdatabase
+package main
 
 import (
 	"fmt"
-	"github.com/datapunchorg/punch/pkg/framework"
-	"gopkg.in/yaml.v3"
 	"regexp"
 	"strings"
+
+	"github.com/datapunchorg/punch/pkg/framework"
+	"gopkg.in/yaml.v3"
 )
 
 var nonAlphanumericRegexp *regexp.Regexp
 
 func init() {
-	framework.DefaultTopologyHandlerManager.AddHandler(KindDatabaseTopology, &TopologyHandler{})
-
 	var err error
 	nonAlphanumericRegexp, err = regexp.Compile("[^a-zA-Z]+")
 	if err != nil {
@@ -38,6 +37,8 @@ func init() {
 
 type TopologyHandler struct {
 }
+
+var Handler TopologyHandler
 
 func (t *TopologyHandler) Generate() (framework.Topology, error) {
 	namePrefix := framework.DefaultNamePrefixTemplate

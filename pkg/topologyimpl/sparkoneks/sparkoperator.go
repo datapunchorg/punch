@@ -14,26 +14,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sparkoneks
+package main
 
 import (
 	"context"
 	"fmt"
+	"log"
+	"strings"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/common"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/kubelib"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	v13 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
-	"log"
-	"strings"
-	"time"
 )
 
 // TODO remove log.Fatalf
@@ -202,16 +203,16 @@ func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, t
 		arguments = append(arguments, "--set")
 		arguments = append(arguments, "apiGateway.sparkEventLogEnabled=true")
 		arguments = append(arguments, "--set")
-		arguments = append(arguments, "apiGateway.sparkEventLogDir=" + topology.ApiGateway.SparkEventLogDir)
+		arguments = append(arguments, "apiGateway.sparkEventLogDir="+topology.ApiGateway.SparkEventLogDir)
 	}
 
 	if topology.ApiGateway.HiveMetastoreUris != "" {
 		arguments = append(arguments, "--set")
-		arguments = append(arguments, "apiGateway.hiveMetastoreUris=" + topology.ApiGateway.HiveMetastoreUris)
+		arguments = append(arguments, "apiGateway.hiveMetastoreUris="+topology.ApiGateway.HiveMetastoreUris)
 	}
 	if topology.ApiGateway.SparkSqlWarehouseDir != "" {
 		arguments = append(arguments, "--set")
-		arguments = append(arguments, "apiGateway.sparkSqlWarehouseDir=" + topology.ApiGateway.SparkSqlWarehouseDir)
+		arguments = append(arguments, "apiGateway.sparkSqlWarehouseDir="+topology.ApiGateway.SparkSqlWarehouseDir)
 	}
 
 	kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvSparkOperatorHelmChart), kubeConfig, arguments, installName, operatorNamespace)
@@ -306,12 +307,12 @@ func CreateApiGatewayIngress(clientset *kubernetes.Clientset, namespace string, 
 		context.TODO(),
 		&v13.Ingress{
 			ObjectMeta: v12.ObjectMeta{
-				Name:        ingressName,
-				Namespace:   namespace,
+				Name:      ingressName,
+				Namespace: namespace,
 				Annotations: map[string]string{
-					"nginx.ingress.kubernetes.io/ssl-redirect": "false",
+					"nginx.ingress.kubernetes.io/ssl-redirect":       "false",
 					"nginx.ingress.kubernetes.io/force-ssl-redirect": "false",
-					"nginx.ingress.kubernetes.io/proxy-body-size": "1g",
+					"nginx.ingress.kubernetes.io/proxy-body-size":    "1g",
 				},
 			},
 			Spec: v13.IngressSpec{

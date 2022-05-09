@@ -14,15 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sparkoneks
+package main
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/kubelib"
-	"k8s.io/api/core/v1"
-	"log"
+	v1 "k8s.io/api/core/v1"
 )
 
 func DeployHistoryServer(commandEnvironment framework.CommandEnvironment, topology SparkOnEksTopologySpec) error {
@@ -77,4 +78,3 @@ func InstallHistoryServerHelm(commandEnvironment framework.CommandEnvironment, t
 
 	return nil
 }
-
