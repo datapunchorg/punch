@@ -1,6 +1,21 @@
 Quick Start Guide: Run Spark with `punch` and Minikube on Your Mac
 ---
 
+Short Version
+---
+
+Use following commands to run a Spark application on Minikube:
+
+```
+make release
+cd dist
+./punch install SparkOnEks --env withMinikube=true --patch spec.apiGateway.userPassword=password1 --print-usage-example
+./sparkcli --user user1 --password password1 --insecure --url https://localhost:32443/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar
+```
+
+Long Version
+---
+
 ## Pre-requisite (One Time Setting)
 
 ### Install Homebrew
