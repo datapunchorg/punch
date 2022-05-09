@@ -14,19 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sparkoneks
+package main
 
 import (
 	"fmt"
-	"github.com/datapunchorg/punch/pkg/awslib"
-	"github.com/datapunchorg/punch/pkg/framework"
-	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
-	"gopkg.in/yaml.v3"
 	"io/fs"
 	"io/ioutil"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/datapunchorg/punch/pkg/awslib"
+	"github.com/datapunchorg/punch/pkg/framework"
+	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -42,6 +43,8 @@ func init() {
 
 type TopologyHandler struct {
 }
+
+var Handler TopologyHandler
 
 func (t *TopologyHandler) Generate() (framework.Topology, error) {
 	topology := GenerateSparkOnEksTopology()

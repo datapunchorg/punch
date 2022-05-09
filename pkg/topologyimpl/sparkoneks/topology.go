@@ -14,22 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sparkoneks
+package main
 
 import (
 	"fmt"
+
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	"gopkg.in/yaml.v3"
 )
 
 const (
-	DefaultApiUserName                  = "user1"
-	DefaultOperatorImageRepository      = "ghcr.io/datapunchorg/spark-on-k8s-operator"
-	DefaultSparkOperatorImageTag        = "sha-1f1adc6"
-	DefaultSparkOperatorNamespace       = "spark-operator-01"
-	DefaultSparkOperatorHelmInstallName = "spark-operator-01"
-	DefaultSparkApplicationNamespace    = "spark-01"
+	DefaultApiUserName                       = "user1"
+	DefaultOperatorImageRepository           = "ghcr.io/datapunchorg/spark-on-k8s-operator"
+	DefaultSparkOperatorImageTag             = "sha-1f1adc6"
+	DefaultSparkOperatorNamespace            = "spark-operator-01"
+	DefaultSparkOperatorHelmInstallName      = "spark-operator-01"
+	DefaultSparkApplicationNamespace         = "spark-01"
 	DefaultSparkHistoryServerHelmInstallName = "spark-history-server"
 	DefaultSparkHistoryServerImageRepository = "ghcr.io/datapunchorg/spark-on-k8s-operator"
 	DefaultSparkHistoryServerImageTag        = "spark-history-server-3.2-1650337377"
@@ -49,17 +50,17 @@ type SparkOnEksTopology struct {
 }
 
 type SparkOnEksTopologySpec struct {
-	EksSpec           eks.EksTopologySpec `json:"eksSpec" yaml:"eksSpec"`
+	EksSpec       eks.EksTopologySpec `json:"eksSpec" yaml:"eksSpec"`
 	SparkOperator SparkOperator       `json:"sparkOperator" yaml:"sparkOperator"`
 	ApiGateway    SparkApiGateway     `json:"apiGateway" yaml:"apiGateway"`
-	HistoryServer SparkHistoryServer       `json:"historyServer" yaml:"historyServer"`
+	HistoryServer SparkHistoryServer  `json:"historyServer" yaml:"historyServer"`
 }
 
 type SparkApiGateway struct {
-	UserName     string `json:"userName" yaml:"userName"`
-	UserPassword string `json:"userPassword" yaml:"userPassword"`
-	SparkEventLogDir string `json:"sparkEventLogDir" yaml:"sparkEventLogDir"`
-	HiveMetastoreUris string `json:"hiveMetastoreUris" yaml:"hiveMetastoreUris"`
+	UserName             string `json:"userName" yaml:"userName"`
+	UserPassword         string `json:"userPassword" yaml:"userPassword"`
+	SparkEventLogDir     string `json:"sparkEventLogDir" yaml:"sparkEventLogDir"`
+	HiveMetastoreUris    string `json:"hiveMetastoreUris" yaml:"hiveMetastoreUris"`
 	SparkSqlWarehouseDir string `json:"sparkSqlWarehouseDir" yaml:"sparkSqlWarehouseDir"`
 }
 
@@ -72,10 +73,10 @@ type SparkOperator struct {
 }
 
 type SparkHistoryServer struct {
-	HelmInstallName           string `json:"helmInstallName" yaml:"helmInstallName"`
-	Namespace                 string `json:"namespace" yaml:"namespace"`
-	ImageRepository           string `json:"imageRepository" yaml:"imageRepository"`
-	ImageTag                  string `json:"imageTag" yaml:"imageTag"`
+	HelmInstallName string `json:"helmInstallName" yaml:"helmInstallName"`
+	Namespace       string `json:"namespace" yaml:"namespace"`
+	ImageRepository string `json:"imageRepository" yaml:"imageRepository"`
+	ImageTag        string `json:"imageTag" yaml:"imageTag"`
 }
 
 func GenerateSparkOnEksTopology() SparkOnEksTopology {
@@ -103,9 +104,9 @@ func CreateDefaultSparkEksTopology(namePrefix string, s3BucketName string) Spark
 		Spec: SparkOnEksTopologySpec{
 			EksSpec: eksTopology.Spec,
 			ApiGateway: SparkApiGateway{
-				UserName: DefaultApiUserName,
-				SparkEventLogDir: fmt.Sprintf("s3a://%s/punch/%s/sparkEventLog", s3BucketName, namePrefix),
-				HiveMetastoreUris: "",
+				UserName:             DefaultApiUserName,
+				SparkEventLogDir:     fmt.Sprintf("s3a://%s/punch/%s/sparkEventLog", s3BucketName, namePrefix),
+				HiveMetastoreUris:    "",
 				SparkSqlWarehouseDir: "",
 			},
 			SparkOperator: SparkOperator{
@@ -116,10 +117,10 @@ func CreateDefaultSparkEksTopology(namePrefix string, s3BucketName string) Spark
 				SparkApplicationNamespace: DefaultSparkApplicationNamespace,
 			},
 			HistoryServer: SparkHistoryServer{
-				HelmInstallName:           DefaultSparkHistoryServerHelmInstallName,
-				ImageRepository:           DefaultSparkHistoryServerImageRepository,
-				ImageTag:                  DefaultSparkHistoryServerImageTag,
-				Namespace:                 DefaultSparkHistoryServerNamespace,
+				HelmInstallName: DefaultSparkHistoryServerHelmInstallName,
+				ImageRepository: DefaultSparkHistoryServerImageRepository,
+				ImageTag:        DefaultSparkHistoryServerImageTag,
+				Namespace:       DefaultSparkHistoryServerNamespace,
 			},
 		},
 	}
