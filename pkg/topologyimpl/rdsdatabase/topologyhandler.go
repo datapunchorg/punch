@@ -28,8 +28,6 @@ import (
 var nonAlphanumericRegexp *regexp.Regexp
 
 func init() {
-	framework.DefaultTopologyHandlerManager.AddHandler(KindDatabaseTopology, &TopologyHandler{})
-
 	var err error
 	nonAlphanumericRegexp, err = regexp.Compile("[^a-zA-Z]+")
 	if err != nil {

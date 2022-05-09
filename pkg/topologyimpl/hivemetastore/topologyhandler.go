@@ -33,8 +33,6 @@ import (
 var nonAlphanumericRegexp *regexp.Regexp
 
 func init() {
-	framework.DefaultTopologyHandlerManager.AddHandler(KindHiveMetastoreTopology, &TopologyHandler{})
-
 	var err error
 	nonAlphanumericRegexp, err = regexp.Compile("[^a-zA-Z]+")
 	if err != nil {

@@ -72,17 +72,20 @@ func Execute() {
 }
 
 func getTopologyHandlerPlugin(kind string) framework.TopologyHandler {
-	// handler := framework.DefaultTopologyHandlerManager.GetHandler(kind)
 	var mod string
 	switch kind {
 	case "SparkOnEks":
 		mod = "./plugin/sparkoneks.so"
-	case "chinese":
-		mod = "./plugin/chi.so"
-	case "swedish":
-		mod = "./plugin/swe.so"
+	case "HiveMetastore":
+		mod = "./plugin/hivemetastore.so"
+	case "RdsDatabase":
+		mod = "./plugin/rdsdatabase.so"
 	default:
-		log.Fatalf("Topology kind %s not supported", kind)
+		handler := framework.DefaultTopologyHandlerManager.GetHandler(kind)
+		if handler == nil {
+			log.Fatalf("Topology kind %s not supported", kind)
+		}
+		return handler
 	}
 
 	plug, err := plugin.Open(mod)
