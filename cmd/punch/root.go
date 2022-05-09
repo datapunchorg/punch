@@ -18,10 +18,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/datapunchorg/punch/pkg/framework"
-	"github.com/spf13/cobra"
 	"log"
 	"os"
+	"plugin"
+
+	"github.com/datapunchorg/punch/pkg/framework"
+	"github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{
@@ -69,10 +71,37 @@ func Execute() {
 	}
 }
 
-func getTopologyHandlerOrFatal(kind string) framework.TopologyHandler {
-	handler := framework.DefaultTopologyHandlerManager.GetHandler(kind)
-	if handler == nil {
-		log.Fatalf("Topology kind %s not supported", kind)
+func getTopologyHandlerPlugin(kind string) framework.TopologyHandler {
+	var mod string
+	switch kind {
+	case "SparkOnEks":
+		mod = "./plugin/sparkoneks.so"
+	case "HiveMetastore":
+		mod = "./plugin/hivemetastore.so"
+	case "RdsDatabase":
+		mod = "./plugin/rdsdatabase.so"
+	default:
+		handler := framework.DefaultTopologyHandlerManager.GetHandler(kind)
+		if handler == nil {
+			log.Fatalf("Topology kind %s not supported", kind)
+		}
+		return handler
 	}
+
+	plug, err := plugin.Open(mod)
+	if err != nil {
+		log.Fatalf("Failed to load plugin from %s due to %v", mod, err)
+	}
+
+	symbol, err := plug.Lookup("Handler")
+	if err != nil {
+		log.Fatalf("Failed to load symbols for plugin %s due to %v", kind, err)
+	}
+
+	handler, ok := symbol.(framework.TopologyHandler)
+	if !ok {
+		log.Fatalf("Failed to get handler for plugin %s", kind)
+	}
+
 	return handler
 }

@@ -14,13 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sparkoneks
+package main
 
 import (
-	"github.com/datapunchorg/punch/pkg/framework"
-	"github.com/stretchr/testify/assert"
 	"log"
 	"testing"
+
+	"github.com/datapunchorg/punch/pkg/framework"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGenerateTopology(t *testing.T) {

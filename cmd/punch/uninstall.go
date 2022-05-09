@@ -17,15 +17,13 @@ limitations under the License.
 package main
 
 import (
+	"log"
+
 	"github.com/datapunchorg/punch/pkg/framework"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/eks"
-	_ "github.com/datapunchorg/punch/pkg/topologyimpl/hivemetastore"
-	_ "github.com/datapunchorg/punch/pkg/topologyimpl/kafkaonmsk"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/kafkabridge"
-	_ "github.com/datapunchorg/punch/pkg/topologyimpl/rdsdatabase"
-	_ "github.com/datapunchorg/punch/pkg/topologyimpl/sparkoneks"
+	_ "github.com/datapunchorg/punch/pkg/topologyimpl/kafkaonmsk"
 	"github.com/spf13/cobra"
-	"log"
 )
 
 var deleteCmd = &cobra.Command{
@@ -36,7 +34,7 @@ var deleteCmd = &cobra.Command{
 		topology := getTopologyFromArguments(args)
 
 		kind := topology.GetKind()
-		handler := getTopologyHandlerOrFatal(kind)
+		handler := getTopologyHandlerPlugin(kind)
 
 		resolvedTopology, err := handler.Validate(topology, framework.PhaseBeforeUninstall)
 		if err != nil {

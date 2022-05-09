@@ -14,11 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package hivemetastore
+package main
 
 import (
 	"context"
 	"fmt"
+
 	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/kubelib"
@@ -32,8 +33,8 @@ var WAREHOUSE_DIR_LOCAL_FILE_TEMP_DIRECTORY = "file:///tmp/"
 
 type DatabaseInfo struct {
 	ConnectionString string
-	User     string
-	Password string
+	User             string
+	Password         string
 }
 
 // TODO mask DatabaseInfo.Password in YAML output
