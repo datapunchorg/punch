@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"plugin"
 
 	"github.com/datapunchorg/punch/pkg/framework"
@@ -75,11 +76,11 @@ func getTopologyHandlerPlugin(kind string) framework.TopologyHandler {
 	var mod string
 	switch kind {
 	case "SparkOnEks":
-		mod = "./plugin/sparkoneks.so"
+		mod = searchFileOrFatal("sparkoneks.so")
 	case "HiveMetastore":
-		mod = "./plugin/hivemetastore.so"
+		mod = searchFileOrFatal("hivemetastore.so")
 	case "RdsDatabase":
-		mod = "./plugin/rdsdatabase.so"
+		mod = searchFileOrFatal("rdsdatabase.so")
 	default:
 		handler := framework.DefaultTopologyHandlerManager.GetHandler(kind)
 		if handler == nil {
@@ -105,3 +106,16 @@ func getTopologyHandlerPlugin(kind string) framework.TopologyHandler {
 
 	return handler
 }
+
+func searchFileOrFatal(fileName string) string {
+	searchDirs := []string{"./plugin", "./dist/plugin"}
+	for _, dir := range searchDirs {
+		filePath := filepath.Join(dir, fileName)
+		if _, err := os.Stat(filePath); err == nil {
+			return filePath
+		}
+	}
+	log.Fatalf("Cannot find file %s under search paths: %s", fileName, searchDirs)
+	return ""
+}
+
