@@ -39,12 +39,10 @@ import (
 
 // TODO remove log.Fatalf
 
-func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, topology SparkOnEksTopologySpec) {
-	region := topology.Eks.Region
-	clusterName := topology.Eks.EksCluster.ClusterName
-	operatorNamespace := topology.Spark.Operator.Namespace
+func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, sparkComponentSpec  SparkComponentSpec, region string, eksClusterName string, s3Bucket string) error {
+	operatorNamespace := sparkComponentSpec.Operator.Namespace
 
-	eventLogDir := topology.Spark.Gateway.SparkEventLogDir
+	eventLogDir := sparkComponentSpec.Gateway.SparkEventLogDir
 	if strings.HasPrefix(strings.ToLower(eventLogDir), "s3") {
 		dummyFileUrl := eventLogDir
 		if !strings.HasSuffix(dummyFileUrl, "/") {
@@ -52,15 +50,15 @@ func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, topolo
 		}
 		dummyFileUrl += "dummy.txt"
 		log.Printf("Uploading dummy file %s to Spark event log directory %s to make sure the directry exits (Spark application and history server will fail if the directory does not exist)", dummyFileUrl, eventLogDir)
-		err := awslib.UploadDataToS3Url(topology.Eks.Region, dummyFileUrl, strings.NewReader(""))
+		err := awslib.UploadDataToS3Url(region, dummyFileUrl, strings.NewReader(""))
 		if err != nil {
-			log.Fatalf("Failed to create dummy file %s in Spark event log directory %s to make sure the directry exits (Spark application and history server will fail if the directory does not exist): %s", dummyFileUrl, eventLogDir, err.Error())
+			return fmt.Errorf("failed to create dummy file %s in Spark event log directory %s to make sure the directry exits (Spark application and history server will fail if the directory does not exist): %s", dummyFileUrl, eventLogDir, err.Error())
 		}
 	}
 
-	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), clusterName)
+	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
 	if err != nil {
-		log.Fatalf("Failed to create Kubernetes client: %s", err.Error())
+		return fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
 	}
 
 	sparkApplicationNamespace := "spark-01"
@@ -76,7 +74,7 @@ func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, topolo
 	)
 	if err != nil {
 		if !awslib.AlreadyExistsMessage(err.Error()) {
-			log.Fatalf("Failed to create Spark application namespace %s: %v", sparkApplicationNamespace, err)
+			return fmt.Errorf("failed to create Spark application namespace %s: %v", sparkApplicationNamespace, err)
 		} else {
 			log.Printf("Namespace %s already exists, do not create it again", sparkApplicationNamespace)
 		}
@@ -84,22 +82,28 @@ func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, topolo
 		log.Printf("Created Spark application namespace %s", namespace.Name)
 	}
 
-	InstallSparkOperatorHelm(commandEnvironment, topology)
+	err = InstallSparkOperatorHelm(commandEnvironment, sparkComponentSpec, region, eksClusterName, s3Bucket)
+	if err != nil {
+		return err
+	}
 
 	// CreateSparkServiceAccount(clientset, operatorNamespace, sparkApplicationNamespace, "spark")
 
-	helmInstallName := topology.Spark.Operator.HelmInstallName
-	CreateApiGatewayService(clientset, operatorNamespace, helmInstallName, helmInstallName)
+	helmInstallName := sparkComponentSpec.Operator.HelmInstallName
+	err = CreateApiGatewayService(clientset, operatorNamespace, helmInstallName, helmInstallName)
+	if err != nil {
+		return err
+	}
 
 	sparkOperatorPodNamePrefix := helmInstallName
 	err = kubelib.WaitPodsInPhases(clientset, operatorNamespace, sparkOperatorPodNamePrefix, []v1.PodPhase{v1.PodRunning})
 	if err != nil {
-		log.Fatalf("Pod %s*** in namespace %s is not in phase %s", sparkOperatorPodNamePrefix, operatorNamespace, v1.PodRunning)
+		return fmt.Errorf("pod %s*** in namespace %s is not in phase %s", sparkOperatorPodNamePrefix, operatorNamespace, v1.PodRunning)
 	}
 
 	// Retry and handle error like following
 	// Failed to create ingress spark-operator-01 in namespace spark-operator-01 for service spark-operator-01: Internal error occurred: failed calling webhook "validate.nginx.ingress.kubernetes.io": Post "https://ingress-nginx-controller-admission.ingress-nginx.svc:443/networking/v1/ingresses?timeout=10s": context deadline exceeded
-	common.RetryUntilTrue(func() (bool, error) {
+	return common.RetryUntilTrue(func() (bool, error) {
 		err := CreateApiGatewayIngress(clientset, operatorNamespace, helmInstallName, helmInstallName)
 		ignoreErrorMsg := "failed calling webhook \"validate.nginx.ingress.kubernetes.io\""
 		if err != nil {
@@ -117,7 +121,7 @@ func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, topolo
 		10*time.Second)
 }
 
-func CreateApiGatewayService(clientset *kubernetes.Clientset, namespace string, serviceName string, instanceName string) {
+func CreateApiGatewayService(clientset *kubernetes.Clientset, namespace string, serviceName string, instanceName string) error {
 	serviceType := "ClusterIP"
 	_, err := clientset.CoreV1().Services(namespace).Create(
 		context.TODO(),
@@ -149,7 +153,7 @@ func CreateApiGatewayService(clientset *kubernetes.Clientset, namespace string, 
 		v12.CreateOptions{})
 	if err != nil {
 		if !awslib.AlreadyExistsMessage(err.Error()) {
-			log.Fatalf("Failed to create API gateway service %s in namespace %s: %v", serviceName, namespace, err)
+			return fmt.Errorf("failed to create API gateway service %s in namespace %s: %v", serviceName, namespace, err)
 		} else {
 			log.Printf("API gateway service %s in namespace %s already exists, do not create it again", serviceName, namespace)
 		}
@@ -162,40 +166,41 @@ func CreateApiGatewayService(clientset *kubernetes.Clientset, namespace string, 
 		serviceName,
 		v12.GetOptions{})
 	if err != nil {
-		log.Fatalf("Failed to get API gateway service %s in namespace %s: %v", serviceName, namespace, err)
+		return fmt.Errorf("failed to get API gateway service %s in namespace %s: %v", serviceName, namespace, err)
 	}
 
 	// TODO delete following?
 	for _, ingress := range service.Status.LoadBalancer.Ingress {
 		log.Printf("Got ingress %s for API gateway service %s in namespace %s", ingress.Hostname, serviceName, namespace)
 	}
+
+	return nil
 }
 
-// TODO remove log.Fatalf
-func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, topology SparkOnEksTopologySpec) {
+func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, sparkComponentSpec  SparkComponentSpec, region string, eksClusterName string, s3Bucket string) error {
 	// helm install my-release spark-operator/spark-operator --namespace spark-operator --create-namespace --set sparkJobNamespace=default
 
-	kubeConfig, err := awslib.CreateKubeConfig(topology.Eks.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), topology.Eks.EksCluster.ClusterName)
+	kubeConfig, err := awslib.CreateKubeConfig(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
 	if err != nil {
-		log.Fatalf("Failed to get kube config: %s", err)
+		return fmt.Errorf("failed to get kube config: %s", err)
 	}
 
 	defer kubeConfig.Cleanup()
 
-	installName := topology.Spark.Operator.HelmInstallName
-	operatorNamespace := topology.Spark.Operator.Namespace
-	sparkApplicationNamespace := topology.Spark.Operator.SparkApplicationNamespace
+	installName := sparkComponentSpec.Operator.HelmInstallName
+	operatorNamespace := sparkComponentSpec.Operator.Namespace
+	sparkApplicationNamespace := sparkComponentSpec.Operator.SparkApplicationNamespace
 
 	arguments := []string{
 		"--set", fmt.Sprintf("sparkJobNamespace=%s", sparkApplicationNamespace),
-		"--set", fmt.Sprintf("image.repository=%s", topology.Spark.Operator.ImageRepository),
-		"--set", fmt.Sprintf("image.tag=%s", topology.Spark.Operator.ImageTag),
+		"--set", fmt.Sprintf("image.repository=%s", sparkComponentSpec.Operator.ImageRepository),
+		"--set", fmt.Sprintf("image.tag=%s", sparkComponentSpec.Operator.ImageTag),
 		"--set", "serviceAccounts.spark.create=true",
 		"--set", "serviceAccounts.spark.name=spark",
-		"--set", "spark.gateway.user=" + topology.Spark.Gateway.User,
-		"--set", "spark.gateway.password=" + topology.Spark.Gateway.Password,
-		"--set", "spark.gateway.s3Region=" + topology.Eks.Region,
-		"--set", "spark.gateway.s3Bucket=" + topology.Eks.S3BucketName,
+		"--set", "spark.gateway.user=" + sparkComponentSpec.Gateway.User,
+		"--set", "spark.gateway.password=" + sparkComponentSpec.Gateway.Password,
+		"--set", "spark.gateway.s3Region=" + region,
+		"--set", "spark.gateway.s3Bucket=" + s3Bucket,
 		// "--set", "webhook.enable=true",
 	}
 
@@ -203,19 +208,20 @@ func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, t
 		arguments = append(arguments, "--set")
 		arguments = append(arguments, "spark.gateway.sparkEventLogEnabled=true")
 		arguments = append(arguments, "--set")
-		arguments = append(arguments, "spark.gateway.sparkEventLogDir="+topology.Spark.Gateway.SparkEventLogDir)
+		arguments = append(arguments, "spark.gateway.sparkEventLogDir="+sparkComponentSpec.Gateway.SparkEventLogDir)
 	}
 
-	if topology.Spark.Gateway.HiveMetastoreUris != "" {
+	if sparkComponentSpec.Gateway.HiveMetastoreUris != "" {
 		arguments = append(arguments, "--set")
-		arguments = append(arguments, "spark.gateway.hiveMetastoreUris="+topology.Spark.Gateway.HiveMetastoreUris)
+		arguments = append(arguments, "spark.gateway.hiveMetastoreUris="+sparkComponentSpec.Gateway.HiveMetastoreUris)
 	}
-	if topology.Spark.Gateway.SparkSqlWarehouseDir != "" {
+	if sparkComponentSpec.Gateway.SparkSqlWarehouseDir != "" {
 		arguments = append(arguments, "--set")
-		arguments = append(arguments, "spark.gateway.sparkSqlWarehouseDir="+topology.Spark.Gateway.SparkSqlWarehouseDir)
+		arguments = append(arguments, "spark.gateway.sparkSqlWarehouseDir="+sparkComponentSpec.Gateway.SparkSqlWarehouseDir)
 	}
 
-	kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvSparkOperatorHelmChart), kubeConfig, arguments, installName, operatorNamespace)
+	err = kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvSparkOperatorHelmChart), kubeConfig, arguments, installName, operatorNamespace)
+	return err
 }
 
 func CreateSparkServiceAccount(clientset *kubernetes.Clientset, sparkOperatorNamespace string, sparkApplicationNamespace string, sparkServiceAccountName string) {

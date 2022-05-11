@@ -42,7 +42,7 @@ func RunHelm(helmExeLocation string, arguments []string) {
 	}
 }
 
-func InstallHelm(helmExeLocation string, helmChartLocation string, kubeConfig KubeConfig, extraArguments []string, installName string, namespace string) {
+func InstallHelm(helmExeLocation string, helmChartLocation string, kubeConfig KubeConfig, extraArguments []string, installName string, namespace string) error {
 	arguments := []string{"install", installName, helmChartLocation,
 		"--namespace", namespace, "--create-namespace"}
 
@@ -58,6 +58,8 @@ func InstallHelm(helmExeLocation string, helmChartLocation string, kubeConfig Ku
 	} else {
 		log.Printf("Finished running helm\n%s", string(helmOut))
 	}
+
+	return nil
 }
 
 func EscapeHelmSetValue(str string) string {

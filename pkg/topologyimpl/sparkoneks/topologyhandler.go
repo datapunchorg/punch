@@ -178,7 +178,7 @@ func BuildInstallDeployment(topologySpec SparkOnEksTopologySpec, commandEnvironm
 	}
 
 	deployment.AddStep("deploySparkOperator", "Deploy Spark Operator", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-		DeploySparkOperator(commandEnvironment, topologySpec)
+		DeploySparkOperator(commandEnvironment, topologySpec.Spark, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName, topologySpec.Eks.S3BucketName)
 		return framework.NewDeploymentStepOutput(), nil
 	})
 
