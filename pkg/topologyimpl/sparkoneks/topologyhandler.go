@@ -18,16 +18,13 @@ package sparkoneks
 
 import (
 	"fmt"
+	"github.com/datapunchorg/punch/pkg/framework"
+	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
+	"gopkg.in/yaml.v3"
 	"io/fs"
 	"io/ioutil"
 	"log"
 	"os"
-	"strings"
-
-	"github.com/datapunchorg/punch/pkg/awslib"
-	"github.com/datapunchorg/punch/pkg/framework"
-	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
-	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -59,34 +56,14 @@ func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) 
 func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (framework.Topology, error) {
 	currentTopology := topology.(*SparkOnEksTopology)
 
-	if strings.EqualFold(phase, framework.PhaseBeforeInstall) {
-		if currentTopology.Spec.Spark.Gateway.Password == "" || currentTopology.Spec.Spark.Gateway.Password == framework.TemplateNoValue {
-			return nil, fmt.Errorf("spec.spark.gateway.password is emmpty, please provide the value for the password")
-		}
-	}
-
-	err := checkCmdEnvFolderExists(currentTopology.Metadata, eks.CmdEnvNginxHelmChart)
+	err := ValidateSparkComponentSpec(currentTopology.Spec.Spark, currentTopology.Metadata, phase)
 	if err != nil {
 		return nil, err
 	}
 
-	err = checkCmdEnvFolderExists(currentTopology.Metadata, CmdEnvSparkOperatorHelmChart)
+	err = eks.ValidateEksTopologySpec(currentTopology.Spec.Eks, currentTopology.Metadata, phase)
 	if err != nil {
 		return nil, err
-	}
-
-	if currentTopology.Spec.Eks.AutoScaling.EnableClusterAutoscaler {
-		err = checkCmdEnvFolderExists(currentTopology.Metadata, eks.CmdEnvClusterAutoscalerHelmChart)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if currentTopology.Spec.Eks.AutoScaling.EnableClusterAutoscaler {
-		err = awslib.CheckEksCtlCmd("eksctl")
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	return topology, nil
@@ -196,17 +173,6 @@ Another example using sparkcli to run Python Spark application from local file (
 ------------------------------
 ` + sparkcliPythonExampleCommandFormat
 	log.Printf(anotherStr, userName, userPassword, url, file.Name())
-}
-
-func checkCmdEnvFolderExists(metadata framework.TopologyMetadata, cmdEnvKey string) error {
-	cmdEnvValue := metadata.CommandEnvironment[cmdEnvKey]
-	if cmdEnvValue == "" {
-		return fmt.Errorf("Metadata.CommandEnvironment[\"%s\"] is empty", cmdEnvKey)
-	}
-	if _, err := os.Stat(cmdEnvValue); os.IsNotExist(err) {
-		return fmt.Errorf("folder not exists (specified in Metadata.CommandEnvironment[\"%s\"]=\"%s\")", cmdEnvKey, cmdEnvValue)
-	}
-	return nil
 }
 
 func BuildInstallDeployment(topologySpec SparkOnEksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {

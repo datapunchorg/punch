@@ -24,7 +24,6 @@ import (
 	"github.com/datapunchorg/punch/pkg/resource"
 	"gopkg.in/yaml.v3"
 	"log"
-	"os"
 	"strings"
 )
 
@@ -51,26 +50,10 @@ func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) 
 
 func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (framework.Topology, error) {
 	currentTopology := topology.(*EksTopology)
-
-	err := checkCmdEnvFolderExists(currentTopology.Metadata, CmdEnvNginxHelmChart)
+	err := ValidateEksTopologySpec(currentTopology.Spec, currentTopology.Metadata, phase)
 	if err != nil {
 		return nil, err
 	}
-
-	if currentTopology.Spec.AutoScaling.EnableClusterAutoscaler {
-		err = checkCmdEnvFolderExists(currentTopology.Metadata, CmdEnvClusterAutoscalerHelmChart)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if currentTopology.Spec.AutoScaling.EnableClusterAutoscaler {
-		err = awslib.CheckEksCtlCmd("eksctl")
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	return topology, nil
 }
 
@@ -293,13 +276,3 @@ func CreateUninstallDeployment(topologySpec EksTopologySpec, commandEnvironment 
 	return deployment, nil
 }
 
-func checkCmdEnvFolderExists(metadata framework.TopologyMetadata, cmdEnvKey string) error {
-	cmdEnvValue := metadata.CommandEnvironment[cmdEnvKey]
-	if cmdEnvValue == "" {
-		return fmt.Errorf("Metadata.CommandEnvironment[\"%s\"] is empty", cmdEnvKey)
-	}
-	if _, err := os.Stat(cmdEnvValue); os.IsNotExist(err) {
-		return fmt.Errorf("folder not exists (specified in Metadata.CommandEnvironment[\"%s\"]=\"%s\")", cmdEnvKey, cmdEnvValue)
-	}
-	return nil
-}

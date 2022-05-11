@@ -35,6 +35,24 @@ var NodePortLocalHttp int32 = 32080
 var NodePortLocalHttps int32 = 32443
 var DefaultNginxServiceName = "ingress-nginx-controller"
 
+func ValidateEksTopologySpec(spec EksTopologySpec, metadata framework.TopologyMetadata, phase string) error {
+	err := framework.CheckCmdEnvFolderExists(metadata, CmdEnvNginxHelmChart)
+	if err != nil {
+		return err
+	}
+	if spec.AutoScaling.EnableClusterAutoscaler {
+		err := framework.CheckCmdEnvFolderExists(metadata, CmdEnvClusterAutoscalerHelmChart)
+		if err != nil {
+			return err
+		}
+		err = awslib.CheckEksCtlCmd("eksctl")
+		if err != nil {
+			return fmt.Errorf("cluster autoscaler enabled, but cannot find eksctl command: %s", err.Error())
+		}
+	}
+	return nil
+}
+
 func CreateInstanceIamRole(topology EksTopologySpec) string {
 	region := topology.Region
 	roleName, err := resource.CreateIamRoleWithMorePolicies(region, topology.EksCluster.InstanceRole, []resource.IamPolicy{topology.S3Policy, topology.KafkaPolicy})

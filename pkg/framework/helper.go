@@ -16,7 +16,23 @@ limitations under the License.
 
 package framework
 
+import (
+	"fmt"
+	"os"
+)
+
 const FieldMaskValue = "***"
+
+func CheckCmdEnvFolderExists(metadata TopologyMetadata, cmdEnvKey string) error {
+	cmdEnvValue := metadata.CommandEnvironment[cmdEnvKey]
+	if cmdEnvValue == "" {
+		return fmt.Errorf("Metadata.CommandEnvironment[\"%s\"] is empty", cmdEnvKey)
+	}
+	if _, err := os.Stat(cmdEnvValue); os.IsNotExist(err) {
+		return fmt.Errorf("folder not exists (specified in Metadata.CommandEnvironment[\"%s\"]=\"%s\")", cmdEnvKey, cmdEnvValue)
+	}
+	return nil
+}
 
 func GetOrElse(valueMap map[string]string, key string, defaultValue string) string {
 	if value, ok := valueMap[key]; ok {
