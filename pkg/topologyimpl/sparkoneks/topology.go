@@ -50,15 +50,19 @@ type SparkOnEksTopology struct {
 }
 
 type SparkOnEksTopologySpec struct {
-	EksSpec       eks.EksTopologySpec `json:"eksSpec" yaml:"eksSpec"`
-	SparkOperator SparkOperator       `json:"sparkOperator" yaml:"sparkOperator"`
-	ApiGateway    SparkApiGateway     `json:"apiGateway" yaml:"apiGateway"`
-	HistoryServer SparkHistoryServer  `json:"historyServer" yaml:"historyServer"`
+	Eks   eks.EksTopologySpec `json:"eks" yaml:"eks"`
+	Spark SparkComponentSpec  `json:"spark" yaml:"spark"`
+}
+
+type SparkComponentSpec struct {
+	Operator      SparkOperator      `json:"operator" yaml:"operator"`
+	Gateway       SparkApiGateway    `json:"gateway" yaml:"gateway"`
+	HistoryServer SparkHistoryServer `json:"historyServer" yaml:"historyServer"`
 }
 
 type SparkApiGateway struct {
-	UserName             string `json:"userName" yaml:"userName"`
-	UserPassword         string `json:"userPassword" yaml:"userPassword"`
+	User         string `json:"user" yaml:"user"`
+	Password string `json:"password" yaml:"password"`
 	SparkEventLogDir     string `json:"sparkEventLogDir" yaml:"sparkEventLogDir"`
 	HiveMetastoreUris    string `json:"hiveMetastoreUris" yaml:"hiveMetastoreUris"`
 	SparkSqlWarehouseDir string `json:"sparkSqlWarehouseDir" yaml:"sparkSqlWarehouseDir"`
@@ -102,25 +106,27 @@ func CreateDefaultSparkEksTopology(namePrefix string, s3BucketName string) Spark
 			},
 		},
 		Spec: SparkOnEksTopologySpec{
-			EksSpec: eksTopology.Spec,
-			ApiGateway: SparkApiGateway{
-				UserName:             DefaultApiUserName,
-				SparkEventLogDir:     fmt.Sprintf("s3a://%s/punch/%s/sparkEventLog", s3BucketName, namePrefix),
-				HiveMetastoreUris:    "",
-				SparkSqlWarehouseDir: "",
-			},
-			SparkOperator: SparkOperator{
-				HelmInstallName:           DefaultSparkOperatorHelmInstallName,
-				ImageRepository:           DefaultOperatorImageRepository,
-				ImageTag:                  DefaultSparkOperatorImageTag,
-				Namespace:                 DefaultSparkOperatorNamespace,
-				SparkApplicationNamespace: DefaultSparkApplicationNamespace,
-			},
-			HistoryServer: SparkHistoryServer{
-				HelmInstallName: DefaultSparkHistoryServerHelmInstallName,
-				ImageRepository: DefaultSparkHistoryServerImageRepository,
-				ImageTag:        DefaultSparkHistoryServerImageTag,
-				Namespace:       DefaultSparkHistoryServerNamespace,
+			Eks: eksTopology.Spec,
+			Spark: SparkComponentSpec{
+				Gateway: SparkApiGateway{
+					User:                 DefaultApiUserName,
+					SparkEventLogDir:     fmt.Sprintf("s3a://%s/punch/%s/sparkEventLog", s3BucketName, namePrefix),
+					HiveMetastoreUris:    "",
+					SparkSqlWarehouseDir: "",
+				},
+				Operator: SparkOperator{
+					HelmInstallName:           DefaultSparkOperatorHelmInstallName,
+					ImageRepository:           DefaultOperatorImageRepository,
+					ImageTag:                  DefaultSparkOperatorImageTag,
+					Namespace:                 DefaultSparkOperatorNamespace,
+					SparkApplicationNamespace: DefaultSparkApplicationNamespace,
+				},
+				HistoryServer: SparkHistoryServer{
+					HelmInstallName: DefaultSparkHistoryServerHelmInstallName,
+					ImageRepository: DefaultSparkHistoryServerImageRepository,
+					ImageTag:        DefaultSparkHistoryServerImageTag,
+					Namespace:       DefaultSparkHistoryServerNamespace,
+				},
 			},
 		},
 	}
@@ -148,8 +154,8 @@ func (t *SparkOnEksTopology) String() string {
 	if err != nil {
 		return fmt.Sprintf("(Failed to deserialize topology in ToYamlString(): %s)", err.Error())
 	}
-	if copy.Spec.ApiGateway.UserPassword != "" {
-		copy.Spec.ApiGateway.UserPassword = FieldMaskValue
+	if copy.Spec.Spark.Gateway.Password != "" {
+		copy.Spec.Spark.Gateway.Password = FieldMaskValue
 	}
 	topologyBytes, err = yaml.Marshal(copy)
 	if err != nil {

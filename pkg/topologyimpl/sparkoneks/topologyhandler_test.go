@@ -33,21 +33,21 @@ func TestGenerateTopology(t *testing.T) {
 	log.Printf("-----\n%s\n-----\n", framework.TopologyString(topology))
 
 	sparkTopology := topology.(*SparkOnEksTopology)
-	assert.Equal(t, "{{ or .Values.namePrefix `my` }}", sparkTopology.Spec.EksSpec.NamePrefix)
+	assert.Equal(t, "{{ or .Values.namePrefix `my` }}", sparkTopology.Spec.Eks.NamePrefix)
 }
 
 func TestParseTopology(t *testing.T) {
 	handler := &TopologyHandler{}
 	topology, err := handler.Generate()
 	sparkTopology := topology.(*SparkOnEksTopology)
-	sparkTopology.Spec.EksSpec.NamePrefix = "foo"
+	sparkTopology.Spec.Eks.NamePrefix = "foo"
 	yamlContent := framework.TopologyString(topology)
 
 	topology, err = handler.Parse([]byte(yamlContent))
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "SparkOnEks", topology.GetKind())
 	sparkTopology = topology.(*SparkOnEksTopology)
-	assert.Equal(t, "foo", sparkTopology.Spec.EksSpec.NamePrefix)
+	assert.Equal(t, "foo", sparkTopology.Spec.Eks.NamePrefix)
 }
 
 func TestResolveTopology(t *testing.T) {
@@ -58,7 +58,7 @@ func TestResolveTopology(t *testing.T) {
 		"sparkOperatorHelmChart": "../../../third-party/helm-charts/spark-operator-service/charts/spark-operator-chart",
 	}
 	topology.(*SparkOnEksTopology).Metadata.CommandEnvironment = env
-	topology.(*SparkOnEksTopology).Spec.ApiGateway.UserPassword = "aaa"
+	topology.(*SparkOnEksTopology).Spec.Spark.Gateway.Password = "aaa"
 	resolvedTopology, err := handler.Validate(topology, framework.PhaseBeforeInstall)
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "SparkOnEks", resolvedTopology.GetKind())
@@ -72,7 +72,7 @@ func TestResolveTopology_NoPassword(t *testing.T) {
 		"sparkOperatorHelmChart": "../../../third-party/helm-charts/spark-operator-service/charts/spark-operator-chart",
 	}
 	topology.(*SparkOnEksTopology).Metadata.CommandEnvironment = env
-	topology.(*SparkOnEksTopology).Spec.ApiGateway.UserPassword = ""
+	topology.(*SparkOnEksTopology).Spec.Spark.Gateway.Password = ""
 	resolvedTopology, err := handler.Validate(topology, framework.PhaseBeforeInstall)
 	assert.NotEqual(t, nil, err)
 	assert.Equal(t, nil, resolvedTopology)

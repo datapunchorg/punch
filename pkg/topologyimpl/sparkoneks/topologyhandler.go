@@ -58,8 +58,8 @@ func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (f
 	currentTopology := topology.(*SparkOnEksTopology)
 
 	if strings.EqualFold(phase, framework.PhaseBeforeInstall) {
-		if currentTopology.Spec.ApiGateway.UserPassword == "" || currentTopology.Spec.ApiGateway.UserPassword == framework.TemplateNoValue {
-			return nil, fmt.Errorf("spec.apiGateway.userPassword is emmpty, please provide the value for the password")
+		if currentTopology.Spec.Spark.Gateway.Password == "" || currentTopology.Spec.Spark.Gateway.Password == framework.TemplateNoValue {
+			return nil, fmt.Errorf("spec.spark.gateway.password is emmpty, please provide the value for the password")
 		}
 	}
 
@@ -73,14 +73,14 @@ func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (f
 		return nil, err
 	}
 
-	if currentTopology.Spec.EksSpec.AutoScaling.EnableClusterAutoscaler {
+	if currentTopology.Spec.Eks.AutoScaling.EnableClusterAutoscaler {
 		err = checkCmdEnvFolderExists(currentTopology.Metadata, eks.CmdEnvClusterAutoscalerHelmChart)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	if currentTopology.Spec.EksSpec.AutoScaling.EnableClusterAutoscaler {
+	if currentTopology.Spec.Eks.AutoScaling.EnableClusterAutoscaler {
 		err = awslib.CheckEksCtlCmd("eksctl")
 		if err != nil {
 			return nil, err
@@ -134,8 +134,8 @@ func (t *TopologyHandler) PrintUsageExample(topology framework.Topology, deploym
 }
 
 func printExampleCommandToRunSparkOnMinikube(url string, topology SparkOnEksTopology) {
-	userName := topology.Spec.ApiGateway.UserName
-	userPassword := topology.Spec.ApiGateway.UserPassword
+	userName := topology.Spec.Spark.Gateway.User
+	userPassword := topology.Spec.Spark.Gateway.Password
 
 	str := `
 ------------------------------
@@ -146,8 +146,8 @@ Run: ` + sparkcliJavaExampleCommandFormat
 }
 
 func printExampleCommandToRunSparkOnAws(url string, topology SparkOnEksTopology) {
-	userName := topology.Spec.ApiGateway.UserName
-	userPassword := topology.Spec.ApiGateway.UserPassword
+	userName := topology.Spec.Spark.Gateway.User
+	userPassword := topology.Spec.Spark.Gateway.Password
 
 	file, err := os.CreateTemp("", "pyspark.*.py")
 	if err != nil {
@@ -208,7 +208,7 @@ func checkCmdEnvFolderExists(metadata framework.TopologyMetadata, cmdEnvKey stri
 }
 
 func BuildInstallDeployment(topologySpec SparkOnEksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
-	deployment, err := eks.CreateInstallDeployment(topologySpec.EksSpec, commandEnvironment)
+	deployment, err := eks.CreateInstallDeployment(topologySpec.Eks, commandEnvironment)
 	if err != nil {
 		return nil, err
 	}
@@ -227,6 +227,6 @@ func BuildInstallDeployment(topologySpec SparkOnEksTopologySpec, commandEnvironm
 }
 
 func BuildUninstallDeployment(topologySpec SparkOnEksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
-	deployment, err := eks.CreateUninstallDeployment(topologySpec.EksSpec, commandEnvironment)
+	deployment, err := eks.CreateUninstallDeployment(topologySpec.Eks, commandEnvironment)
 	return deployment, err
 }

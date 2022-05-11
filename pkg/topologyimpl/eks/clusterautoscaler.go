@@ -32,7 +32,7 @@ func DeployClusterAutoscaler(commandEnvironment framework.CommandEnvironment, to
 func InstallClusterAutoscalerHelm(commandEnvironment framework.CommandEnvironment, topology EksTopologySpec) {
 	// helm install cluster-autoscaler third-party/helm-charts/cluster-autoscaler --set autoDiscovery.clusterName=my-eks-01 --set awsRegion=us-west-1
 
-	kubeConfig, err := awslib.CreateKubeConfig(topology.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), topology.Eks.ClusterName)
+	kubeConfig, err := awslib.CreateKubeConfig(topology.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), topology.EksCluster.ClusterName)
 	if err != nil {
 		log.Fatalf("Failed to get kube config: %s", err)
 	}
@@ -44,7 +44,7 @@ func InstallClusterAutoscalerHelm(commandEnvironment framework.CommandEnvironmen
 
 	arguments := []string{
 		"--set", fmt.Sprintf("awsRegion=%s", topology.Region),
-		"--set", fmt.Sprintf("autoDiscovery.clusterName=%s", topology.Eks.ClusterName),
+		"--set", fmt.Sprintf("autoDiscovery.clusterName=%s", topology.EksCluster.ClusterName),
 		"--set", "cloudProvider=aws",
 		"--set", "rbac.serviceAccount.create=false",
 		"--set", "rbac.serviceAccount.name=cluster-autoscaler",
@@ -53,7 +53,7 @@ func InstallClusterAutoscalerHelm(commandEnvironment framework.CommandEnvironmen
 	kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvClusterAutoscalerHelmChart), kubeConfig, arguments, installName, installNamespace)
 
 	region := topology.Region
-	clusterName := topology.Eks.ClusterName
+	clusterName := topology.EksCluster.ClusterName
 
 	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), clusterName)
 	if err != nil {

@@ -21,12 +21,12 @@ data:
       serviceAccount: spark
       defaultSparkVersion: 3.1
       sparkConf:
-        spark.eventLog.enabled: {{ .Values.apiGateway.sparkEventLogEnabled }}
-        spark.eventLog.dir: {{ .Values.apiGateway.sparkEventLogDir }}
+        spark.eventLog.enabled: {{ .Values.spark.gateway.sparkEventLogEnabled }}
+        spark.eventLog.dir: {{ .Values.spark.gateway.sparkEventLogDir }}
         spark.sql.catalogImplementation: hive
-      {{- if (not (empty .Values.apiGateway.hiveMetastoreUris)) }}
-        spark.hadoop.hive.metastore.uris: {{ .Values.apiGateway.hiveMetastoreUris }}
+      {{- if (not (empty .Values.spark.gateway.hiveMetastoreUris)) }}
+        spark.hadoop.hive.metastore.uris: {{ .Values.spark.gateway.hiveMetastoreUris }}
       {{- end }}
-      {{- if (not (empty .Values.apiGateway.sparkSqlWarehouseDir)) }}
-        spark.sql.warehouse.dir: {{ .Values.apiGateway.sparkSqlWarehouseDir }}
+      {{- if (not (empty .Values.spark.gateway.sparkSqlWarehouseDir)) }}
+        spark.sql.warehouse.dir: {{ .Values.spark.gateway.sparkSqlWarehouseDir }}
       {{- end }}

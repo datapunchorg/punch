@@ -37,7 +37,7 @@ var DefaultNginxServiceName = "ingress-nginx-controller"
 
 func CreateInstanceIamRole(topology EksTopologySpec) string {
 	region := topology.Region
-	roleName, err := resource.CreateIamRoleWithMorePolicies(region, topology.Eks.InstanceRole, []resource.IamPolicy{topology.S3Policy, topology.KafkaPolicy})
+	roleName, err := resource.CreateIamRoleWithMorePolicies(region, topology.EksCluster.InstanceRole, []resource.IamPolicy{topology.S3Policy, topology.KafkaPolicy})
 	if err != nil {
 		// TODO remove Fatalf
 		log.Fatalf("Failed to create instance IAM role: %s", err.Error())
@@ -95,7 +95,7 @@ func CreateClusterAutoscalerIamServiceAccount(commandEnvironment framework.Comma
 		[]string{"create", "iamserviceaccount",
 			"--name", serviceAccountName,
 			"--region", topology.Region,
-			"--cluster", topology.Eks.ClusterName,
+			"--cluster", topology.EksCluster.ClusterName,
 			"--namespace", systemNamespace,
 			"--attach-role-arn", roleArn,
 			"--approve"})
@@ -105,7 +105,7 @@ func CreateClusterAutoscalerIamServiceAccount(commandEnvironment framework.Comma
 
 func WaitEksServiceAccount(commandEnvironment framework.CommandEnvironment, topology EksTopologySpec, namespace string, serviceAccount string) error {
 	region := topology.Region
-	clusterName := topology.Eks.ClusterName
+	clusterName := topology.EksCluster.ClusterName
 
 	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), clusterName)
 	if err != nil {
@@ -137,7 +137,7 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 	helmInstallName := topology.NginxIngress.HelmInstallName
 	nginxServiceName := DefaultNginxServiceName
 	region := topology.Region
-	eksClusterName := topology.Eks.ClusterName
+	eksClusterName := topology.EksCluster.ClusterName
 	kubeConfig, err := awslib.CreateKubeConfig(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
 	if err != nil {
 		log.Fatalf("Failed to get kube config: %s", err)

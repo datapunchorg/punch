@@ -27,8 +27,8 @@ import (
 )
 
 func DeployHistoryServer(commandEnvironment framework.CommandEnvironment, topology SparkOnEksTopologySpec) error {
-	region := topology.EksSpec.Region
-	clusterName := topology.EksSpec.Eks.ClusterName
+	region := topology.Eks.Region
+	clusterName := topology.Eks.EksCluster.ClusterName
 	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), clusterName)
 	if err != nil {
 		return fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
@@ -39,9 +39,9 @@ func DeployHistoryServer(commandEnvironment framework.CommandEnvironment, topolo
 		return fmt.Errorf("failed to install Spark History Server helm chart: %s", err.Error())
 	}
 
-	helmInstallName := topology.HistoryServer.HelmInstallName
+	helmInstallName := topology.Spark.HistoryServer.HelmInstallName
 
-	namespace := topology.HistoryServer.Namespace
+	namespace := topology.Spark.HistoryServer.Namespace
 	podNamePrefix := helmInstallName
 	err = kubelib.WaitPodsInPhases(clientset, namespace, podNamePrefix, []v1.PodPhase{v1.PodRunning})
 	if err != nil {
@@ -54,24 +54,24 @@ func DeployHistoryServer(commandEnvironment framework.CommandEnvironment, topolo
 func InstallHistoryServerHelm(commandEnvironment framework.CommandEnvironment, topology SparkOnEksTopologySpec) error {
 	// helm install spark-history-server third-party/helm-charts/spark-history-server/charts/spark-history-server --namespace spark-history-server --create-namespace
 
-	kubeConfig, err := awslib.CreateKubeConfig(topology.EksSpec.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), topology.EksSpec.Eks.ClusterName)
+	kubeConfig, err := awslib.CreateKubeConfig(topology.Eks.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), topology.Eks.EksCluster.ClusterName)
 	if err != nil {
 		log.Fatalf("Failed to get kube config: %s", err)
 	}
 
 	defer kubeConfig.Cleanup()
 
-	installName := topology.HistoryServer.HelmInstallName
-	installNamespace := topology.HistoryServer.Namespace
+	installName := topology.Spark.HistoryServer.HelmInstallName
+	installNamespace := topology.Spark.HistoryServer.Namespace
 
 	arguments := []string{
-		"--set", fmt.Sprintf("image.repository=%s", topology.HistoryServer.ImageRepository),
-		"--set", fmt.Sprintf("image.tag=%s", topology.HistoryServer.ImageTag),
+		"--set", fmt.Sprintf("image.repository=%s", topology.Spark.HistoryServer.ImageRepository),
+		"--set", fmt.Sprintf("image.tag=%s", topology.Spark.HistoryServer.ImageTag),
 	}
 
 	if !commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
 		arguments = append(arguments, "--set")
-		arguments = append(arguments, fmt.Sprintf("sparkEventLogDir=%s", topology.ApiGateway.SparkEventLogDir))
+		arguments = append(arguments, fmt.Sprintf("sparkEventLogDir=%s", topology.Spark.Gateway.SparkEventLogDir))
 	}
 
 	kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvHistoryServerHelmChart), kubeConfig, arguments, installName, installNamespace)

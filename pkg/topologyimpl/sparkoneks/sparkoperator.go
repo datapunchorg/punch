@@ -40,11 +40,11 @@ import (
 // TODO remove log.Fatalf
 
 func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, topology SparkOnEksTopologySpec) {
-	region := topology.EksSpec.Region
-	clusterName := topology.EksSpec.Eks.ClusterName
-	operatorNamespace := topology.SparkOperator.Namespace
+	region := topology.Eks.Region
+	clusterName := topology.Eks.EksCluster.ClusterName
+	operatorNamespace := topology.Spark.Operator.Namespace
 
-	eventLogDir := topology.ApiGateway.SparkEventLogDir
+	eventLogDir := topology.Spark.Gateway.SparkEventLogDir
 	if strings.HasPrefix(strings.ToLower(eventLogDir), "s3") {
 		dummyFileUrl := eventLogDir
 		if !strings.HasSuffix(dummyFileUrl, "/") {
@@ -52,7 +52,7 @@ func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, topolo
 		}
 		dummyFileUrl += "dummy.txt"
 		log.Printf("Uploading dummy file %s to Spark event log directory %s to make sure the directry exits (Spark application and history server will fail if the directory does not exist)", dummyFileUrl, eventLogDir)
-		err := awslib.UploadDataToS3Url(topology.EksSpec.Region, dummyFileUrl, strings.NewReader(""))
+		err := awslib.UploadDataToS3Url(topology.Eks.Region, dummyFileUrl, strings.NewReader(""))
 		if err != nil {
 			log.Fatalf("Failed to create dummy file %s in Spark event log directory %s to make sure the directry exits (Spark application and history server will fail if the directory does not exist): %s", dummyFileUrl, eventLogDir, err.Error())
 		}
@@ -88,7 +88,7 @@ func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, topolo
 
 	// CreateSparkServiceAccount(clientset, operatorNamespace, sparkApplicationNamespace, "spark")
 
-	helmInstallName := topology.SparkOperator.HelmInstallName
+	helmInstallName := topology.Spark.Operator.HelmInstallName
 	CreateApiGatewayService(clientset, operatorNamespace, helmInstallName, helmInstallName)
 
 	sparkOperatorPodNamePrefix := helmInstallName
@@ -175,44 +175,44 @@ func CreateApiGatewayService(clientset *kubernetes.Clientset, namespace string, 
 func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, topology SparkOnEksTopologySpec) {
 	// helm install my-release spark-operator/spark-operator --namespace spark-operator --create-namespace --set sparkJobNamespace=default
 
-	kubeConfig, err := awslib.CreateKubeConfig(topology.EksSpec.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), topology.EksSpec.Eks.ClusterName)
+	kubeConfig, err := awslib.CreateKubeConfig(topology.Eks.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), topology.Eks.EksCluster.ClusterName)
 	if err != nil {
 		log.Fatalf("Failed to get kube config: %s", err)
 	}
 
 	defer kubeConfig.Cleanup()
 
-	installName := topology.SparkOperator.HelmInstallName
-	operatorNamespace := topology.SparkOperator.Namespace
-	sparkApplicationNamespace := topology.SparkOperator.SparkApplicationNamespace
+	installName := topology.Spark.Operator.HelmInstallName
+	operatorNamespace := topology.Spark.Operator.Namespace
+	sparkApplicationNamespace := topology.Spark.Operator.SparkApplicationNamespace
 
 	arguments := []string{
 		"--set", fmt.Sprintf("sparkJobNamespace=%s", sparkApplicationNamespace),
-		"--set", fmt.Sprintf("image.repository=%s", topology.SparkOperator.ImageRepository),
-		"--set", fmt.Sprintf("image.tag=%s", topology.SparkOperator.ImageTag),
+		"--set", fmt.Sprintf("image.repository=%s", topology.Spark.Operator.ImageRepository),
+		"--set", fmt.Sprintf("image.tag=%s", topology.Spark.Operator.ImageTag),
 		"--set", "serviceAccounts.spark.create=true",
 		"--set", "serviceAccounts.spark.name=spark",
-		"--set", "apiGateway.userName=" + topology.ApiGateway.UserName,
-		"--set", "apiGateway.userPassword=" + topology.ApiGateway.UserPassword,
-		"--set", "apiGateway.s3Region=" + topology.EksSpec.Region,
-		"--set", "apiGateway.s3Bucket=" + topology.EksSpec.S3BucketName,
+		"--set", "spark.gateway.user=" + topology.Spark.Gateway.User,
+		"--set", "spark.gateway.password=" + topology.Spark.Gateway.Password,
+		"--set", "spark.gateway.s3Region=" + topology.Eks.Region,
+		"--set", "spark.gateway.s3Bucket=" + topology.Eks.S3BucketName,
 		// "--set", "webhook.enable=true",
 	}
 
 	if !commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
 		arguments = append(arguments, "--set")
-		arguments = append(arguments, "apiGateway.sparkEventLogEnabled=true")
+		arguments = append(arguments, "spark.gateway.sparkEventLogEnabled=true")
 		arguments = append(arguments, "--set")
-		arguments = append(arguments, "apiGateway.sparkEventLogDir="+topology.ApiGateway.SparkEventLogDir)
+		arguments = append(arguments, "spark.gateway.sparkEventLogDir="+topology.Spark.Gateway.SparkEventLogDir)
 	}
 
-	if topology.ApiGateway.HiveMetastoreUris != "" {
+	if topology.Spark.Gateway.HiveMetastoreUris != "" {
 		arguments = append(arguments, "--set")
-		arguments = append(arguments, "apiGateway.hiveMetastoreUris="+topology.ApiGateway.HiveMetastoreUris)
+		arguments = append(arguments, "spark.gateway.hiveMetastoreUris="+topology.Spark.Gateway.HiveMetastoreUris)
 	}
-	if topology.ApiGateway.SparkSqlWarehouseDir != "" {
+	if topology.Spark.Gateway.SparkSqlWarehouseDir != "" {
 		arguments = append(arguments, "--set")
-		arguments = append(arguments, "apiGateway.sparkSqlWarehouseDir="+topology.ApiGateway.SparkSqlWarehouseDir)
+		arguments = append(arguments, "spark.gateway.sparkSqlWarehouseDir="+topology.Spark.Gateway.SparkSqlWarehouseDir)
 	}
 
 	kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvSparkOperatorHelmChart), kubeConfig, arguments, installName, operatorNamespace)

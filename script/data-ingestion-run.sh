@@ -28,10 +28,10 @@ metastoreUri=$(jq -r '.output[] | select(.step=="installHiveMetastoreServer").ou
 metastoreWarehouseDir=$(jq -r '.output[] | select(.step=="installHiveMetastoreServer").output.metastoreWarehouseDir' HiveMetastore.output.json)
 
 ./punch install SparkOnEks --set namePrefix=$namePrefix \
-  --patch spec.apiGateway.userName=$sparkApiGatewayUser \
-  --patch spec.apiGateway.userPassword=$sparkApiGatewayPassword \
-  --patch spec.apiGateway.hiveMetastoreUris=$metastoreUri \
-  --patch spec.apiGateway.sparkSqlWarehouseDir=$metastoreWarehouseDir \
+  --patch spec.spark.gateway.user=$sparkApiGatewayUser \
+  --patch spec.spark.gateway.password=$sparkApiGatewayPassword \
+  --patch spec.spark.gateway.hiveMetastoreUris=$metastoreUri \
+  --patch spec.spark.gateway.sparkSqlWarehouseDir=$metastoreWarehouseDir \
   --print-usage-example \
   -o SparkOnEks.output.json
 

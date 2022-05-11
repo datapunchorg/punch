@@ -32,7 +32,7 @@ func TestTemplate(t *testing.T) {
 	topology := CreateDefaultEksTopology("my", "{{ or .Values.s3BucketName .DefaultS3BucketName }}")
 	topology.Metadata.CommandEnvironment["kubeConfig"] = ""
 	topology.Metadata.CommandEnvironment["helmExecutable"] = "helm"
-	topology.Spec.Eks.ClusterName = "{{ .Values.eksCluster.name }}"
+	topology.Spec.EksCluster.ClusterName = "{{ .Values.eksCluster.name }}"
 
 	tmpl, err := template.New("").Parse(framework.TopologyString(&topology))
 	assert.Equal(t, nil, err)
@@ -51,7 +51,7 @@ func TestTemplate(t *testing.T) {
 	eksTopology := EksTopology{}
 	yaml.Unmarshal([]byte(str), &eksTopology)
 	assert.Equal(t, "bucket123abc", eksTopology.Spec.S3BucketName)
-	assert.Equal(t, "cluster1", eksTopology.Spec.Eks.ClusterName)
+	assert.Equal(t, "cluster1", eksTopology.Spec.EksCluster.ClusterName)
 }
 
 func TestTemplateWithAlternativeValue(t *testing.T) {
