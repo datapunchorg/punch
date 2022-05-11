@@ -75,8 +75,6 @@ func Execute() {
 func getTopologyHandlerPlugin(kind string) framework.TopologyHandler {
 	var mod string
 	switch kind {
-	case "SparkOnEks":
-		mod = searchFileOrFatal("sparkoneks.so")
 	case "HiveMetastore":
 		mod = searchFileOrFatal("hivemetastore.so")
 	case "RdsDatabase":
