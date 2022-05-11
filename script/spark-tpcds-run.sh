@@ -5,7 +5,7 @@ set -ex
 
 namePrefix=my
 instanceType=t3.xlarge
-instanceCount=4
+instanceCount=3
 
 databaseUser=user1
 databasePassword=password1
