@@ -27,7 +27,7 @@ func TestGenerateTopology(t *testing.T) {
 	handler := &TopologyHandler{}
 	topology, err := handler.Generate()
 	assert.Equal(t, nil, err)
-	assert.Equal(t, "EksCluster", topology.GetKind())
+	assert.Equal(t, "Eks", topology.GetKind())
 
 	log.Printf("-----\n%s\n-----\n", framework.TopologyString(topology))
 
@@ -44,7 +44,7 @@ func TestParseTopology(t *testing.T) {
 
 	topology, err = handler.Parse([]byte(yamlContent))
 	assert.Equal(t, nil, err)
-	assert.Equal(t, "EksCluster", topology.GetKind())
+	assert.Equal(t, "Eks", topology.GetKind())
 	currentTopology = topology.(*EksTopology)
 	assert.Equal(t, "foo", currentTopology.Spec.NamePrefix)
 }
@@ -58,5 +58,5 @@ func TestResolveTopology(t *testing.T) {
 	topology.(*EksTopology).Metadata.CommandEnvironment = env
 	resolvedTopology, err := handler.Validate(topology, framework.PhaseBeforeInstall)
 	assert.Equal(t, nil, err)
-	assert.Equal(t, "EksCluster", resolvedTopology.GetKind())
+	assert.Equal(t, "Eks", resolvedTopology.GetKind())
 }
