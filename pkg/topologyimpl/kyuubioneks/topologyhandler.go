@@ -22,6 +22,7 @@ import (
 	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	"github.com/datapunchorg/punch/pkg/topologyimpl/sparkoneks"
 	"gopkg.in/yaml.v3"
+	"log"
 )
 
 const (
@@ -63,14 +64,48 @@ func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (f
 }
 
 func (t *TopologyHandler) Install(topology framework.Topology) (framework.DeploymentOutput, error) {
-	deployment := framework.NewDeployment()
-	return deployment.GetOutput(), nil
+	currentTopology := topology.(*KyuubiOnEksTopology)
+	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
+	deployment, err := CreateInstallDeployment(currentTopology.Spec, commandEnvironment)
+	if err != nil {
+		return deployment.GetOutput(), err
+	}
+	err = deployment.Run()
+	return deployment.GetOutput(), err
 }
 
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
-	deployment := framework.NewDeployment()
-	return deployment.GetOutput(), nil
+	currentTopology := topology.(*KyuubiOnEksTopology)
+	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
+	deployment, err := CreateUninstallDeployment(currentTopology.Spec, commandEnvironment)
+	if err != nil {
+		return deployment.GetOutput(), err
+	}
+	err = deployment.Run()
+	return deployment.GetOutput(), err
 }
 
 func (t *TopologyHandler) PrintUsageExample(topology framework.Topology, deploymentOutput framework.DeploymentOutput) {
+	log.Printf("Kyuubi Installed")
+}
+
+func CreateInstallDeployment(topologySpec KyuubiOnEksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
+	deployment, err := eks.CreateInstallDeployment(topologySpec.Eks, commandEnvironment)
+	if err != nil {
+		return nil, err
+	}
+	deployment.AddStep("deploySparkOperator", "Deploy Spark Operator", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+		err := sparkoneks.DeploySparkOperator(commandEnvironment, topologySpec.Spark, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName, topologySpec.Eks.S3BucketName)
+		return nil, err
+	})
+	deployment.AddStep("deploySparkHistoryServer", "Deploy Spark History Server", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+		err := sparkoneks.DeployHistoryServer(commandEnvironment, topologySpec.Spark, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName)
+		return nil, err
+	})
+	return deployment, nil
+}
+
+func CreateUninstallDeployment(topologySpec KyuubiOnEksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
+	deployment, err := eks.CreateUninstallDeployment(topologySpec.Eks, commandEnvironment)
+	return deployment, err
 }

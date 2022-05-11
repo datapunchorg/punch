@@ -67,28 +67,22 @@ func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (f
 
 func (t *TopologyHandler) Install(topology framework.Topology) (framework.DeploymentOutput, error) {
 	currentTopology := topology.(*SparkOnEksTopology)
-
 	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
-
-	deployment, err := BuildInstallDeployment(currentTopology.Spec, commandEnvironment)
+	deployment, err := CreateInstallDeployment(currentTopology.Spec, commandEnvironment)
 	if err != nil {
 		return deployment.GetOutput(), err
 	}
-
 	err = deployment.Run()
 	return deployment.GetOutput(), err
 }
 
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
 	currentTopology := topology.(*SparkOnEksTopology)
-
 	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
-
-	deployment, err := BuildUninstallDeployment(currentTopology.Spec, commandEnvironment)
+	deployment, err := CreateUninstallDeployment(currentTopology.Spec, commandEnvironment)
 	if err != nil {
 		return deployment.GetOutput(), err
 	}
-
 	err = deployment.Run()
 	return deployment.GetOutput(), err
 }
@@ -171,26 +165,23 @@ Another example using sparkcli to run Python Spark application from local file (
 	log.Printf(anotherStr, userName, userPassword, url, file.Name())
 }
 
-func BuildInstallDeployment(topologySpec SparkOnEksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
+func CreateInstallDeployment(topologySpec SparkOnEksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
 	deployment, err := eks.CreateInstallDeployment(topologySpec.Eks, commandEnvironment)
 	if err != nil {
 		return nil, err
 	}
-
 	deployment.AddStep("deploySparkOperator", "Deploy Spark Operator", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-		DeploySparkOperator(commandEnvironment, topologySpec.Spark, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName, topologySpec.Eks.S3BucketName)
-		return framework.NewDeploymentStepOutput(), nil
+		err := DeploySparkOperator(commandEnvironment, topologySpec.Spark, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName, topologySpec.Eks.S3BucketName)
+		return nil, err
 	})
-
 	deployment.AddStep("deploySparkHistoryServer", "Deploy Spark History Server", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-		DeployHistoryServer(commandEnvironment, topologySpec)
-		return framework.NewDeploymentStepOutput(), nil
+		err := DeployHistoryServer(commandEnvironment, topologySpec.Spark, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName)
+		return nil, err
 	})
-
 	return deployment, nil
 }
 
-func BuildUninstallDeployment(topologySpec SparkOnEksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
+func CreateUninstallDeployment(topologySpec SparkOnEksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
 	deployment, err := eks.CreateUninstallDeployment(topologySpec.Eks, commandEnvironment)
 	return deployment, err
 }

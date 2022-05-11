@@ -26,22 +26,20 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-func DeployHistoryServer(commandEnvironment framework.CommandEnvironment, topology SparkOnEksTopologySpec) error {
-	region := topology.Eks.Region
-	clusterName := topology.Eks.EksCluster.ClusterName
-	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), clusterName)
+func DeployHistoryServer(commandEnvironment framework.CommandEnvironment, sparkComponentSpec SparkComponentSpec, region string, eksClusterName string) error {
+	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
 	if err != nil {
 		return fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
 	}
 
-	err = InstallHistoryServerHelm(commandEnvironment, topology)
+	err = InstallHistoryServerHelm(commandEnvironment, sparkComponentSpec, region, eksClusterName)
 	if err != nil {
 		return fmt.Errorf("failed to install Spark History Server helm chart: %s", err.Error())
 	}
 
-	helmInstallName := topology.Spark.HistoryServer.HelmInstallName
+	helmInstallName := sparkComponentSpec.HistoryServer.HelmInstallName
 
-	namespace := topology.Spark.HistoryServer.Namespace
+	namespace := sparkComponentSpec.HistoryServer.Namespace
 	podNamePrefix := helmInstallName
 	err = kubelib.WaitPodsInPhases(clientset, namespace, podNamePrefix, []v1.PodPhase{v1.PodRunning})
 	if err != nil {
@@ -51,30 +49,29 @@ func DeployHistoryServer(commandEnvironment framework.CommandEnvironment, topolo
 	return nil
 }
 
-func InstallHistoryServerHelm(commandEnvironment framework.CommandEnvironment, topology SparkOnEksTopologySpec) error {
+func InstallHistoryServerHelm(commandEnvironment framework.CommandEnvironment, sparkComponentSpec SparkComponentSpec, region string, eksClusterName string) error {
 	// helm install spark-history-server third-party/helm-charts/spark-history-server/charts/spark-history-server --namespace spark-history-server --create-namespace
 
-	kubeConfig, err := awslib.CreateKubeConfig(topology.Eks.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), topology.Eks.EksCluster.ClusterName)
+	kubeConfig, err := awslib.CreateKubeConfig(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
 	if err != nil {
 		log.Fatalf("Failed to get kube config: %s", err)
 	}
 
 	defer kubeConfig.Cleanup()
 
-	installName := topology.Spark.HistoryServer.HelmInstallName
-	installNamespace := topology.Spark.HistoryServer.Namespace
+	installName := sparkComponentSpec.HistoryServer.HelmInstallName
+	installNamespace := sparkComponentSpec.HistoryServer.Namespace
 
 	arguments := []string{
-		"--set", fmt.Sprintf("image.repository=%s", topology.Spark.HistoryServer.ImageRepository),
-		"--set", fmt.Sprintf("image.tag=%s", topology.Spark.HistoryServer.ImageTag),
+		"--set", fmt.Sprintf("image.repository=%s", sparkComponentSpec.HistoryServer.ImageRepository),
+		"--set", fmt.Sprintf("image.tag=%s", sparkComponentSpec.HistoryServer.ImageTag),
 	}
 
 	if !commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
 		arguments = append(arguments, "--set")
-		arguments = append(arguments, fmt.Sprintf("sparkEventLogDir=%s", topology.Spark.Gateway.SparkEventLogDir))
+		arguments = append(arguments, fmt.Sprintf("sparkEventLogDir=%s", sparkComponentSpec.Gateway.SparkEventLogDir))
 	}
 
-	kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvHistoryServerHelmChart), kubeConfig, arguments, installName, installNamespace)
-
-	return nil
+	err = kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvHistoryServerHelmChart), kubeConfig, arguments, installName, installNamespace)
+	return err
 }
