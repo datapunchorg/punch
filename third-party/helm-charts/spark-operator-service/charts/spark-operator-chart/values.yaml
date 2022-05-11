@@ -169,12 +169,13 @@ istio:
 # labelSelectorFilter -- A comma-separated list of key=value, or key labels to filter resources during watch and list based on the specified labels.
 labelSelectorFilter: ""
 
-apiGateway:
-  port: 80
-  urlPrefix: /sparkapi
-  userName: user1
-  userPassword: ""
-  s3Region: us-west-1
-  s3Bucket: todo-change-to-your-bucket-name
-  sparkEventLogEnabled: "false"
-  sparkEventLogDir: /tmp/eventLog
+spark:
+  gateway:
+    port: 80
+    urlPrefix: /sparkapi
+    userName: user1
+    userPassword: ""
+    s3Region: us-west-1
+    s3Bucket: todo-change-to-your-bucket-name
+    sparkEventLogEnabled: "false"
+    sparkEventLogDir: /tmp/eventLog

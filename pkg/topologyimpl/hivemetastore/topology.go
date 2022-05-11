@@ -89,7 +89,7 @@ func CreateDefaultHiveMetastoreTopology(namePrefix string, s3BucketName string) 
 		Spec: HiveMetastoreTopologySpec{
 			NamePrefix:      namePrefix,
 			Region:          fmt.Sprintf("{{ or .Values.region `%s` }}", framework.DefaultRegion),
-			EksClusterName:  eksTopology.Spec.Eks.ClusterName,
+			EksClusterName:  eksTopology.Spec.EksCluster.ClusterName,
 			EksVpcId:        eksTopology.Spec.VpcId,
 			Namespace:       "hive-01",
 			ImageRepository: "ghcr.io/datapunchorg/helm-hive-metastore",

@@ -87,7 +87,7 @@ func CreateDefaultTopology(namePrefix string, s3BucketName string) KafkaBridgeTo
 			NamePrefix:   namePrefix,
 			Region:       fmt.Sprintf("{{ or .Values.region `%s` }}", framework.DefaultRegion),
 			KafkaOnMskSpec: kafkaOnMskTopology.Spec,
-			EksClusterName: eksTopology.Spec.Eks.ClusterName,
+			EksClusterName: eksTopology.Spec.EksCluster.ClusterName,
 			NginxNamespace: eks.DefaultNginxIngressNamespace,
 			NginxServiceName: eks.DefaultNginxServiceName,
 			KafkaBridge: KafkaBridgeSpec{

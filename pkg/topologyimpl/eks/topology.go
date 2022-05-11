@@ -49,9 +49,9 @@ type EksTopologySpec struct {
 	VpcId             string                   `json:"vpcId" yaml:"vpcId"`
 	S3BucketName      string              `json:"s3BucketName" yaml:"s3BucketName"`
 	S3Policy          resource.IamPolicy  `json:"s3Policy" yaml:"s3Policy"`
-	KafkaPolicy       resource.IamPolicy  `json:"kafkaPolicy" yaml:"kafkaPolicy"`
-	Eks               resource.EKSCluster `json:"eks" yaml:"eks"`
-	NodeGroups        []resource.NodeGroup `json:"nodeGroups" yaml:"nodeGroups"`
+	KafkaPolicy resource.IamPolicy   `json:"kafkaPolicy" yaml:"kafkaPolicy"`
+	EksCluster  resource.EKSCluster  `json:"eksCluster" yaml:"eksCluster"`
+	NodeGroups  []resource.NodeGroup `json:"nodeGroups" yaml:"nodeGroups"`
 	NginxIngress      NginxIngress             `json:"nginxIngress" yaml:"nginxIngress"`
 	AutoScaling       resource.AutoScalingSpec `json:"autoScaling" yaml:"autoScaling"`
 }
@@ -70,8 +70,8 @@ func GenerateEksTopology() EksTopology {
 }
 
 func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopology {
-	topologyName := fmt.Sprintf("%s-Eks-k8s", namePrefix)
-	eksClusterName := fmt.Sprintf("%s-eks-01", namePrefix)
+	topologyName := fmt.Sprintf("%s-eks-01", namePrefix)
+	eksClusterName := topologyName
 	controlPlaneRoleName := fmt.Sprintf("%s-eks-control-plane", namePrefix)
 	instanceRoleName := fmt.Sprintf("%s-eks-instance", namePrefix)
 	securityGroupName := fmt.Sprintf("%s-eks-sg-01", namePrefix)
@@ -109,7 +109,7 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 {"Effect":"Allow","Action":"kafka-cluster:*","Resource":"*"}
 ]}`,
 			},
-			Eks: resource.EKSCluster{
+			EksCluster: resource.EKSCluster{
 				ClusterName: eksClusterName,
 				// TODO fill in default value for SubnetIds
 				ControlPlaneRole: resource.IamRole{

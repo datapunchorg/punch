@@ -55,7 +55,7 @@ spec:
             containerPort: {{ .Values.metrics.port }}
         {{ end }}
           - name: api-gateway
-            containerPort: {{ .Values.apiGateway.port }}
+            containerPort: {{ .Values.spark.gateway.port }}
         args:
         - -v={{ .Values.logLevel }}
         - -logtostderr
@@ -88,12 +88,12 @@ spec:
         - -leader-election-lock-namespace={{ default .Release.Namespace .Values.leaderElection.lockNamespace }}
         - -leader-election-lock-name={{ .Values.leaderElection.lockName }}
         {{- end }}
-        - -api-gateway-port={{ .Values.apiGateway.port }}
-        - -api-gateway-url-prefix={{ .Values.apiGateway.urlPrefix }}
-        - -api-gateway-user-name={{ .Values.apiGateway.userName }}
-        - -api-gateway-user-password={{ .Values.apiGateway.userPassword }}
-        - -api-gateway-s3-region={{ .Values.apiGateway.s3Region }}
-        - -api-gateway-s3-bucket={{ .Values.apiGateway.s3Bucket }}
+        - -api-gateway-port={{ .Values.spark.gateway.port }}
+        - -api-gateway-url-prefix={{ .Values.spark.gateway.urlPrefix }}
+        - -api-gateway-user-name={{ .Values.spark.gateway.user }}
+        - -api-gateway-user-password={{ .Values.spark.gateway.password }}
+        - -api-gateway-s3-region={{ .Values.spark.gateway.s3Region }}
+        - -api-gateway-s3-bucket={{ .Values.spark.gateway.s3Bucket }}
         - -api-gateway-config=/etc/api-gateway-config/apiGatewayConfig.yml
         resources:
           {{- toYaml .Values.resources | nindent 10 }}

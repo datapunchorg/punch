@@ -111,7 +111,7 @@ Example commands to use EKS cluster:
 ------------------------------
 Step 1: run: aws eks update-kubeconfig --region %s --name %s
 Step 2: run: kubectl get pods -A`
-	log.Printf(str, currentTopology.Spec.Region, currentTopology.Spec.Eks.ClusterName)
+	log.Printf(str, currentTopology.Spec.Region, currentTopology.Spec.EksCluster.ClusterName)
 }
 
 func CreateInstallDeployment(topologySpec EksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
@@ -125,7 +125,7 @@ func CreateInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fr
 	if commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
 		commandEnvironment.Set(framework.CmdEnvKubeConfig, kubelib.GetKubeConfigPath())
 		deployment.AddStep("minikubeProfile", "Set Minikube Profile", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-			_, err := resource.MinikubeExec("profile", topologySpec.Eks.ClusterName)
+			_, err := resource.MinikubeExec("profile", topologySpec.EksCluster.ClusterName)
 			return framework.NewDeploymentStepOutput(), err
 		})
 
@@ -150,11 +150,11 @@ func CreateInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fr
 		})
 
 		deployment.AddStep("createEksCluster", "Create EKS cluster", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-			err := resource.CreateEksCluster(topologySpec.Region, topologySpec.VpcId, topologySpec.Eks)
+			err := resource.CreateEksCluster(topologySpec.Region, topologySpec.VpcId, topologySpec.EksCluster)
 			if err != nil {
 				return framework.NewDeploymentStepOutput(), err
 			}
-			clusterSummary, err := resource.DescribeEksCluster(topologySpec.Region, topologySpec.Eks.ClusterName)
+			clusterSummary, err := resource.DescribeEksCluster(topologySpec.Region, topologySpec.EksCluster.ClusterName)
 			if err != nil {
 				return framework.NewDeploymentStepOutput(), err
 			}
@@ -172,7 +172,7 @@ func CreateInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fr
 				return framework.NewDeploymentStepOutput(), err
 			}
 			for _, nodeGroup := range topologySpec.NodeGroups {
-				err := resource.CreateNodeGroup(topologySpec.Region, topologySpec.Eks.ClusterName, nodeGroup, roleArn)
+				err := resource.CreateNodeGroup(topologySpec.Region, topologySpec.EksCluster.ClusterName, nodeGroup, roleArn)
 				if err != nil {
 					return framework.NewDeploymentStepOutput(), err
 				}
@@ -185,7 +185,7 @@ func CreateInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fr
 				awslib.RunEksCtlCmd("eksctl",
 					[]string{"utils", "associate-iam-oidc-provider",
 						"--region", topologySpec.Region,
-						"--cluster", topologySpec.Eks.ClusterName,
+						"--cluster", topologySpec.EksCluster.ClusterName,
 						"--approve"})
 				return framework.NewDeploymentStepOutput(), nil
 			})
@@ -210,7 +210,7 @@ func CreateInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fr
 
 			deployment.AddStep("createClusterAutoscalerTagsOnNodeGroup", "Create Cluster Autoscaler tags on node groups", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 				for _, nodeGroup := range topologySpec.NodeGroups {
-					err := awslib.CreateOrUpdateClusterAutoscalerTagsOnNodeGroup(topologySpec.Region, topologySpec.Eks.ClusterName, nodeGroup.Name)
+					err := awslib.CreateOrUpdateClusterAutoscalerTagsOnNodeGroup(topologySpec.Region, topologySpec.EksCluster.ClusterName, nodeGroup.Name)
 					if err != nil {
 						return framework.NewDeploymentStepOutput(), err
 					}
@@ -239,7 +239,7 @@ func CreateUninstallDeployment(topologySpec EksTopologySpec, commandEnvironment 
 
 	if commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
 		deployment.AddStep("minikubeProfile", "Set Minikube Profile", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-			_, err := resource.MinikubeExec("profile", topologySpec.Eks.ClusterName)
+			_, err := resource.MinikubeExec("profile", topologySpec.EksCluster.ClusterName)
 			return framework.NewDeploymentStepOutput(), err
 		})
 
@@ -254,9 +254,9 @@ func CreateUninstallDeployment(topologySpec EksTopologySpec, commandEnvironment 
 		})
 	} else {
 		deployment.AddStep("deleteOidcProvider", "Delete OIDC Provider", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-			clusterSummary, err := resource.DescribeEksCluster(topologySpec.Region, topologySpec.Eks.ClusterName)
+			clusterSummary, err := resource.DescribeEksCluster(topologySpec.Region, topologySpec.EksCluster.ClusterName)
 			if err != nil {
-				log.Printf("[WARN] Cannot delete OIDC provider, failed to get EKS cluster %s in regsion %s: %s", topologySpec.Eks.ClusterName, topologySpec.Region, err.Error())
+				log.Printf("[WARN] Cannot delete OIDC provider, failed to get EKS cluster %s in regsion %s: %s", topologySpec.EksCluster.ClusterName, topologySpec.Region, err.Error())
 				return framework.NewDeploymentStepOutput(), nil
 			}
 			if clusterSummary.OidcIssuer != "" {
@@ -272,7 +272,7 @@ func CreateUninstallDeployment(topologySpec EksTopologySpec, commandEnvironment 
 		})
 		deployment.AddStep("deleteNodeGroups", "Delete Node Groups", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 			for _, nodeGroup := range topologySpec.NodeGroups {
-				err := awslib.DeleteNodeGroup(topologySpec.Region, topologySpec.Eks.ClusterName, nodeGroup.Name)
+				err := awslib.DeleteNodeGroup(topologySpec.Region, topologySpec.EksCluster.ClusterName, nodeGroup.Name)
 				if err != nil {
 					return framework.NewDeploymentStepOutput(), err
 				}
@@ -281,12 +281,12 @@ func CreateUninstallDeployment(topologySpec EksTopologySpec, commandEnvironment 
 		})
 
 		deployment.AddStep("deleteLoadBalancer", "Delete Load Balancer", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-			err := awslib.DeleteLoadBalancersOnEks(topologySpec.Region, topologySpec.VpcId, topologySpec.Eks.ClusterName, "ingress-nginx")
+			err := awslib.DeleteLoadBalancersOnEks(topologySpec.Region, topologySpec.VpcId, topologySpec.EksCluster.ClusterName, "ingress-nginx")
 			return framework.NewDeploymentStepOutput(), err
 		})
 
 		deployment.AddStep("deleteEksCluster", "Delete EKS Cluster", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-			DeleteEksCluster(topologySpec.Region, topologySpec.Eks.ClusterName)
+			DeleteEksCluster(topologySpec.Region, topologySpec.EksCluster.ClusterName)
 			return framework.NewDeploymentStepOutput(), nil
 		})
 	}
