@@ -21,19 +21,10 @@ import (
 	"github.com/datapunchorg/punch/pkg/framework"
 	"gopkg.in/yaml.v3"
 	"log"
-	"regexp"
 )
-
-var nonAlphanumericRegexp *regexp.Regexp
 
 func init() {
 	framework.DefaultTopologyHandlerManager.AddHandler(KindKafkaTopology, &TopologyHandler{})
-
-	var err error
-	nonAlphanumericRegexp, err = regexp.Compile("[^a-zA-Z]+")
-	if err != nil {
-		panic(err)
-	}
 }
 
 type TopologyHandler struct {

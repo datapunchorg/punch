@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package sparkoneks
 
 import (
 	"fmt"
@@ -35,10 +35,12 @@ const (
 	sparkcliPythonExampleCommandFormat = `./sparkcli --user %s --password %s --insecure --url %s/sparkapi/v1 submit --spark-version 3.2 --driver-memory 512m --executor-memory 512m %s`
 )
 
-type TopologyHandler struct {
+func init() {
+	framework.DefaultTopologyHandlerManager.AddHandler(KindSparkOnEksTopology, &TopologyHandler{})
 }
 
-var Handler TopologyHandler
+type TopologyHandler struct {
+}
 
 func (t *TopologyHandler) Generate() (framework.Topology, error) {
 	topology := GenerateSparkOnEksTopology()

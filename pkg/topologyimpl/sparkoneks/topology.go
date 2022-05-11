@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package sparkoneks
 
 import (
 	"fmt"
@@ -36,7 +36,7 @@ const (
 	DefaultSparkHistoryServerImageTag        = "spark-history-server-3.2-1650337377"
 	DefaultSparkHistoryServerNamespace       = "spark-history-server"
 
-	KindSparkTopology = "SparkOnEks"
+	KindSparkOnEksTopology = "SparkOnEks"
 
 	FieldMaskValue = "***"
 
@@ -95,7 +95,7 @@ func CreateDefaultSparkEksTopology(namePrefix string, s3BucketName string) Spark
 	topology := SparkOnEksTopology{
 		TopologyBase: framework.TopologyBase{
 			ApiVersion: framework.DefaultVersion,
-			Kind:       KindSparkTopology,
+			Kind:       KindSparkOnEksTopology,
 			Metadata: framework.TopologyMetadata{
 				Name: topologyName,
 				CommandEnvironment: map[string]string{

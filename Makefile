@@ -49,8 +49,6 @@ format:
 build:
 	@echo "building punch commands ..."
 	go build -o dist/punch ./cmd/punch
-	@echo "building sparkoneks plugin ..."
-	go build -buildmode=plugin -o dist/plugin/sparkoneks.so ./pkg/topologyimpl/sparkoneks/
 	@echo "building hivemetastore plugin ..."
 	go build -buildmode=plugin -o dist/plugin/hivemetastore.so ./pkg/topologyimpl/hivemetastore/
 	@echo "building rdsdatabase plugin ..."
