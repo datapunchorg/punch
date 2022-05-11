@@ -27,10 +27,6 @@ import (
 	"strings"
 )
 
-func init() {
-	framework.DefaultTopologyHandlerManager.AddHandler(KindEksTopology, &TopologyHandler{})
-}
-
 type TopologyHandler struct {
 }
 

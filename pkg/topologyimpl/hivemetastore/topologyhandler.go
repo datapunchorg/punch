@@ -29,9 +29,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func init() {
-}
-
 type TopologyHandler struct {
 }
 

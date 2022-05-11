@@ -28,10 +28,6 @@ import (
 	"time"
 )
 
-func init() {
-	framework.DefaultTopologyHandlerManager.AddHandler(KindKafkaTopology, &TopologyHandler{})
-}
-
 type createTopicRequest struct {
 	NumPartitions int64  `json:"numPartitions" yaml:"numPartitions"`
 	ReplicationFactor int64  `json:"replicationFactor" yaml:"replicationFactor"`

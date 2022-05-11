@@ -23,10 +23,6 @@ import (
 	"log"
 )
 
-func init() {
-	framework.DefaultTopologyHandlerManager.AddHandler(KindKafkaTopology, &TopologyHandler{})
-}
-
 type TopologyHandler struct {
 }
 

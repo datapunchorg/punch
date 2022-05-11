@@ -32,10 +32,6 @@ const (
 	sparkcliPythonExampleCommandFormat = `./sparkcli --user %s --password %s --insecure --url %s/sparkapi/v1 submit --spark-version 3.2 --driver-memory 512m --executor-memory 512m %s`
 )
 
-func init() {
-	framework.DefaultTopologyHandlerManager.AddHandler(KindSparkOnEksTopology, &TopologyHandler{})
-}
-
 type TopologyHandler struct {
 }
 

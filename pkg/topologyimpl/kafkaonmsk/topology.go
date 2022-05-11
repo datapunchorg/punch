@@ -25,7 +25,7 @@ import (
 
 const (
 
-	KindKafkaTopology = "KafkaOnMsk"
+	KindKafkaOnMskTopology = "KafkaOnMsk"
 
 	DefaultVersion    = "datapunch.org/v1alpha1"
 	DefaultRegion     = "us-west-1"
@@ -65,7 +65,7 @@ func CreateDefaultKafkaOnMskTopology(namePrefix string) KafkaTopology {
 	topology := KafkaTopology{
 		TopologyBase: framework.TopologyBase{
 			ApiVersion: DefaultVersion,
-			Kind:       KindKafkaTopology,
+			Kind:       KindKafkaOnMskTopology,
 			Metadata: framework.TopologyMetadata{
 				Name:               topologyName,
 				CommandEnvironment: map[string]string{},

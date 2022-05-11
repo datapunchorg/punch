@@ -18,22 +18,11 @@ package main
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/datapunchorg/punch/pkg/framework"
 	"gopkg.in/yaml.v3"
 )
-
-var nonAlphanumericRegexp *regexp.Regexp
-
-func init() {
-	var err error
-	nonAlphanumericRegexp, err = regexp.Compile("[^a-zA-Z]+")
-	if err != nil {
-		panic(err)
-	}
-}
 
 type TopologyHandler struct {
 }

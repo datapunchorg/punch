@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	KindKafkaTopology = "KafkaBridge"
+	KindKafkaBridgeTopology = "KafkaBridge"
 
 	CmdEnvKafkaBridgeHelmChart = "kafkaBridgeHelmChart"
 )
@@ -73,7 +73,7 @@ func CreateDefaultTopology(namePrefix string, s3BucketName string) KafkaBridgeTo
 	topology := KafkaBridgeTopology{
 		TopologyBase: framework.TopologyBase{
 			ApiVersion: framework.DefaultVersion,
-			Kind:       KindKafkaTopology,
+			Kind:       KindKafkaBridgeTopology,
 			Metadata: framework.TopologyMetadata{
 				Name:               topologyName,
 				CommandEnvironment: map[string]string{
