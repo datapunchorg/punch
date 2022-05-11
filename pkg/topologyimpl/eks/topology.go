@@ -32,7 +32,7 @@ const (
 	DefaultNginxEnableHttp             = true
 	DefaultNginxEnableHttps            = true
 
-	KindEksTopology = "EksCluster"
+	KindEksTopology = "Eks"
 
 	CmdEnvNginxHelmChart             = "nginxHelmChart"
 	CmdEnvClusterAutoscalerHelmChart = "ClusterAutoscalerHelmChart"
