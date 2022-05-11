@@ -1,5 +1,5 @@
 /*
-Copyright 2022 DataPunch Project
+Copyright 2022 DataPunch Organization
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,8 +28,6 @@ const (
 	DefaultUserName = "user1"
 
 	KindDatabaseTopology = "RdsDatabase"
-
-	FieldMaskValue = "***"
 )
 
 type RdsDatabaseTopology struct {
@@ -115,7 +113,7 @@ func (t *RdsDatabaseTopology) String() string {
 		return fmt.Sprintf("(Failed to deserialize topology in ToYamlString(): %s)", err.Error())
 	}
 	if copy.Spec.MasterUserPassword != "" {
-		copy.Spec.MasterUserPassword = FieldMaskValue
+		copy.Spec.MasterUserPassword = framework.FieldMaskValue
 	}
 	topologyBytes, err = yaml.Marshal(copy)
 	if err != nil {

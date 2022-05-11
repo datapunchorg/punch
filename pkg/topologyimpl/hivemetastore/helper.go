@@ -1,5 +1,5 @@
 /*
-Copyright 2022 DataPunch Project
+Copyright 2022 DataPunch Organization
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ type DatabaseInfo struct {
 
 func (t DatabaseInfo) String() string {
 	copy := t
-	copy.Password = FieldMaskValue
+	copy.Password = framework.FieldMaskValue
 	bytes, err := yaml.Marshal(copy)
 	if err != nil {
 		return fmt.Sprintf("(failed to get string for DatabaseInfo: %s)", err.Error())

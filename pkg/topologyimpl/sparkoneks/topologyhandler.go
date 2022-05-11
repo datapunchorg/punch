@@ -1,5 +1,5 @@
 /*
-Copyright 2022 DataPunch Project
+Copyright 2022 DataPunch Organization
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ func (t *TopologyHandler) Generate() (framework.Topology, error) {
 }
 
 func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) {
-	result := CreateDefaultSparkEksTopology(framework.DefaultNamePrefix, eks.ToBeReplacedS3BucketName)
+	result := CreateDefaultSparkOnEksTopology(framework.DefaultNamePrefix, eks.ToBeReplacedS3BucketName)
 	err := yaml.Unmarshal(yamlContent, &result)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse YAML (%s): \n%s", err.Error(), string(yamlContent))

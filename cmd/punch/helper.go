@@ -1,5 +1,5 @@
 /*
-Copyright 2022 DataPunch Project
+Copyright 2022 DataPunch Organization
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import (
 func MarshalTopology(topology framework.Topology) string {
 	topologyBytes, err := yaml.Marshal(topology)
 	if err != nil {
-		return fmt.Sprintf("<Failed to serialize topology: %s>", err.Error())
+		return fmt.Sprintf("(Failed to serialize topology: %s)", err.Error())
 	}
 	return string(topologyBytes)
 }

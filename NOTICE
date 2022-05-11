@@ -1,5 +1,5 @@
 DataPunch
-Copyright (c) 2022 DataPunch Project
+Copyright (c) 2022 DataPunch Organization
 
 I. Included Software
 
@@ -37,6 +37,10 @@ Licensed under the Apache License 2.0.
 
 This product includes and may modify software developed at
 strimzi-kafka-bridge (https://github.com/strimzi/strimzi-kafka-bridge).
+Licensed under the Apache License 2.0.
+
+This product includes and may modify software developed at
+Apache Kyuubi (https://github.com/apache/incubator-kyuubi).
 Licensed under the Apache License 2.0.
 
 This product may include or depend software developed at

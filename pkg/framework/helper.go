@@ -1,5 +1,5 @@
 /*
-Copyright 2022 DataPunch Project
+Copyright 2022 DataPunch Organization
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@ limitations under the License.
 */
 
 package framework
+
+const FieldMaskValue = "***"
 
 func GetOrElse(valueMap map[string]string, key string, defaultValue string) string {
 	if value, ok := valueMap[key]; ok {

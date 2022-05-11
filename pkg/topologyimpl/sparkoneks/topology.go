@@ -1,5 +1,5 @@
 /*
-Copyright 2022 DataPunch Project
+Copyright 2022 DataPunch Organization
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -37,8 +37,6 @@ const (
 	DefaultSparkHistoryServerNamespace       = "spark-history-server"
 
 	KindSparkOnEksTopology = "SparkOnEks"
-
-	FieldMaskValue = "***"
 
 	CmdEnvSparkOperatorHelmChart = "sparkOperatorHelmChart"
 	CmdEnvHistoryServerHelmChart = "historyServerHelmChart"
@@ -86,11 +84,11 @@ type SparkHistoryServer struct {
 func GenerateSparkOnEksTopology() SparkOnEksTopology {
 	namePrefix := framework.DefaultNamePrefixTemplate
 	s3BucketName := framework.DefaultS3BucketNameTemplate
-	return CreateDefaultSparkEksTopology(namePrefix, s3BucketName)
+	return CreateDefaultSparkOnEksTopology(namePrefix, s3BucketName)
 }
 
-func CreateDefaultSparkEksTopology(namePrefix string, s3BucketName string) SparkOnEksTopology {
-	topologyName := fmt.Sprintf("%s-spark-k8s", namePrefix)
+func CreateDefaultSparkOnEksTopology(namePrefix string, s3BucketName string) SparkOnEksTopology {
+	topologyName := fmt.Sprintf("%s-spark-on-eks-01", namePrefix)
 	eksTopology := eks.CreateDefaultEksTopology(namePrefix, s3BucketName)
 	topology := SparkOnEksTopology{
 		TopologyBase: framework.TopologyBase{
@@ -155,11 +153,11 @@ func (t *SparkOnEksTopology) String() string {
 		return fmt.Sprintf("(Failed to deserialize topology in ToYamlString(): %s)", err.Error())
 	}
 	if copy.Spec.Spark.Gateway.Password != "" {
-		copy.Spec.Spark.Gateway.Password = FieldMaskValue
+		copy.Spec.Spark.Gateway.Password = framework.FieldMaskValue
 	}
 	topologyBytes, err = yaml.Marshal(copy)
 	if err != nil {
-		return fmt.Sprintf("(Failed to serialize topology in ToYamlString(): %s)", err.Error())
+		return fmt.Sprintf("(Failed to serialize topology as YAML: %s)", err.Error())
 	}
 	return string(topologyBytes)
 }
