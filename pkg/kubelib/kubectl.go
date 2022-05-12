@@ -23,7 +23,7 @@ import (
 )
 
 func CheckKubectl(exeLocation string) error {
-	cmd := exec.Command(exeLocation, "options")
+	cmd := exec.Command(exeLocation, "version", "--client")
 	output, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("%s not installed: %s", exeLocation, err.Error())

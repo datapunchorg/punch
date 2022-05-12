@@ -86,6 +86,22 @@ func DeleteSecurityGroupById(ec2Client *ec2.EC2, securityGroupId string) error {
 	return nil
 }
 
+func DeleteSecurityGroupRulesBySourceId(ec2Client *ec2.EC2, securityGroupId string) error {
+	hasMoreResult := true
+	var nextToken *string
+	for hasMoreResult {
+		describeSecurityGroupsOutput, err := ec2Client.DescribeSecurityGroups(&ec2.DescribeSecurityGroupsInput{
+			NextToken: nextToken,
+			})
+		if err != nil {
+			return fmt.Errorf("failed to describe security groups: %s", err.Error())
+		}
+		nextToken = describeSecurityGroupsOutput.NextToken
+		hasMoreResult = nextToken != nil
+	}
+	return nil
+}
+
 func ListSecurityGroupRoles(ec2Client *ec2.EC2, vpcId string, securityGroupName string) ([]*ec2.SecurityGroupRule, error) {
 	var nextToken *string = nil
 	var hasMoreResult bool = true
