@@ -25,6 +25,8 @@ import (
 	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/common"
 	"github.com/datapunchorg/punch/pkg/framework"
+	"github.com/shipengqi/kube"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"log"
 	"strings"
 	"time"
@@ -275,4 +277,20 @@ func GetLoadBalancerPreferredUrl(urls []string) string {
 		}
 	}
 	return preferredUrl
+}
+
+func KubectlApply(kubeConfig string, yamlFile string) error {
+	flags := genericclioptions.NewConfigFlags(false)
+	flags.KubeConfig = &kubeConfig
+	cfg := kube.NewConfig(flags)
+	cli := kube.New(cfg)
+	_, err := cli.Dial()
+	if err != nil {
+		return fmt.Errorf("failed to dial in cli: %s", err.Error())
+	}
+	// apply file, is like "kubectl apply -f testdata/content-apply.yaml"
+	err = cli.Apply([]string{yamlFile})
+	if err != nil {
+		return fmt.Errorf("failed to apply yaml file %s in cli: %s", yamlFile, err.Error())
+	}
 }
