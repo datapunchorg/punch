@@ -293,4 +293,5 @@ func KubectlApply(kubeConfig string, yamlFile string) error {
 	if err != nil {
 		return fmt.Errorf("failed to apply yaml file %s in cli: %s", yamlFile, err.Error())
 	}
+	return nil
 }
