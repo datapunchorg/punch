@@ -84,6 +84,7 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 				Name: topologyName,
 				CommandEnvironment: map[string]string{
 					framework.CmdEnvHelmExecutable: framework.DefaultHelmExecutable,
+					framework.CmdEnvKubectlExecutable: framework.DefaultKubectlExecutable,
 					framework.CmdEnvWithMinikube: "false",
 					CmdEnvNginxHelmChart: "third-party/helm-charts/ingress-nginx/charts/ingress-nginx",
 					CmdEnvClusterAutoscalerHelmChart: "third-party/helm-charts/cluster-autoscaler/charts/cluster-autoscaler",

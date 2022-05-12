@@ -25,6 +25,7 @@ const (
 	DefaultVersion    = "datapunch.org/v1alpha1"
 
 	CmdEnvHelmExecutable             = "helmExecutable"
+	CmdEnvKubectlExecutable             = "kubectlExecutable"
 	CmdEnvWithMinikube               = "withMinikube"
 	CmdEnvKubeConfig                 = "kubeConfig"
 
@@ -35,6 +36,7 @@ const (
 	DefaultS3BucketNameTemplate = "{{ or .Values.s3BucketName .DefaultS3BucketName }}"
 
 	DefaultHelmExecutable = "helm"
+	DefaultKubectlExecutable = "kubectl"
 
 	DefaultEKSAssumeRolePolicyDocument = `{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":["eks.amazonaws.com"]},"Action":["sts:AssumeRole"]}]}`
 	DefaultEC2AssumeRolePolicyDocument = `{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":["ec2.amazonaws.com"]},"Action":["sts:AssumeRole"]}]}`
