@@ -26,11 +26,6 @@ import (
 	"log"
 )
 
-const (
-	sparkcliJavaExampleCommandFormat   = `./sparkcli --user %s --password %s --insecure --url %s/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar`
-	sparkcliPythonExampleCommandFormat = `./sparkcli --user %s --password %s --insecure --url %s/sparkapi/v1 submit --spark-version 3.2 --driver-memory 512m --executor-memory 512m %s`
-)
-
 type TopologyHandler struct {
 }
 
@@ -89,7 +84,8 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 }
 
 func (t *TopologyHandler) PrintUsageExample(topology framework.Topology, deploymentOutput framework.DeploymentOutput) {
-	log.Printf("Pinot Installed")
+	url := deploymentOutput.Output()["deployPinotService"]["pinotControllerUrl"].(string)
+	log.Printf("Pinot installed! Open %s in web browser to query data.", url)
 }
 
 func CreateInstallDeployment(topologySpec PinotDemoTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
@@ -97,8 +93,8 @@ func CreateInstallDeployment(topologySpec PinotDemoTopologySpec, commandEnvironm
 	if err != nil {
 		return nil, err
 	}
-	deployment.AddStep("deployPinotServer", "Deploy Pinot Server", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-		url, err := DeployPinotServer(commandEnvironment, topologySpec.Pinot, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName)
+	deployment.AddStep("deployPinotService", "Deploy Pinot Service", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+		url, err := DeployPinotService(commandEnvironment, topologySpec.Pinot, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName)
 		if err != nil {
 			return nil, err
 		}
@@ -106,8 +102,8 @@ func CreateInstallDeployment(topologySpec PinotDemoTopologySpec, commandEnvironm
 			"pinotControllerUrl": url,
 		}, nil
 	})
-	deployment.AddStep("deployKafkaServer", "Deploy Kafka Server", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-		err := DeployKafkaServer(commandEnvironment, topologySpec.Kafka, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName)
+	deployment.AddStep("deployKafkaService", "Deploy Kafka Service", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+		err := DeployKafkaService(commandEnvironment, topologySpec.Kafka, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName)
 		return nil, err
 	})
 	deployment.AddStep("createKafkaTopics", "Create Kafka Topics", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {

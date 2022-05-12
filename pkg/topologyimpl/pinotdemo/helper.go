@@ -28,7 +28,7 @@ import (
 	"time"
 )
 
-func DeployPinotServer(commandEnvironment framework.CommandEnvironment, pinotComponentSpec PinotComponentSpec, region string, eksClusterName string) (string, error) {
+func DeployPinotService(commandEnvironment framework.CommandEnvironment, pinotComponentSpec PinotComponentSpec, region string, eksClusterName string) (string, error) {
 	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
 	if err != nil {
 		return "", fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
@@ -83,7 +83,7 @@ func InstallPinotHelm(commandEnvironment framework.CommandEnvironment, pinotComp
 	return err
 }
 
-func DeployKafkaServer(commandEnvironment framework.CommandEnvironment, kafkaComponentSpec KafkaComponentSpec, region string, eksClusterName string) error {
+func DeployKafkaService(commandEnvironment framework.CommandEnvironment, kafkaComponentSpec KafkaComponentSpec, region string, eksClusterName string) error {
 	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
 	if err != nil {
 		return fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
