@@ -23,7 +23,9 @@
 
 ### How to uninstall SparkOnEks on Minikube
 
-1. Run punch command:
+1. In your terminal, run `make release`, and enter `dist` folder.
+
+2. Run punch command:
 
 ```
 ./punch uninstall SparkOnEks --env withMinikube=true
@@ -43,7 +45,7 @@ aws configure
 
 ### How to install SparkOnEks on AWS
 
-1. Unzip the zip file from Punch, and enter that folder in your terminal.
+1. In your terminal, run `make release`, and enter `dist` folder.
 
 2. Run punch command:
 
