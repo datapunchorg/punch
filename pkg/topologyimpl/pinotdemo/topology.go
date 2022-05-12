@@ -77,11 +77,11 @@ func CreateDefaultPinotDemoTopology(namePrefix string, s3BucketName string) Pino
 			Eks: eksTopology.Spec,
 			Pinot: PinotComponentSpec{
 				HelmInstallName: "pinot",
-				Namespace: "pinot-demo-01",
+				Namespace: "pinot-quickstart",
 			},
 			Kafka: KafkaComponentSpec{
 				HelmInstallName: "kafka",
-				Namespace: "pinot-demo-01",
+				Namespace: "pinot-quickstart",
 			},
 		},
 	}

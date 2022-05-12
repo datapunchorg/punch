@@ -77,3 +77,41 @@ func InstallPinotHelm(commandEnvironment framework.CommandEnvironment, pinotComp
 	err = kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvPinotHelmChart), kubeConfig, arguments, installName, installNamespace)
 	return err
 }
+
+func DeployKafkaServer(commandEnvironment framework.CommandEnvironment, kafkaComponentSpec KafkaComponentSpec, region string, eksClusterName string) (string, error) {
+	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
+	if err != nil {
+		return "", fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
+	}
+
+	err = InstallKafkaHelm(commandEnvironment, kafkaComponentSpec, region, eksClusterName)
+	if err != nil {
+		return "", fmt.Errorf("failed to install Spark History Server helm chart: %s", err.Error())
+	}
+
+	namespace := kafkaComponentSpec.Namespace
+	podNamePrefix := "kafka-1"
+	err = kubelib.WaitPodsInPhases(clientset, namespace, podNamePrefix, []v1.PodPhase{v1.PodRunning})
+	if err != nil {
+		return "", fmt.Errorf("pod %s*** in namespace %s is not in phase %s", podNamePrefix, namespace, v1.PodRunning)
+	}
+
+	return "", nil
+}
+
+func InstallKafkaHelm(commandEnvironment framework.CommandEnvironment, kafkaComponentSpec KafkaComponentSpec, region string, eksClusterName string) error {
+	kubeConfig, err := awslib.CreateKubeConfig(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
+	if err != nil {
+		return fmt.Errorf("failed to get kube config: %s", err)
+	}
+
+	defer kubeConfig.Cleanup()
+
+	installName := kafkaComponentSpec.HelmInstallName
+	installNamespace := kafkaComponentSpec.Namespace
+
+	arguments := make([]string, 0, 100)
+
+	err = kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvKafkaHelmChart), kubeConfig, arguments, installName, installNamespace)
+	return err
+}
