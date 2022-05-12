@@ -53,22 +53,6 @@ func (t *KubeConfig) Cleanup() error {
 	return nil
 }
 
-func AppendHelmKubeArguments(arguments []string, kubeConfig KubeConfig) []string {
-	if kubeConfig.ConfigFile != "" {
-		arguments = append(arguments, "--kubeconfig", kubeConfig.ConfigFile)
-	}
-	if kubeConfig.ApiServer != "" {
-		arguments = append(arguments, "--kube-apiserver", kubeConfig.ApiServer)
-	}
-	if kubeConfig.CAFile != "" {
-		arguments = append(arguments, "--kube-ca-file", kubeConfig.CAFile)
-	}
-	if kubeConfig.KubeToken != "" {
-		arguments = append(arguments, "--kube-token", kubeConfig.KubeToken)
-	}
-	return arguments
-}
-
 func CheckPodsInPhases(clientset *kubernetes.Clientset, namespace string, podNamePrefix string, podPhases []v1.PodPhase) (bool, error) {
 	podList, err := clientset.CoreV1().Pods(namespace).List(
 		context.TODO(),
