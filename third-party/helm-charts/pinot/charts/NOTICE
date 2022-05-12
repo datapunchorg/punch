@@ -1,0 +1,10 @@
+I. Included Software
+
+This folder contains files copied from: https://github.com/apache/pinot/tree/master/kubernetes/helm/pinot.
+
+This folder contains files copied from: https://github.com/helm/charts/tree/master/incubator/kafka.
+
+This folder contains files copied from: https://github.com/helm/charts/tree/master/incubator/zookeeper.
+
+II. License Summary
+- Apache License 2.0

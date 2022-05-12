@@ -63,5 +63,17 @@ This product may include or depend software developed at
 https://github.com/maropu/spark-tpcds-datagen.
 Licensed under the Apache License 2.0.
 
+This product includes and may modify software developed at
+Apache Pinot (https://github.com/apache/pinot/tree/master/kubernetes/helm/pinot).
+Licensed under the Apache License 2.0.
+
+This product includes and may modify software developed at
+Kafka Helm Chart (https://github.com/helm/charts/tree/master/incubator/kafka).
+Licensed under the Apache License 2.0.
+
+This product includes and may modify software developed at
+ZooKeeper Helm Chart (https://github.com/helm/charts/tree/master/incubator/zookeeper).
+Licensed under the Apache License 2.0.
+
 II. License Summary
 - Apache License 2.0
