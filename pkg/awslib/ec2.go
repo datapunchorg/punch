@@ -86,20 +86,86 @@ func DeleteSecurityGroupById(ec2Client *ec2.EC2, securityGroupId string) error {
 	return nil
 }
 
-func DeleteSecurityGroupRulesBySourceId(ec2Client *ec2.EC2, securityGroupId string) error {
+func ListAndRemoveSecurityGroupRulesBySourceOrDestinationSecurityGroupId(ec2Client *ec2.EC2, vpcId string, sourceOrDestinationSecurityGroupId string) error {
 	hasMoreResult := true
 	var nextToken *string
+	var securityGroups []*ec2.SecurityGroup = make([]*ec2.SecurityGroup, 0, 500)
 	for hasMoreResult {
 		describeSecurityGroupsOutput, err := ec2Client.DescribeSecurityGroups(&ec2.DescribeSecurityGroupsInput{
+			Filters: []*ec2.Filter{
+				{
+					Name: aws.String("vpc-id"),
+					Values: []*string{
+						aws.String(vpcId),
+					},
+				},
+			},
 			NextToken: nextToken,
 			})
 		if err != nil {
 			return fmt.Errorf("failed to describe security groups: %s", err.Error())
 		}
+		for _, securityGroup := range describeSecurityGroupsOutput.SecurityGroups {
+			securityGroups = append(securityGroups, securityGroup)
+		}
 		nextToken = describeSecurityGroupsOutput.NextToken
 		hasMoreResult = nextToken != nil
 	}
+
+	for _, securityGroup := range securityGroups {
+		err := RemoveSecurityGroupRulesBySourceOrDestinationSecurityGroupId(ec2Client, securityGroup, sourceOrDestinationSecurityGroupId)
+		if err != nil {
+			return fmt.Errorf("failed to remove security group rules on %s by %s: %s", *securityGroup.GroupId, sourceOrDestinationSecurityGroupId, err.Error())
+		}
+	}
 	return nil
+}
+
+func RemoveSecurityGroupRulesBySourceOrDestinationSecurityGroupId(ec2Client *ec2.EC2, securityGroup *ec2.SecurityGroup, sourceOrDestinationSecurityGroupId string) error {
+	ipPermissionsCopy := make([]*ec2.IpPermission, len(securityGroup.IpPermissions))
+	copy(ipPermissionsCopy, securityGroup.IpPermissions)
+	for _, perm := range ipPermissionsCopy {
+		for _, userIdGroupPair := range perm.UserIdGroupPairs {
+			if userIdGroupPair != nil &&
+				// TODO check userIdGroupPair.UserId
+				stringEquals(userIdGroupPair.GroupId, sourceOrDestinationSecurityGroupId) {
+				log.Printf("Deleting ingress rule on security group %s due to matching source group id %s", *securityGroup.GroupId, userIdGroupPair.GroupId)
+				_, err := ec2Client.RevokeSecurityGroupIngress(&ec2.RevokeSecurityGroupIngressInput{
+					GroupId: securityGroup.GroupId,
+					IpPermissions: []*ec2.IpPermission{perm},
+				})
+				if err != nil {
+					return fmt.Errorf("failed to call RevokeSecurityGroupIngress on %s %s: %s", *securityGroup.GroupId, perm, err.Error())
+				}
+				break
+			}
+		}
+	}
+
+	ipPermissionsCopy = make([]*ec2.IpPermission, len(securityGroup.IpPermissionsEgress))
+	copy(ipPermissionsCopy, securityGroup.IpPermissionsEgress)
+	for _, perm := range ipPermissionsCopy {
+		for _, userIdGroupPair := range perm.UserIdGroupPairs {
+			if userIdGroupPair != nil &&
+				// TODO check userIdGroupPair.UserId
+				stringEquals(userIdGroupPair.GroupId, sourceOrDestinationSecurityGroupId) {
+				log.Printf("Deleting egress rule on security group %s due to matching source group id %s", *securityGroup.GroupId, userIdGroupPair.GroupId)
+				_, err := ec2Client.RevokeSecurityGroupEgress(&ec2.RevokeSecurityGroupEgressInput{
+					GroupId: securityGroup.GroupId,
+					IpPermissions: []*ec2.IpPermission{perm},
+				})
+				if err != nil {
+					return fmt.Errorf("failed to call RevokeSecurityGroupIngress on %s %s: %s", *securityGroup.GroupId, perm, err.Error())
+				}
+				break
+			}
+		}
+	}
+	return nil
+}
+
+func stringEquals(str1 *string, str2 string) bool {
+	return str1 != nil && (*str1) == str2
 }
 
 func ListSecurityGroupRoles(ec2Client *ec2.EC2, vpcId string, securityGroupName string) ([]*ec2.SecurityGroupRule, error) {
