@@ -23,12 +23,12 @@ import (
 )
 
 func CheckKubectl(exeLocation string) error {
-	cmd := exec.Command(exeLocation, "version")
+	cmd := exec.Command(exeLocation, "options")
 	output, err := cmd.Output()
 	if err != nil {
-		return fmt.Errorf("kubectl not installed: %s", err.Error())
+		return fmt.Errorf("%s not installed: %s", exeLocation, err.Error())
 	}
-	log.Printf("kubectl version: %s", string(output))
+	log.Printf("%s version: %s", exeLocation, string(output))
 	return nil
 }
 
