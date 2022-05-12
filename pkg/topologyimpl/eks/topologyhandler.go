@@ -259,7 +259,7 @@ func CreateUninstallDeployment(topologySpec EksTopologySpec, commandEnvironment 
 			return framework.NewDeploymentStepOutput(), nil
 		})
 
-		deployment.AddStep("deleteLoadBalancer", "Delete Load Balancer", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+		deployment.AddStep("deleteNginxLoadBalancer", "Delete Nginx Load Balancer", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 			err := awslib.DeleteLoadBalancersOnEks(topologySpec.Region, topologySpec.VpcId, topologySpec.EksCluster.ClusterName, "ingress-nginx")
 			return framework.NewDeploymentStepOutput(), err
 		})

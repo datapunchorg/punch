@@ -18,6 +18,7 @@ package kyuubioneks
 
 import (
 	"fmt"
+	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	"github.com/datapunchorg/punch/pkg/topologyimpl/sparkoneks"
@@ -114,6 +115,14 @@ func CreateInstallDeployment(topologySpec KyuubiOnEksTopologySpec, commandEnviro
 }
 
 func CreateUninstallDeployment(topologySpec KyuubiOnEksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
-	deployment, err := eks.CreateUninstallDeployment(topologySpec.Eks, commandEnvironment)
+	deployment := framework.NewDeployment()
+	deployment.AddStep("deleteKyuubiLoadBalancer", "Delete Kyuubi Load Balancer", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+		err := awslib.DeleteLoadBalancersOnEks(topologySpec.Eks.Region, topologySpec.Eks.VpcId, topologySpec.Eks.EksCluster.ClusterName, topologySpec.Kyuubi.Namespace)
+		return framework.NewDeploymentStepOutput(), err
+	})
+	deployment2, err := eks.CreateUninstallDeployment(topologySpec.Eks, commandEnvironment)
+	for _, step := range deployment2.GetSteps() {
+		deployment.AddStep(step.GetName(), step.GetDescription(), step.GetDeployable())
+	}
 	return deployment, err
 }
