@@ -19,6 +19,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/datapunchorg/punch/pkg/common"
 
 	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/framework"
@@ -196,32 +197,22 @@ func InstallMetastoreServer(commandEnvironment framework.CommandEnvironment, spe
 	}
 
 	serviceName := "hive-metastore"
-
-	hostPorts, err := awslib.GetLoadBalancerHostPorts(spec.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), spec.EksClusterName, namespace, serviceName)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get load balancer urls for nginx controller service %s in namespace %s", serviceName, namespace)
-	}
-
-	dnsNamesMap := make(map[string]bool, len(hostPorts))
-	for _, entry := range hostPorts {
-		dnsNamesMap[entry.Host] = true
-	}
-	dnsNames := make([]string, 0, len(dnsNamesMap))
-	for k := range dnsNamesMap {
-		dnsNames = append(dnsNames, k)
-	}
-
-	if !commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
-		err = awslib.WaitLoadBalancersReadyByDnsNames(spec.Region, dnsNames)
+	waitLoadBalancerReady := !commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false)
+	var hostPorts []common.HostPort
+	if waitLoadBalancerReady {
+		hostPorts, err = awslib.WaitServiceLoadBalancerHostPorts(spec.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), spec.EksClusterName, namespace, serviceName)
 		if err != nil {
-			return nil, fmt.Errorf("failed to wait and get load balancer urls: %s", err.Error())
+			return nil, err
+		}
+	} else {
+		hostPorts, err = awslib.GetServiceLoadBalancerHostPorts(spec.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), spec.EksClusterName, namespace, serviceName)
+		if err != nil {
+			return nil, err
 		}
 	}
-
 	urls := make([]string, 0, len(hostPorts))
 	for _, entry := range hostPorts {
 		urls = append(urls, fmt.Sprintf("thrift://%s:%d", entry.Host, entry.Port))
 	}
-
 	return urls, nil
 }

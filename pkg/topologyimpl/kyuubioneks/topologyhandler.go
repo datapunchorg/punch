@@ -105,8 +105,10 @@ func CreateInstallDeployment(topologySpec KyuubiOnEksTopologySpec, commandEnviro
 	deployment.AddStep("deployKyuubiServer", "Deploy Kyuubi Server", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 		loadBalancerUrl := deployment.GetContext().GetStepOutput("deployNginxIngressController")["loadBalancerPreferredUrl"].(string)
 		sparkApiGatewayUrl := loadBalancerUrl + sparkoneks.SparkApiRelativeUrl
-		err := DeployKyuubiServer(commandEnvironment, topologySpec.Kyuubi, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName, topologySpec.Spark.Gateway, sparkApiGatewayUrl)
-		return nil, err
+		url, err := DeployKyuubiServer(commandEnvironment, topologySpec.Kyuubi, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName, topologySpec.Spark.Gateway, sparkApiGatewayUrl)
+		return framework.DeployableOutput{
+			"thriftServiceUrl": url,
+		}, err
 	})
 	return deployment, nil
 }

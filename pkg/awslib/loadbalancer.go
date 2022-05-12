@@ -128,7 +128,7 @@ func DeleteLoadBalancersOnEks(region string, vpcId string, eksClusterName string
 	return nil
 }
 
-func GetLoadBalancerHostPorts(region string, kubeConfigFile string, eksClusterName string, namespace string, serviceName string) ([]common.HostPort, error) {
+func GetServiceLoadBalancerHostPorts(region string, kubeConfigFile string, eksClusterName string, namespace string, serviceName string) ([]common.HostPort, error) {
 	_, clientset, err := CreateKubernetesClient(region, kubeConfigFile, eksClusterName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
@@ -136,6 +136,27 @@ func GetLoadBalancerHostPorts(region string, kubeConfigFile string, eksClusterNa
 	hostPorts, err := kubelib.GetServiceLoadBalancerHostPorts(clientset, namespace, serviceName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get load balancers for service %s in namespace %s in cluster %s: %v", serviceName, namespace, eksClusterName, err)
+	}
+	return hostPorts, nil
+}
+
+func WaitServiceLoadBalancerHostPorts(region string, kubeConfig string, eksClusterName string, namespace string, serviceName string) ([]common.HostPort, error) {
+	hostPorts, err := GetServiceLoadBalancerHostPorts(region, kubeConfig, eksClusterName, namespace, serviceName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get load balancer urls for nginx controller service %s in namespace %s", serviceName, namespace)
+	}
+
+	dnsNameSet := make(map[string]bool, len(hostPorts))
+	for _, entry := range hostPorts {
+		dnsNameSet[entry.Host] = true
+	}
+	dnsNames := make([]string, 0, len(dnsNameSet))
+	for k := range dnsNameSet {
+		dnsNames = append(dnsNames, k)
+	}
+	err = WaitLoadBalancersReadyByDnsNames(region, dnsNames)
+	if err != nil {
+		return nil, fmt.Errorf("failed to wait and get load balancer urls: %s", err.Error())
 	}
 	return hostPorts, nil
 }

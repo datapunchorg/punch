@@ -25,15 +25,15 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-func DeployKyuubiServer(commandEnvironment framework.CommandEnvironment, kyuubiComponentSpec KyuubiComponentSpec, region string, eksClusterName string, sparkApiGateway sparkoneks.SparkApiGateway, sparkApiGatewayUrl string) error {
+func DeployKyuubiServer(commandEnvironment framework.CommandEnvironment, kyuubiComponentSpec KyuubiComponentSpec, region string, eksClusterName string, sparkApiGateway sparkoneks.SparkApiGateway, sparkApiGatewayUrl string) (string, error) {
 	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
 	if err != nil {
-		return fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
+		return "", fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
 	}
 
 	err = InstallKyuubiHelm(commandEnvironment, kyuubiComponentSpec, region, eksClusterName, sparkApiGatewayUrl, sparkApiGateway.User, sparkApiGateway.Password)
 	if err != nil {
-		return fmt.Errorf("failed to install Spark History Server helm chart: %s", err.Error())
+		return "", fmt.Errorf("failed to install Spark History Server helm chart: %s", err.Error())
 	}
 
 	helmInstallName := kyuubiComponentSpec.HelmInstallName
@@ -41,10 +41,24 @@ func DeployKyuubiServer(commandEnvironment framework.CommandEnvironment, kyuubiC
 	podNamePrefix := helmInstallName
 	err = kubelib.WaitPodsInPhases(clientset, namespace, podNamePrefix, []v1.PodPhase{v1.PodRunning})
 	if err != nil {
-		return fmt.Errorf("pod %s*** in namespace %s is not in phase %s", podNamePrefix, namespace, v1.PodRunning)
+		return "", fmt.Errorf("pod %s*** in namespace %s is not in phase %s", podNamePrefix, namespace, v1.PodRunning)
 	}
 
-	return nil
+	serviceName := "kyuubi-svc"
+	hostPorts, err := awslib.WaitServiceLoadBalancerHostPorts(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName, namespace, serviceName)
+	if err != nil {
+		return "", err
+	}
+
+	for _, entry := range hostPorts {
+		// TODO do not hard code port 10009
+		if entry.Port == 10009 {
+			url := fmt.Sprintf("thrift://%s:%d", entry.Host, entry.Port)
+			return url, nil
+		}
+	}
+
+	return "", fmt.Errorf("did not find load balancer url for kyuubi thrift server")
 }
 
 func InstallKyuubiHelm(commandEnvironment framework.CommandEnvironment, kyuubiComponentSpec KyuubiComponentSpec, region string, eksClusterName string, sparkApiGatewayUrl string, apiGatewayUser string, apiGatewayPassword string) error {

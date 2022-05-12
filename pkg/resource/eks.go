@@ -223,8 +223,10 @@ func CheckEksCluster(region string, clusterName string) error {
 	return nil
 }
 
+// TODO refactor this method and reuse WaitServiceLoadBalancerHostPorts
+
 func GetEksNginxLoadBalancerUrls(commandEnvironment framework.CommandEnvironment, region string, eksClusterName string, nginxNamespace string, nginxServiceName string, explicitHttpsPort int32) ([]string, error) {
-	hostPorts, err := awslib.GetLoadBalancerHostPorts(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName, nginxNamespace, nginxServiceName)
+	hostPorts, err := awslib.GetServiceLoadBalancerHostPorts(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName, nginxNamespace, nginxServiceName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get load balancer urls for nginx controller service %s in namespace %s: %s", nginxServiceName, nginxNamespace, err.Error())
 	}
