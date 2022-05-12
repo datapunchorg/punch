@@ -18,8 +18,6 @@ package sparkoneks
 
 import (
 	"fmt"
-	"log"
-
 	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/kubelib"
@@ -54,7 +52,7 @@ func InstallHistoryServerHelm(commandEnvironment framework.CommandEnvironment, s
 
 	kubeConfig, err := awslib.CreateKubeConfig(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
 	if err != nil {
-		log.Fatalf("Failed to get kube config: %s", err)
+		return fmt.Errorf("failed to get kube config: %s", err)
 	}
 
 	defer kubeConfig.Cleanup()

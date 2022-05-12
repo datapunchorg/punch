@@ -27,6 +27,8 @@ import (
 
 const (
 	KindKyuubiOnEksTopology = "KyuubiOnEks"
+
+	CmdEnvKyuubiHelmChart = "kyuubiHelmChart"
 )
 
 type KyuubiOnEksTopology struct {
@@ -37,6 +39,19 @@ type KyuubiOnEksTopology struct {
 type KyuubiOnEksTopologySpec struct {
 	Eks   eks.EksTopologySpec `json:"eks" yaml:"eks"`
 	Spark sparkoneks.SparkComponentSpec  `json:"spark" yaml:"spark"`
+	Kyuubi KyuubiComponentSpec `json:"kyuubi" yaml:"kyuubi"`
+}
+
+type KyuubiComponentSpec struct {
+	HelmInstallName           string `json:"helmInstallName" yaml:"helmInstallName"`
+	Namespace                 string `json:"namespace" yaml:"namespace"`
+	ImageRepository           string `json:"imageRepository" yaml:"imageRepository"`
+	ImageTag                  string `json:"imageTag" yaml:"imageTag"`
+	SparkSqlEngine            SparkSqlEngineSpec `json:"sparkSqlEngine" yaml:"sparkSqlEngine"`
+}
+
+type SparkSqlEngineSpec struct {
+	JarFile string `json:"jarFile" yaml:"jarFile"`
 }
 
 func GenerateKyuubiOnEksTopology() KyuubiOnEksTopology {
@@ -54,13 +69,24 @@ func CreateDefaultKyuubiOnEksTopology(namePrefix string, s3BucketName string) Ky
 			Kind:       KindKyuubiOnEksTopology,
 			Metadata: framework.TopologyMetadata{
 				Name: topologyName,
-				CommandEnvironment: map[string]string{},
+				CommandEnvironment: map[string]string{
+					CmdEnvKyuubiHelmChart: "third-party/helm-charts/kyuubi/charts/kyuubi",
+				},
 				Notes: map[string]string{},
 			},
 		},
 		Spec: KyuubiOnEksTopologySpec{
 			Eks: sparkOnEksTopology.Spec.Eks,
 			Spark: sparkOnEksTopology.Spec.Spark,
+			Kyuubi: KyuubiComponentSpec{
+				HelmInstallName: "kyuubi",
+				Namespace: "kyuubi-01",
+				ImageRepository: "ghcr.io/datapunchorg/incubator-kyuubi",
+				ImageTag: "kyuubi-1652247753",
+				SparkSqlEngine: SparkSqlEngineSpec{
+					JarFile: "s3a://datapunch-public-01/jars/kyuubi-spark-sql-engine_2.12-1.5.0-incubating.jar",
+				},
+			},
 		},
 	}
 

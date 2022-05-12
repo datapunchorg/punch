@@ -28,8 +28,10 @@ import (
 )
 
 const (
-	sparkcliJavaExampleCommandFormat   = `./sparkcli --user %s --password %s --insecure --url %s/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar`
-	sparkcliPythonExampleCommandFormat = `./sparkcli --user %s --password %s --insecure --url %s/sparkapi/v1 submit --spark-version 3.2 --driver-memory 512m --executor-memory 512m %s`
+	SparkApiRelativeUrl = "/sparkapi/v1"
+
+	sparkcliJavaExampleCommandFormat   = `./sparkcli --user %s --password %s --insecure --url %s submit --class org.apache.spark.examples.SparkPi --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar`
+	sparkcliPythonExampleCommandFormat = `./sparkcli --user %s --password %s --insecure --url %s submit --spark-version 3.2 --driver-memory 512m --executor-memory 512m %s`
 )
 
 type TopologyHandler struct {
@@ -92,10 +94,11 @@ func (t *TopologyHandler) PrintUsageExample(topology framework.Topology, deploym
 
 	loadBalancerUrl := deploymentOutput.Output()["deployNginxIngressController"]["loadBalancerPreferredUrl"].(string)
 	if loadBalancerUrl != "" {
+		apiGatewayUrl := loadBalancerUrl + SparkApiRelativeUrl
 		if _, ok := deploymentOutput.Output()["minikubeStart"]; ok {
-			printExampleCommandToRunSparkOnMinikube(loadBalancerUrl, *currentTopology)
+			printExampleCommandToRunSparkOnMinikube(apiGatewayUrl, *currentTopology)
 		} else {
-			printExampleCommandToRunSparkOnAws(loadBalancerUrl, *currentTopology)
+			printExampleCommandToRunSparkOnAws(apiGatewayUrl, *currentTopology)
 		}
 	} else {
 		log.Printf("Did not find load balancer url, cannot print usage example command")
