@@ -44,9 +44,9 @@ func RunKubectl(exeLocation string, arguments []string) error {
 	log.Printf("Running kubectl: %s", cmd.String())
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("failed to run kubectl %s: %s\n%s", exeLocation, err.Error(), string(output))
+		return fmt.Errorf("failed to run %s: %s\n%s", exeLocation, err.Error(), string(output))
 	} else {
-		log.Printf("finished running kubectl %s\n%s", exeLocation, string(output))
+		log.Printf("finished running %s\n%s", exeLocation, string(output))
 		return nil
 	}
 }
