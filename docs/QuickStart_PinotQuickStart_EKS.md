@@ -57,7 +57,7 @@ Run `make release` in the root of this project, it will generate `dist` folder w
 
 Or download a pre-built zip file and unzip it:
 ```
-curl -L -o dist.zip https://github.com/datapunchorg/punch/releases/download/0.5.0/dist.zip
+curl -L -o dist.zip https://github.com/datapunchorg/punch/releases/download/0.6.0/dist.zip
 unzip dist.zip
 ```
 
