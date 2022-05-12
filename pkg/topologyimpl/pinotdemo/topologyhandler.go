@@ -98,12 +98,16 @@ func CreateInstallDeployment(topologySpec PinotDemoTopologySpec, commandEnvironm
 		return nil, err
 	}
 	deployment.AddStep("deployPinotServer", "Deploy Pinot Server", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-		DeployPinotServer(commandEnvironment, topologySpec.Pinot, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName)
-		return nil, nil
+		_, err := DeployPinotServer(commandEnvironment, topologySpec.Pinot, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName)
+		return nil, err
 	})
 	deployment.AddStep("deployKafkaServer", "Deploy Kafka Server", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-		DeployKafkaServer(commandEnvironment, topologySpec.Kafka, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName)
-		return nil, nil
+		err := DeployKafkaServer(commandEnvironment, topologySpec.Kafka, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName)
+		return nil, err
+	})
+	deployment.AddStep("createKafkaTopics", "Create Kafka Topics", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+		err := CreateKafkaTopics(commandEnvironment)
+		return nil, err
 	})
 	return deployment, nil
 }

@@ -22,6 +22,7 @@ import (
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/kubelib"
 	v1 "k8s.io/api/core/v1"
+	"strings"
 )
 
 func DeployPinotServer(commandEnvironment framework.CommandEnvironment, pinotComponentSpec PinotComponentSpec, region string, eksClusterName string) (string, error) {
@@ -36,7 +37,7 @@ func DeployPinotServer(commandEnvironment framework.CommandEnvironment, pinotCom
 	}
 
 	namespace := pinotComponentSpec.Namespace
-	podNamePrefix := "pinot-server"
+	podNamePrefix := "pinot-broker-0"
 	err = kubelib.WaitPodsInPhases(clientset, namespace, podNamePrefix, []v1.PodPhase{v1.PodRunning})
 	if err != nil {
 		return "", fmt.Errorf("pod %s*** in namespace %s is not in phase %s", podNamePrefix, namespace, v1.PodRunning)
@@ -78,25 +79,25 @@ func InstallPinotHelm(commandEnvironment framework.CommandEnvironment, pinotComp
 	return err
 }
 
-func DeployKafkaServer(commandEnvironment framework.CommandEnvironment, kafkaComponentSpec KafkaComponentSpec, region string, eksClusterName string) (string, error) {
+func DeployKafkaServer(commandEnvironment framework.CommandEnvironment, kafkaComponentSpec KafkaComponentSpec, region string, eksClusterName string) error {
 	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
 	if err != nil {
-		return "", fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
+		return fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
 	}
 
 	err = InstallKafkaHelm(commandEnvironment, kafkaComponentSpec, region, eksClusterName)
 	if err != nil {
-		return "", fmt.Errorf("failed to install Spark History Server helm chart: %s", err.Error())
+		return fmt.Errorf("failed to install Spark History Server helm chart: %s", err.Error())
 	}
 
 	namespace := kafkaComponentSpec.Namespace
 	podNamePrefix := "kafka-1"
 	err = kubelib.WaitPodsInPhases(clientset, namespace, podNamePrefix, []v1.PodPhase{v1.PodRunning})
 	if err != nil {
-		return "", fmt.Errorf("pod %s*** in namespace %s is not in phase %s", podNamePrefix, namespace, v1.PodRunning)
+		return fmt.Errorf("pod %s*** in namespace %s is not in phase %s", podNamePrefix, namespace, v1.PodRunning)
 	}
 
-	return "", nil
+	return nil
 }
 
 func InstallKafkaHelm(commandEnvironment framework.CommandEnvironment, kafkaComponentSpec KafkaComponentSpec, region string, eksClusterName string) error {
@@ -114,4 +115,22 @@ func InstallKafkaHelm(commandEnvironment framework.CommandEnvironment, kafkaComp
 
 	err = kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvKafkaHelmChart), kubeConfig, arguments, installName, installNamespace)
 	return err
+}
+
+func CreateKafkaTopics(commandEnvironment framework.CommandEnvironment) error {
+	cmd := "-n pinot-quickstart exec kafka-0 -- kafka-topics --zookeeper kafka-zookeeper:2181 --topic flights-realtime --create --partitions 1 --replication-factor 1 --if-not-exists"
+	arguments := strings.Split(cmd," ")
+	err := kubelib.RunKubectl(commandEnvironment.Get(framework.CmdEnvKubectlExecutable), arguments)
+	if err != nil {
+		return err
+	}
+
+	cmd = "-n pinot-quickstart exec kafka-0 -- kafka-topics --zookeeper kafka-zookeeper:2181 --topic flights-realtime-avro --create --partitions 1 --replication-factor 1 --if-not-exists"
+	arguments = strings.Split(cmd," ")
+	err = kubelib.RunKubectl(commandEnvironment.Get(framework.CmdEnvKubectlExecutable), arguments)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
