@@ -109,6 +109,10 @@ func CreateInstallDeployment(topologySpec PinotDemoTopologySpec, commandEnvironm
 		err := CreateKafkaTopics(commandEnvironment)
 		return nil, err
 	})
+	deployment.AddStep("createPinotRealtimeIngestion", "Create Pinot Realtime Ingestion", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+		err := CreatePinotRealtimeIngestion(commandEnvironment)
+		return nil, err
+	})
 	return deployment, nil
 }
 

@@ -19,10 +19,13 @@ package pinotdemo
 import (
 	"fmt"
 	"github.com/datapunchorg/punch/pkg/awslib"
+	"github.com/datapunchorg/punch/pkg/common"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/kubelib"
 	v1 "k8s.io/api/core/v1"
+	"log"
 	"strings"
+	"time"
 )
 
 func DeployPinotServer(commandEnvironment framework.CommandEnvironment, pinotComponentSpec PinotComponentSpec, region string, eksClusterName string) (string, error) {
@@ -118,6 +121,19 @@ func InstallKafkaHelm(commandEnvironment framework.CommandEnvironment, kafkaComp
 }
 
 func CreateKafkaTopics(commandEnvironment framework.CommandEnvironment) error {
+	return common.RetryUntilTrue(func() (bool, error) {
+		err := CreateKafkaTopicsNoRetry(commandEnvironment)
+		if err != nil {
+			log.Printf("Failed to create kafka topics, retrying...")
+			return false, nil
+		}
+		return true, nil
+	},
+		3*time.Second,
+		60*time.Second)
+}
+
+func CreateKafkaTopicsNoRetry(commandEnvironment framework.CommandEnvironment) error {
 	cmd := "-n pinot-quickstart exec kafka-0 -- kafka-topics --zookeeper kafka-zookeeper:2181 --topic flights-realtime --create --partitions 1 --replication-factor 1 --if-not-exists"
 	arguments := strings.Split(cmd," ")
 	err := kubelib.RunKubectl(commandEnvironment.Get(framework.CmdEnvKubectlExecutable), arguments)
@@ -132,5 +148,16 @@ func CreateKafkaTopics(commandEnvironment framework.CommandEnvironment) error {
 		return err
 	}
 
+	return nil
+}
+
+func CreatePinotRealtimeIngestion(commandEnvironment framework.CommandEnvironment) error {
+	cmd := fmt.Sprintf("apply -f %s/pinot-realtime-quickstart.yml",
+		commandEnvironment.Get(CmdEnvPinotHelmChart))
+	arguments := strings.Split(cmd," ")
+	err := kubelib.RunKubectl(commandEnvironment.Get(framework.CmdEnvKubectlExecutable), arguments)
+	if err != nil {
+		return err
+	}
 	return nil
 }
