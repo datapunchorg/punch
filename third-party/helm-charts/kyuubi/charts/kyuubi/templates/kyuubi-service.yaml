@@ -27,12 +27,11 @@ metadata:
   {{- end }}
 spec:
   ports:
-    - name: http
-      nodePort: {{ .Values.service.port }}
+    - name: thrift
       port: {{ .Values.server.bind.port }}
+      targetPort: {{ .Values.server.bind.port }}
       protocol: TCP
-    - name: http-rest
-      nodePort: 30099
+    - name: http
       port: 10099
       targetPort: 10099
       protocol: TCP

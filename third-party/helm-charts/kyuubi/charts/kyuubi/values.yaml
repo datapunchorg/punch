@@ -47,7 +47,7 @@ server:
     mountPath: /opt/kyuubi/conf
 
 service:
-  type: NodePort
+  type: LoadBalancer
   # The default port limit of kubernetes is 30000-32767
   # to change:
   #   vim kube-apiserver.yaml (usually under path: /etc/kubernetes/manifests/)
