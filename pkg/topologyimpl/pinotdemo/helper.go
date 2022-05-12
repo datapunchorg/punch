@@ -46,23 +46,21 @@ func DeployPinotServer(commandEnvironment framework.CommandEnvironment, pinotCom
 		return "", fmt.Errorf("pod %s*** in namespace %s is not in phase %s", podNamePrefix, namespace, v1.PodRunning)
 	}
 
-	return "", nil
-
-	/* serviceName := "kyuubi-svc"
+	serviceName := "pinot-controller"
 	hostPorts, err := awslib.WaitServiceLoadBalancerHostPorts(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName, namespace, serviceName)
 	if err != nil {
 		return "", err
 	}
 
 	for _, entry := range hostPorts {
-		// TODO do not hard code port 10009
-		if entry.Port == 10009 {
-			url := fmt.Sprintf("thrift://%s:%d", entry.Host, entry.Port)
+		// TODO do not hard code port 9000
+		if entry.Port == 9000 {
+			url := fmt.Sprintf("http://%s:%d", entry.Host, entry.Port)
 			return url, nil
 		}
 	}
 
-	return "", fmt.Errorf("did not find load balancer url for kyuubi thrift server")*/
+	return "", fmt.Errorf("did not find load balancer url for %s service in namespace %s", serviceName, namespace)
 }
 
 func InstallPinotHelm(commandEnvironment framework.CommandEnvironment, pinotComponentSpec PinotComponentSpec, region string, eksClusterName string) error {
@@ -76,7 +74,10 @@ func InstallPinotHelm(commandEnvironment framework.CommandEnvironment, pinotComp
 	installName := pinotComponentSpec.HelmInstallName
 	installNamespace := pinotComponentSpec.Namespace
 
-	arguments := make([]string, 0, 100)
+	arguments := []string {
+		"--set",
+		"controller.service.type=LoadBalancer",
+	}
 
 	err = kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvPinotHelmChart), kubeConfig, arguments, installName, installNamespace)
 	return err
