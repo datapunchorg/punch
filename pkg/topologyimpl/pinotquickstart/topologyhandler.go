@@ -30,12 +30,12 @@ type TopologyHandler struct {
 }
 
 func (t *TopologyHandler) Generate() (framework.Topology, error) {
-	topology := GeneratePinotDemoTopology()
+	topology := GeneratePinotQuickStartTopology()
 	return &topology, nil
 }
 
 func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) {
-	topology := GeneratePinotDemoTopology()
+	topology := GeneratePinotQuickStartTopology()
 	err := yaml.Unmarshal(yamlContent, &topology)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse YAML (%s): \n%s", err.Error(), string(yamlContent))
@@ -44,7 +44,7 @@ func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) 
 }
 
 func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (framework.Topology, error) {
-	currentTopology := topology.(*PinotDemoTopology)
+	currentTopology := topology.(*PinotQuickStartTopology)
 
 	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
 
@@ -62,18 +62,23 @@ func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (f
 }
 
 func (t *TopologyHandler) Install(topology framework.Topology) (framework.DeploymentOutput, error) {
-	currentTopology := topology.(*PinotDemoTopology)
+	currentTopology := topology.(*PinotQuickStartTopology)
 	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
 	deployment, err := CreateInstallDeployment(currentTopology.Spec, commandEnvironment)
 	if err != nil {
 		return deployment.GetOutput(), err
 	}
 	err = deployment.Run()
+	if err != nil {
+		return deployment.GetOutput(), err
+	}
+	url := deployment.GetOutput().Output()["deployPinotService"]["pinotControllerUrl"].(string)
+	log.Printf("Pinot installed! Open %s in web browser to query data.", url)
 	return deployment.GetOutput(), err
 }
 
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
-	currentTopology := topology.(*PinotDemoTopology)
+	currentTopology := topology.(*PinotQuickStartTopology)
 	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
 	deployment, err := CreateUninstallDeployment(currentTopology.Spec, commandEnvironment)
 	if err != nil {
@@ -88,7 +93,7 @@ func (t *TopologyHandler) PrintUsageExample(topology framework.Topology, deploym
 	log.Printf("Pinot installed! Open %s in web browser to query data.", url)
 }
 
-func CreateInstallDeployment(topologySpec PinotDemoTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
+func CreateInstallDeployment(topologySpec PinotQuickStartTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
 	deployment, err := eks.CreateInstallDeployment(topologySpec.Eks, commandEnvironment)
 	if err != nil {
 		return nil, err
@@ -117,7 +122,7 @@ func CreateInstallDeployment(topologySpec PinotDemoTopologySpec, commandEnvironm
 	return deployment, nil
 }
 
-func CreateUninstallDeployment(topologySpec PinotDemoTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
+func CreateUninstallDeployment(topologySpec PinotQuickStartTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
 	deployment := framework.NewDeployment()
 	deployment.AddStep("deletePinotLoadBalancer", "Delete Pinot Load Balancer", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 		err := awslib.DeleteLoadBalancersOnEks(topologySpec.Eks.Region, topologySpec.Eks.VpcId, topologySpec.Eks.EksCluster.ClusterName, topologySpec.Pinot.Namespace)

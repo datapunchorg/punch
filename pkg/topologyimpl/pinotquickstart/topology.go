@@ -24,18 +24,18 @@ import (
 )
 
 const (
-	KindPinotDemoTopology = "PinotDemo"
+	KindPinotQuickStartTopology = "PinotQuickStart"
 
 	CmdEnvPinotHelmChart = "pinotHelmChart"
 	CmdEnvKafkaHelmChart = "kafkaKafkaChart"
 )
 
-type PinotDemoTopology struct {
+type PinotQuickStartTopology struct {
 	framework.TopologyBase `json:",inline" yaml:",inline"`
-	Spec                   PinotDemoTopologySpec `json:"spec" yaml:"spec"`
+	Spec                   PinotQuickStartTopologySpec `json:"spec" yaml:"spec"`
 }
 
-type PinotDemoTopologySpec struct {
+type PinotQuickStartTopologySpec struct {
 	Eks   eks.EksTopologySpec `json:"eks" yaml:"eks"`
 	Pinot PinotComponentSpec `json:"pinot" yaml:"pinot"`
 	Kafka KafkaComponentSpec `json:"kafka" yaml:"kafka"`
@@ -51,19 +51,19 @@ type KafkaComponentSpec struct {
 	Namespace                 string `json:"namespace" yaml:"namespace"`
 }
 
-func GeneratePinotDemoTopology() PinotDemoTopology {
+func GeneratePinotQuickStartTopology() PinotQuickStartTopology {
 	namePrefix := framework.DefaultNamePrefixTemplate
 	s3BucketName := framework.DefaultS3BucketNameTemplate
-	return CreateDefaultPinotDemoTopology(namePrefix, s3BucketName)
+	return CreateDefaultPinotQuickStartTopology(namePrefix, s3BucketName)
 }
 
-func CreateDefaultPinotDemoTopology(namePrefix string, s3BucketName string) PinotDemoTopology {
+func CreateDefaultPinotQuickStartTopology(namePrefix string, s3BucketName string) PinotQuickStartTopology {
 	topologyName := fmt.Sprintf("%s-kyuubi-on-eks-01", namePrefix)
 	eksTopology := eks.CreateDefaultEksTopology(namePrefix, s3BucketName)
-	topology := PinotDemoTopology{
+	topology := PinotQuickStartTopology{
 		TopologyBase: framework.TopologyBase{
 			ApiVersion: framework.DefaultVersion,
-			Kind:       KindPinotDemoTopology,
+			Kind:       KindPinotQuickStartTopology,
 			Metadata: framework.TopologyMetadata{
 				Name: topologyName,
 				CommandEnvironment: map[string]string{
@@ -73,7 +73,7 @@ func CreateDefaultPinotDemoTopology(namePrefix string, s3BucketName string) Pino
 				Notes: map[string]string{},
 			},
 		},
-		Spec: PinotDemoTopologySpec{
+		Spec: PinotQuickStartTopologySpec{
 			Eks: eksTopology.Spec,
 			Pinot: PinotComponentSpec{
 				HelmInstallName: "pinot",
@@ -91,15 +91,15 @@ func CreateDefaultPinotDemoTopology(namePrefix string, s3BucketName string) Pino
 	return topology
 }
 
-func (t *PinotDemoTopology) GetKind() string {
+func (t *PinotQuickStartTopology) GetKind() string {
 	return t.Kind
 }
 
-func (t *PinotDemoTopology) GetMetadata() *framework.TopologyMetadata {
+func (t *PinotQuickStartTopology) GetMetadata() *framework.TopologyMetadata {
 	return &t.Metadata
 }
 
-func (t *PinotDemoTopology) String() string {
+func (t *PinotQuickStartTopology) String() string {
 	topologyBytes, err := yaml.Marshal(*t)
 	if err != nil {
 		return fmt.Sprintf("(Failed to serialize topology as YAML: %s)", err.Error())

@@ -21,5 +21,5 @@ import (
 )
 
 func init() {
-	framework.DefaultTopologyHandlerManager.AddHandler(KindPinotDemoTopology, &TopologyHandler{})
+	framework.DefaultTopologyHandlerManager.AddHandler(KindPinotQuickStartTopology, &TopologyHandler{})
 }
