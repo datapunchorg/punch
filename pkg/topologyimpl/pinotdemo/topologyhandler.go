@@ -89,7 +89,7 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 }
 
 func (t *TopologyHandler) PrintUsageExample(topology framework.Topology, deploymentOutput framework.DeploymentOutput) {
-	log.Printf("Kyuubi Installed")
+	log.Printf("Pinot Installed")
 }
 
 func CreateInstallDeployment(topologySpec PinotDemoTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
@@ -97,7 +97,8 @@ func CreateInstallDeployment(topologySpec PinotDemoTopologySpec, commandEnvironm
 	if err != nil {
 		return nil, err
 	}
-	deployment.AddStep("deploySparkOperator", "Deploy Spark Operator", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+	deployment.AddStep("deployPinotServer", "Deploy Pinot Server", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+		DeployPinotServer(commandEnvironment, topologySpec.Pinot, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName)
 		return nil, nil
 	})
 	return deployment, nil

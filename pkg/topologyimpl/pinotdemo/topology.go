@@ -25,6 +25,9 @@ import (
 
 const (
 	KindPinotDemoTopology = "PinotDemo"
+
+	CmdEnvPinotHelmChart = "pinotHelmChart"
+	CmdEnvKafkaHelmChart = "kafkaKafkaChart"
 )
 
 type PinotDemoTopology struct {
@@ -63,7 +66,10 @@ func CreateDefaultPinotDemoTopology(namePrefix string, s3BucketName string) Pino
 			Kind:       KindPinotDemoTopology,
 			Metadata: framework.TopologyMetadata{
 				Name: topologyName,
-				CommandEnvironment: map[string]string{},
+				CommandEnvironment: map[string]string{
+					CmdEnvPinotHelmChart: "third-party/helm-charts/pinot/charts/pinot",
+					CmdEnvKafkaHelmChart: "third-party/helm-charts/pinot/charts/kafka",
+				},
 				Notes: map[string]string{},
 			},
 		},

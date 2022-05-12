@@ -25,6 +25,7 @@ import (
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/kafkabridge"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/kafkaonmsk"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/kyuubioneks"
+	_ "github.com/datapunchorg/punch/pkg/topologyimpl/pinotdemo"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/sparkoneks"
 	"github.com/spf13/cobra"
 )
