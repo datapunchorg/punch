@@ -22,13 +22,21 @@ import (
 	"os/exec"
 )
 
-func CheckKubectlOrFatal(exeLocation string) {
+func CheckKubectl(exeLocation string) error {
 	cmd := exec.Command(exeLocation, "version")
 	output, err := cmd.Output()
 	if err != nil {
-		log.Fatalf("kubectl not installed: %s", err.Error())
+		return fmt.Errorf("kubectl not installed: %s", err.Error())
 	}
 	log.Printf("kubectl version: %s", string(output))
+	return nil
+}
+
+func CheckKubectlOrFatal(exeLocation string) {
+	err := CheckKubectl(exeLocation)
+	if err != nil {
+		log.Fatalf("%s", err.Error())
+	}
 }
 
 func RunKubectl(exeLocation string, arguments []string) error {
