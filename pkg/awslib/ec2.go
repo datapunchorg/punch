@@ -129,7 +129,7 @@ func RemoveSecurityGroupRulesBySourceOrDestinationSecurityGroupId(ec2Client *ec2
 			if userIdGroupPair != nil &&
 				// TODO check userIdGroupPair.UserId
 				stringEquals(userIdGroupPair.GroupId, sourceOrDestinationSecurityGroupId) {
-				log.Printf("Deleting ingress rule on security group %s due to matching source group id %s", *securityGroup.GroupId, userIdGroupPair.GroupId)
+				log.Printf("Deleting ingress rule on security group %s due to matching source group id %s", *securityGroup.GroupId, *userIdGroupPair.GroupId)
 				_, err := ec2Client.RevokeSecurityGroupIngress(&ec2.RevokeSecurityGroupIngressInput{
 					GroupId: securityGroup.GroupId,
 					IpPermissions: []*ec2.IpPermission{perm},
@@ -149,7 +149,7 @@ func RemoveSecurityGroupRulesBySourceOrDestinationSecurityGroupId(ec2Client *ec2
 			if userIdGroupPair != nil &&
 				// TODO check userIdGroupPair.UserId
 				stringEquals(userIdGroupPair.GroupId, sourceOrDestinationSecurityGroupId) {
-				log.Printf("Deleting egress rule on security group %s due to matching source group id %s", *securityGroup.GroupId, userIdGroupPair.GroupId)
+				log.Printf("Deleting egress rule on security group %s due to matching source group id %s", *securityGroup.GroupId, *userIdGroupPair.GroupId)
 				_, err := ec2Client.RevokeSecurityGroupEgress(&ec2.RevokeSecurityGroupEgressInput{
 					GroupId: securityGroup.GroupId,
 					IpPermissions: []*ec2.IpPermission{perm},
