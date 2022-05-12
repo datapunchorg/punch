@@ -26,7 +26,7 @@ func CheckHelmOrFatal(helmExeLocation string) {
 	helmCmd := exec.Command(helmExeLocation, "version")
 	helmOut, err := helmCmd.Output()
 	if err != nil {
-		log.Fatalf("helm not installed: %v", err)
+		log.Fatalf("helm not installed: %s", err.Error())
 	}
 	log.Printf("helm version: %s", string(helmOut))
 }
@@ -68,4 +68,20 @@ func EscapeHelmSetValue(str string) string {
 		return str
 	}
 	return str
+}
+
+func AppendHelmKubeArguments(arguments []string, kubeConfig KubeConfig) []string {
+	if kubeConfig.ConfigFile != "" {
+		arguments = append(arguments, "--kubeconfig", kubeConfig.ConfigFile)
+	}
+	if kubeConfig.ApiServer != "" {
+		arguments = append(arguments, "--kube-apiserver", kubeConfig.ApiServer)
+	}
+	if kubeConfig.CAFile != "" {
+		arguments = append(arguments, "--kube-ca-file", kubeConfig.CAFile)
+	}
+	if kubeConfig.KubeToken != "" {
+		arguments = append(arguments, "--kube-token", kubeConfig.KubeToken)
+	}
+	return arguments
 }
