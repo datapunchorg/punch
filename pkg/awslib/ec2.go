@@ -86,7 +86,7 @@ func DeleteSecurityGroupById(ec2Client *ec2.EC2, securityGroupId string) error {
 	return nil
 }
 
-func ListAndRemoveSecurityGroupRulesBySourceOrDestinationSecurityGroupId(ec2Client *ec2.EC2, vpcId string, sourceOrDestinationSecurityGroupId string) error {
+func ListAndDeleteSecurityGroupRulesBySourceOrDestinationSecurityGroupId(ec2Client *ec2.EC2, vpcId string, sourceOrDestinationSecurityGroupId string) error {
 	hasMoreResult := true
 	var nextToken *string
 	var securityGroups []*ec2.SecurityGroup = make([]*ec2.SecurityGroup, 0, 500)
