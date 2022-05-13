@@ -36,7 +36,7 @@ func DeployPinotService(commandEnvironment framework.CommandEnvironment, pinotCo
 
 	err = InstallPinotHelm(commandEnvironment, pinotComponentSpec, region, eksClusterName)
 	if err != nil {
-		return "", fmt.Errorf("failed to install Spark History Server helm chart: %s", err.Error())
+		return "", fmt.Errorf("failed to install Pinot helm chart: %s", err.Error())
 	}
 
 	namespace := pinotComponentSpec.Namespace
@@ -91,7 +91,7 @@ func DeployKafkaService(commandEnvironment framework.CommandEnvironment, kafkaCo
 
 	err = InstallKafkaHelm(commandEnvironment, kafkaComponentSpec, region, eksClusterName)
 	if err != nil {
-		return fmt.Errorf("failed to install Spark History Server helm chart: %s", err.Error())
+		return fmt.Errorf("failed to install Kafka helm chart: %s", err.Error())
 	}
 
 	namespace := kafkaComponentSpec.Namespace

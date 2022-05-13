@@ -27,6 +27,7 @@ import (
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/kyuubioneks"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/pinotquickstart"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/sparkoneks"
+	_ "github.com/datapunchorg/punch/pkg/topologyimpl/superset"
 	"github.com/spf13/cobra"
 )
 
