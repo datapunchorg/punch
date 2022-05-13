@@ -116,13 +116,19 @@ func DeleteLoadBalancersOnEks(region string, vpcId string, eksClusterName string
 					10*time.Second)
 
 				log.Printf("Deleting source security group %s (%s) on load balancer %s", securityGroupId, securityGroupName, *loadBalancer.DNSName)
-				ListAndDeleteSecurityGroupRulesBySourceOrDestinationSecurityGroupId(ec2Client, vpcId, securityGroupId)
+				err := ListAndDeleteSecurityGroupRulesBySourceOrDestinationSecurityGroupId(ec2Client, vpcId, securityGroupId)
+				if err != nil {
+					log.Printf("[WARN] failed to delete security group rules by source or destination security group id %s: %s", securityGroupId, err.Error())
+				}
 				DeleteSecurityGroupByIdIgnoreError(ec2Client, securityGroupId, 20*time.Minute)
 			}
 		}
 		for _, securityGroupId := range loadBalancer.SecurityGroups {
 			log.Printf("Deleting security group %s on load balancer %s", *securityGroupId, *loadBalancer.DNSName)
-			ListAndDeleteSecurityGroupRulesBySourceOrDestinationSecurityGroupId(ec2Client, vpcId, *securityGroupId)
+			err := ListAndDeleteSecurityGroupRulesBySourceOrDestinationSecurityGroupId(ec2Client, vpcId, *securityGroupId)
+			if err != nil {
+				log.Printf("[WARN] failed to delete security group rules by source or destination security group id %s: %s", securityGroupId, err.Error())
+			}
 			DeleteSecurityGroupByIdIgnoreError(ec2Client, *securityGroupId, 20*time.Minute)
 		}
 	}
