@@ -95,7 +95,7 @@ func DeployKafkaService(commandEnvironment framework.CommandEnvironment, kafkaCo
 	}
 
 	namespace := kafkaComponentSpec.Namespace
-	podNamePrefix := "kafka-1"
+	podNamePrefix := "kafka-2"
 	err = kubelib.WaitPodsInPhases(clientset, namespace, podNamePrefix, []v1.PodPhase{v1.PodRunning})
 	if err != nil {
 		return fmt.Errorf("pod %s*** in namespace %s is not in phase %s", podNamePrefix, namespace, v1.PodRunning)
@@ -130,8 +130,8 @@ func CreateKafkaTopics(commandEnvironment framework.CommandEnvironment) error {
 		}
 		return true, nil
 	},
-		120*time.Second,
-		5*time.Second)
+		180*time.Second,
+		10*time.Second)
 }
 
 func CreateKafkaTopicsNoRetry(commandEnvironment framework.CommandEnvironment) error {
