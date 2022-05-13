@@ -121,9 +121,9 @@ func InstallKafkaHelm(commandEnvironment framework.CommandEnvironment, kafkaComp
 	return err
 }
 
-func CreateKafkaTopics(commandEnvironment framework.CommandEnvironment) error {
+func CreateKafkaTopics(commandEnvironment framework.CommandEnvironment, region string, eksClusterName string) error {
 	return common.RetryUntilTrue(func() (bool, error) {
-		err := CreateKafkaTopicsNoRetry(commandEnvironment)
+		err := CreateKafkaTopicsNoRetry(commandEnvironment, region, eksClusterName)
 		if err != nil {
 			log.Printf("Failed to create kafka topics, retrying...")
 			return false, nil
@@ -134,17 +134,23 @@ func CreateKafkaTopics(commandEnvironment framework.CommandEnvironment) error {
 		10*time.Second)
 }
 
-func CreateKafkaTopicsNoRetry(commandEnvironment framework.CommandEnvironment) error {
+func CreateKafkaTopicsNoRetry(commandEnvironment framework.CommandEnvironment, region string, eksClusterName string) error {
+	kubeConfig, err := awslib.CreateKubeConfig(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
+	if err != nil {
+		return fmt.Errorf("failed to get kube config: %s", err.Error())
+	}
+	defer kubeConfig.Cleanup()
+
 	cmd := "-n pinot-quickstart exec kafka-0 -- kafka-topics --zookeeper kafka-zookeeper:2181 --topic flights-realtime --create --partitions 1 --replication-factor 1 --if-not-exists"
 	arguments := strings.Split(cmd," ")
-	err := kubelib.RunKubectl(commandEnvironment.Get(framework.CmdEnvKubectlExecutable), arguments)
+	err = kubelib.RunKubectlWithKubeConfig(commandEnvironment.Get(framework.CmdEnvKubectlExecutable), kubeConfig, arguments)
 	if err != nil {
 		return err
 	}
 
 	cmd = "-n pinot-quickstart exec kafka-0 -- kafka-topics --zookeeper kafka-zookeeper:2181 --topic flights-realtime-avro --create --partitions 1 --replication-factor 1 --if-not-exists"
 	arguments = strings.Split(cmd," ")
-	err = kubelib.RunKubectl(commandEnvironment.Get(framework.CmdEnvKubectlExecutable), arguments)
+	err = kubelib.RunKubectlWithKubeConfig(commandEnvironment.Get(framework.CmdEnvKubectlExecutable), kubeConfig, arguments)
 	if err != nil {
 		return err
 	}
@@ -152,11 +158,16 @@ func CreateKafkaTopicsNoRetry(commandEnvironment framework.CommandEnvironment) e
 	return nil
 }
 
-func CreatePinotRealtimeIngestion(commandEnvironment framework.CommandEnvironment) error {
+func CreatePinotRealtimeIngestion(commandEnvironment framework.CommandEnvironment, region string, eksClusterName string) error {
+	kubeConfig, err := awslib.CreateKubeConfig(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
+	if err != nil {
+		return fmt.Errorf("failed to get kube config: %s", err.Error())
+	}
+	defer kubeConfig.Cleanup()
 	cmd := fmt.Sprintf("apply -f %s/pinot-realtime-quickstart.yml",
 		commandEnvironment.Get(CmdEnvPinotHelmChart))
 	arguments := strings.Split(cmd," ")
-	err := kubelib.RunKubectl(commandEnvironment.Get(framework.CmdEnvKubectlExecutable), arguments)
+	err = kubelib.RunKubectl(commandEnvironment.Get(framework.CmdEnvKubectlExecutable), arguments)
 	if err != nil {
 		return err
 	}

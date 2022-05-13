@@ -112,11 +112,11 @@ func CreateInstallDeployment(topologySpec PinotQuickStartTopologySpec, commandEn
 		return nil, err
 	})
 	deployment.AddStep("createKafkaTopics", "Create Kafka Topics", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-		err := CreateKafkaTopics(commandEnvironment)
+		err := CreateKafkaTopics(commandEnvironment, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName)
 		return nil, err
 	})
 	deployment.AddStep("createPinotRealtimeIngestion", "Create Pinot Realtime Ingestion", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-		err := CreatePinotRealtimeIngestion(commandEnvironment)
+		err := CreatePinotRealtimeIngestion(commandEnvironment, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName)
 		return nil, err
 	})
 	return deployment, nil
