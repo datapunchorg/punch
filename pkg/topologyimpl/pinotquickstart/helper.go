@@ -167,7 +167,7 @@ func CreatePinotRealtimeIngestion(commandEnvironment framework.CommandEnvironmen
 	cmd := fmt.Sprintf("apply -f %s/pinot-realtime-quickstart.yml",
 		commandEnvironment.Get(CmdEnvPinotHelmChart))
 	arguments := strings.Split(cmd," ")
-	err = kubelib.RunKubectl(commandEnvironment.Get(framework.CmdEnvKubectlExecutable), arguments)
+	err = kubelib.RunKubectlWithKubeConfig(commandEnvironment.Get(framework.CmdEnvKubectlExecutable), kubeConfig, arguments)
 	if err != nil {
 		return err
 	}

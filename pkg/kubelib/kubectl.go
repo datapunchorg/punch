@@ -32,14 +32,7 @@ func CheckKubectl(exeLocation string) error {
 	return nil
 }
 
-func CheckKubectlOrFatal(exeLocation string) {
-	err := CheckKubectl(exeLocation)
-	if err != nil {
-		log.Fatalf("%s", err.Error())
-	}
-}
-
-func RunKubectl(exeLocation string, arguments []string) error {
+func runKubectl(exeLocation string, arguments []string) error {
 	cmd := exec.Command(exeLocation, arguments...)
 	log.Printf("Running kubectl: %s", cmd.String())
 	output, err := cmd.CombinedOutput()
@@ -55,7 +48,7 @@ func RunKubectlWithKubeConfig(exeLocation string, kubeConfig KubeConfig, extraAr
 	arguments := make([]string, 0, 100)
 	arguments = AppendKubectlKubeArguments(arguments, kubeConfig)
 	arguments = append(arguments, extraArguments...)
-	return RunKubectl(exeLocation, arguments)
+	return runKubectl(exeLocation, arguments)
 }
 
 func AppendKubectlKubeArguments(arguments []string, kubeConfig KubeConfig) []string {
