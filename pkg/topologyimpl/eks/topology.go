@@ -50,7 +50,7 @@ type EksTopologySpec struct {
 	S3BucketName      string              `json:"s3BucketName" yaml:"s3BucketName"`
 	S3Policy          resource.IamPolicy  `json:"s3Policy" yaml:"s3Policy"`
 	KafkaPolicy resource.IamPolicy   `json:"kafkaPolicy" yaml:"kafkaPolicy"`
-	EksCluster  resource.EKSCluster  `json:"eksCluster" yaml:"eksCluster"`
+	EksCluster  resource.EksCluster  `json:"eksCluster" yaml:"eksCluster"`
 	NodeGroups  []resource.NodeGroup `json:"nodeGroups" yaml:"nodeGroups"`
 	NginxIngress      NginxIngress             `json:"nginxIngress" yaml:"nginxIngress"`
 	AutoScaling       resource.AutoScalingSpec `json:"autoScaling" yaml:"autoScaling"`
@@ -110,8 +110,9 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 {"Effect":"Allow","Action":"kafka-cluster:*","Resource":"*"}
 ]}`,
 			},
-			EksCluster: resource.EKSCluster{
+			EksCluster: resource.EksCluster{
 				ClusterName: eksClusterName,
+				EksVersion: "1.21",
 				// TODO fill in default value for SubnetIds
 				ControlPlaneRole: resource.IamRole{
 					Name:                     controlPlaneRoleName,

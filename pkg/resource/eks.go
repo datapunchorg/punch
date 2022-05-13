@@ -30,8 +30,9 @@ import (
 	"time"
 )
 
-type EKSCluster struct {
+type EksCluster struct {
 	ClusterName string `json:"clusterName" yaml:"clusterName"`
+	EksVersion  string `json:"eksVersion" yaml:"eksVersion"`
 	SubnetIds         []string                  `json:"subnetIds" yaml:"subnetIds"`
 	// The Amazon Resource Name (ARN) of the IAM role that provides permissions
 	// for the Kubernetes control plane to make calls to Amazon Web Services API
@@ -49,7 +50,7 @@ type EKSClusterSummary struct {
 	OidcIssuer  string `json:"oidcIssuer" yaml:"oidcIssuer"`
 }
 
-func CreateEksCluster(region string, vpcId string, eksCluster EKSCluster) error {
+func CreateEksCluster(region string, vpcId string, eksCluster EksCluster) error {
 	clusterName := eksCluster.ClusterName
 
 	session := awslib.CreateSession(region)
@@ -138,7 +139,7 @@ func CreateEksCluster(region string, vpcId string, eksCluster EKSCluster) error 
 			EndpointPublicAccess:  aws.Bool(true),
 		},
 		RoleArn: getRoleOutput.Role.Arn,
-		Version: aws.String("1.21"),
+		Version: aws.String(eksCluster.EksVersion),
 	}
 
 	eksClient := eks.New(session)

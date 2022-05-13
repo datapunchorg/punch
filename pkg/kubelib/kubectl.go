@@ -62,7 +62,7 @@ func AppendKubectlKubeArguments(arguments []string, kubeConfig KubeConfig) []str
 		arguments = append(arguments, fmt.Sprintf("--certificate-authority=%s", kubeConfig.CAFile))
 	}
 	if kubeConfig.KubeToken != "" {
-		arguments = append(arguments, fmt.Sprintf("--token==%s", kubeConfig.KubeToken))
+		arguments = append(arguments, fmt.Sprintf("--token=%s", kubeConfig.KubeToken))
 	}
 	return arguments
 }
