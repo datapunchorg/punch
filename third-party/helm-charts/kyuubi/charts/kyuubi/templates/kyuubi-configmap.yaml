@@ -50,7 +50,7 @@ data:
     kyuubi.frontend.bind.port {{ .Values.server.bind.port }}
     kyuubi.zookeeper.embedded.client.port.address localhost
     kyuubi.frontend.rest.bind.host 0.0.0.0
-    kyuubi.service.discovery.client.rest.url {{ .Values.serviceRegistry.restUrl }}
+    kyuubi.ha.service.discovery.client.rest.url {{ .Values.serviceRegistry.restUrl }}
     kyuubi.engine.spark.punch.rest.api.url {{ .Values.sparkApiGateway.restUrl }}
     kyuubi.engine.spark.punch.rest.api.user {{ .Values.sparkApiGateway.user }}
     kyuubi.engine.spark.punch.rest.api.password {{ .Values.sparkApiGateway.password }}
