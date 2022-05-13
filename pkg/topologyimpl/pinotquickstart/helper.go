@@ -130,7 +130,7 @@ func CreateKafkaTopics(commandEnvironment framework.CommandEnvironment) error {
 		}
 		return true, nil
 	},
-		180*time.Second,
+		5*time.Minute,
 		10*time.Second)
 }
 
