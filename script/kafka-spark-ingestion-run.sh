@@ -88,9 +88,9 @@ echo Submitting Spark steaming application to ingest Kafka data
   --kafkaOption kafka.sasl.client.callback.handler.class=software.amazon.msk.auth.iam.IAMClientCallbackHandler
 
 
-echo Submitting Spark steaming application to ingest Kafka data
+echo Installing Kyuubi
 
-install KyuubiOnEks --set namePrefix=$namePrefix \
+./punch install KyuubiOnEks --set namePrefix=$namePrefix \
   --patch spec.spark.gateway.user=$sparkApiGatewayUser \
   --patch spec.spark.gateway.password=$sparkApiGatewayPassword \
   --patch spec.spark.gateway.hiveMetastoreUris=$metastoreUri \
