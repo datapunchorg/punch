@@ -87,5 +87,20 @@ echo Submitting Spark steaming application to ingest Kafka data
   --kafkaOption kafka.sasl.jaas.config="software.amazon.msk.auth.iam.IAMLoginModule required;" \
   --kafkaOption kafka.sasl.client.callback.handler.class=software.amazon.msk.auth.iam.IAMClientCallbackHandler
 
+
+echo Submitting Spark steaming application to ingest Kafka data
+
+install KyuubiOnEks --set namePrefix=$namePrefix \
+  --patch spec.spark.gateway.user=$sparkApiGatewayUser \
+  --patch spec.spark.gateway.password=$sparkApiGatewayPassword \
+  --patch spec.spark.gateway.hiveMetastoreUris=$metastoreUri \
+  --patch spec.spark.gateway.sparkSqlWarehouseDir=$metastoreWarehouseDir \
+  -o KyuubiOnEks.output.json
+
+echo KyuubiOnEks deployment output
+
+cat KyuubiOnEks.output.json | jq .
+
+
 kafkaJsonMessage='{"records":[{"key":"key1","value":"value1"},{"key":"key2","value":"value2"}]}'
 echo Command example to send more data to Kafka: curl -k -X POST $kafkaBridgeTopicProduceUrl/topic_01 -H \'Content-Type: application/vnd.kafka.json.v2+json\' -d \'$kafkaJsonMessage\'

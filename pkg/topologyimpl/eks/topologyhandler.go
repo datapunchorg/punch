@@ -169,7 +169,7 @@ func CreateInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fr
 				return framework.NewDeploymentStepOutput(), nil
 			})
 
-			deployment.AddStep("createClusterAutoscalerIAMRole", "Create Cluster Autoscaler IAM role", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+			deployment.AddStep("createClusterAutoscalerIamRole", "Create Cluster Autoscaler IAM role", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 				oidcIssuer := c.GetStepOutput("createEksCluster")["oidcIssuer"].(string)
 				idStr := "id/"
 				index := strings.LastIndex(strings.ToLower(oidcIssuer), idStr)
@@ -182,7 +182,7 @@ func CreateInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fr
 			})
 
 			deployment.AddStep("createClusterAutoscalerIAMServiceAccount", "Create Cluster Autoscaler IAM service account", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-				roleName := c.GetStepOutput("createClusterAutoscalerIAMRole")["roleName"].(string)
+				roleName := c.GetStepOutput("createClusterAutoscalerIamRole")["roleName"].(string)
 				err := CreateClusterAutoscalerIamServiceAccount(commandEnvironment, topologySpec, roleName)
 				return framework.NewDeploymentStepOutput(), err
 			})

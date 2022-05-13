@@ -73,4 +73,10 @@ Run punch command:
 ./punch install PinotQuickStart --print-usage-example
 ```
 
-The upper `punch install` will print out an AWS load balancer URL which you could browse to query data in Pinot.
+The upper `punch install` will print out an AWS load balancer URL which you could browse to query data in Pinot, like following:
+
+```
+- step: deployPinotService
+  output:
+    pinotControllerUrl: http://a09c105e3207a49948d2ca2d5d5a7ee9-651003257.us-west-1.elb.amazonaws.com:9000
+```

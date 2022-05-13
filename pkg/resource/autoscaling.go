@@ -18,5 +18,5 @@ package resource
 
 type AutoScalingSpec struct {
 	EnableClusterAutoscaler  bool    `json:"enableClusterAutoscaler" yaml:"enableClusterAutoscaler"`
-	ClusterAutoscalerIamRole IamRole `json:"clusterAutoscalerIAMRole" yaml:"clusterAutoscalerIAMRole"`
+	ClusterAutoscalerIamRole IamRole `json:"clusterAutoscalerIamRole" yaml:"clusterAutoscalerIamRole"`
 }
