@@ -75,5 +75,9 @@ This product includes and may modify software developed at
 ZooKeeper Helm Chart (https://github.com/helm/charts/tree/master/incubator/zookeeper).
 Licensed under the Apache License 2.0.
 
+This product includes and may modify software developed at
+Apache Superset (https://github.com/apache/superset).
+Licensed under the Apache License 2.0.
+
 II. License Summary
 - Apache License 2.0
