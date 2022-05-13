@@ -39,8 +39,8 @@ func WaitHttpUrlReady(url string, maxWait time.Duration, retryInterval time.Dura
 	return finalErr
 }
 
-func PostHttpAsJsonWithResponse(url string, skipVerifyTlsCertificate bool, request interface{}, response interface{}) error {
-	responseBytes, err := PostHttpAsJson(url, skipVerifyTlsCertificate, request)
+func PostHttpAsJsonParseResponse(url string, header http.Header, skipVerifyTlsCertificate bool, request interface{}, response interface{}) error {
+	responseBytes, err := PostHttpAsJson(url, header, skipVerifyTlsCertificate, request)
 	if err != nil {
 		return err
 	}
@@ -51,16 +51,19 @@ func PostHttpAsJsonWithResponse(url string, skipVerifyTlsCertificate bool, reque
 	return nil
 }
 
-func PostHttpAsJson(url string, skipVerifyTlsCertificate bool, request interface{}) ([]byte, error) {
+func PostHttpAsJson(url string, header http.Header, skipVerifyTlsCertificate bool, request interface{}) ([]byte, error) {
 	requestBytes, err := json.Marshal(request)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request as json: %s", err.Error())
 	}
-	return PostHttp(url, skipVerifyTlsCertificate, requestBytes)
+	return PostHttpWithHeader(url, header, skipVerifyTlsCertificate, requestBytes)
 }
 
-func PostHttp(url string, skipVerifyTlsCertificate bool, requestBytes []byte) ([]byte, error) {
+func PostHttpWithHeader(url string, header http.Header, skipVerifyTlsCertificate bool, requestBytes []byte) ([]byte, error) {
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(requestBytes))
+	if header != nil {
+		req.Header = header
+	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to create post request for url %s: %s", url, err.Error())
 	}

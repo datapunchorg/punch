@@ -80,6 +80,14 @@ func CreateInstallDeployment(topologySpec SupersetTopologySpec, commandEnvironme
 			"supersetUrl": url,
 		}, nil
 	})
+	deployment.AddStep("addInitDatabases", "Add initial databases", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+		url := c.GetStepOutput("deploySupersetService")["supersetUrl"].(string)
+		err := AddInitDatabases(url, commandEnvironment, topologySpec, topologySpec.Region, topologySpec.EksClusterName)
+		if err != nil {
+			return nil, err
+		}
+		return nil, nil
+	})
 	return deployment, nil
 }
 

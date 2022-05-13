@@ -124,7 +124,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 				ReplicationFactor: topicToCreate.ReplicationFactor,
 			}
 			var response createTopicResponse
-			err := common.PostHttpAsJsonWithResponse(url, true, request, &response)
+			err := common.PostHttpAsJsonParseResponse(url, nil,true, request, &response)
 			if err != nil {
 				return framework.NewDeploymentStepOutput(), err
 			}

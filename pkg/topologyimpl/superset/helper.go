@@ -78,3 +78,7 @@ func InstallSupersetHelm(commandEnvironment framework.CommandEnvironment, supers
 	err = kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvSupersetHelmChart), kubeConfig, arguments, installName, installNamespace)
 	return err
 }
+
+func AddInitDatabases(supersetUrl string, commandEnvironment framework.CommandEnvironment, supersetTopologySpec SupersetTopologySpec, region string, eksClusterName string) error {
+	return nil
+}
