@@ -62,7 +62,7 @@ func DeleteAllLoadBalancersOnEks(region string, vpcId string, eksClusterName str
 	}
 
 	for _, nonSystemNamespace := range nonSystemNamespaces {
-		log.Printf("Checking and deleting load balancers on EKS %s in region %s vpc %s", eksClusterName, region, vpcId)
+		log.Printf("Checking and deleting load balancers in namespace %s, EKS: %s, region: %s, VPC: %s", nonSystemNamespace, eksClusterName, region, vpcId)
 		err = deleteLoadBalancersOnEks(session, ec2Client, clientset, vpcId, nonSystemNamespace)
 		if err != nil {
 			return err
