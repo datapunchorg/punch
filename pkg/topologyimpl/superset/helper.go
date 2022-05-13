@@ -49,8 +49,8 @@ func DeploySupersetService(commandEnvironment framework.CommandEnvironment, supe
 	}
 
 	for _, entry := range hostPorts {
-		// TODO do not hard code port 9000
-		if entry.Port == 9000 {
+		// TODO do not hard code port 8088
+		if entry.Port == 8088 {
 			url := fmt.Sprintf("http://%s:%d", entry.Host, entry.Port)
 			return url, nil
 		}
@@ -72,7 +72,7 @@ func InstallSupersetHelm(commandEnvironment framework.CommandEnvironment, supers
 
 	arguments := []string {
 		"--set",
-		"controller.service.type=LoadBalancer",
+		"service.type=LoadBalancer",
 	}
 
 	err = kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvSupersetHelmChart), kubeConfig, arguments, installName, installNamespace)

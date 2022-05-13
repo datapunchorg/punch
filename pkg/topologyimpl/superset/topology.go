@@ -63,6 +63,7 @@ func CreateDefaultSupersetTopology(namePrefix string, s3BucketName string) Super
 			Metadata: framework.TopologyMetadata{
 				Name: topologyName,
 				CommandEnvironment: map[string]string{
+					framework.CmdEnvHelmExecutable:             framework.DefaultHelmExecutable,
 					CmdEnvSupersetHelmChart: "third-party/helm-charts/superset/charts/superset",
 				},
 				Notes: map[string]string{},

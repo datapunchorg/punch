@@ -55,7 +55,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 	if err != nil {
 		return deployment.GetOutput(), err
 	}
-	url := deployment.GetOutput().Output()["deployPinotService"]["pinotControllerUrl"].(string)
+	url := deployment.GetOutput().Output()["deploySupersetService"]["supersetUrl"].(string)
 	log.Printf("Superset installed! Open %s in web browser to query data.", url)
 	return deployment.GetOutput(), err
 }
@@ -65,19 +65,19 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 }
 
 func (t *TopologyHandler) PrintUsageExample(topology framework.Topology, deploymentOutput framework.DeploymentOutput) {
-	url := deploymentOutput.Output()["deployPinotService"]["pinotControllerUrl"].(string)
+	url := deploymentOutput.Output()["deploySupersetService"]["supersetUrl"].(string)
 	log.Printf("Pinot installed! Open %s in web browser to query data.", url)
 }
 
 func CreateInstallDeployment(topologySpec SupersetTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
 	deployment := framework.NewDeployment()
-	deployment.AddStep("deployPinotService", "Deploy Pinot Service", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+	deployment.AddStep("deploySupersetService", "Deploy Superset Service", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 		url, err := DeploySupersetService(commandEnvironment, topologySpec, topologySpec.Region, topologySpec.EksClusterName)
 		if err != nil {
 			return nil, err
 		}
 		return framework.DeployableOutput{
-			"pinotControllerUrl": url,
+			"supersetUrl": url,
 		}, nil
 	})
 	return deployment, nil

@@ -198,7 +198,7 @@ func GetServiceLoadBalancerHostPorts(region string, kubeConfigFile string, eksCl
 func WaitServiceLoadBalancerHostPorts(region string, kubeConfig string, eksClusterName string, namespace string, serviceName string) ([]common.HostPort, error) {
 	hostPorts, err := GetServiceLoadBalancerHostPorts(region, kubeConfig, eksClusterName, namespace, serviceName)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get load balancer urls for nginx controller service %s in namespace %s", serviceName, namespace)
+		return nil, fmt.Errorf("failed to get load balancer urls for service %s in namespace %s", serviceName, namespace)
 	}
 
 	dnsNameSet := make(map[string]bool, len(hostPorts))
