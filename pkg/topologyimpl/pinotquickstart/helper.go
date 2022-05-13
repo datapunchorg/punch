@@ -125,7 +125,7 @@ func CreateKafkaTopics(commandEnvironment framework.CommandEnvironment, region s
 	return common.RetryUntilTrue(func() (bool, error) {
 		err := CreateKafkaTopicsNoRetry(commandEnvironment, region, eksClusterName)
 		if err != nil {
-			log.Printf("Failed to create kafka topics, retrying...")
+			log.Printf("Failed to create kafka topics and will retry: %s", err.Error())
 			return false, nil
 		}
 		return true, nil

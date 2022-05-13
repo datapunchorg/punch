@@ -82,7 +82,7 @@ func CreateDefaultKyuubiOnEksTopology(namePrefix string, s3BucketName string) Ky
 				HelmInstallName: "kyuubi",
 				Namespace: "kyuubi-01",
 				ImageRepository: "ghcr.io/datapunchorg/incubator-kyuubi",
-				ImageTag: "kyuubi-1652247753",
+				ImageTag: "kyuubi-1652420363",
 				SparkSqlEngine: SparkSqlEngineSpec{
 					JarFile: "s3a://datapunch-public-01/jars/kyuubi-spark-sql-engine_2.12-1.5.0-incubating.jar",
 				},

@@ -24,7 +24,7 @@ replicaCount: 1
 
 image:
   repository: ghcr.io/datapunchorg/incubator-kyuubi
-  tag: kyuubi-1652247753
+  tag: kyuubi-1652420363
   pullPolicy: IfNotPresent
 
 probe:
