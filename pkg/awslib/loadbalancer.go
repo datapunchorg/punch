@@ -19,15 +19,58 @@ package awslib
 import (
 	"context"
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/datapunchorg/punch/pkg/common"
 	"github.com/datapunchorg/punch/pkg/kubelib"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 	"log"
 	"strings"
 	"time"
 )
+
+func DeleteAllLoadBalancersOnEks(region string, vpcId string, eksClusterName string) error {
+	session := CreateSession(region)
+	ec2Client := ec2.New(session)
+
+	var err error
+
+	vpcId, err = CheckOrGetFirstVpcId(ec2Client, vpcId)
+	if err != nil {
+		return fmt.Errorf("failed to check or get first VPC: %s", err.Error())
+	}
+
+	_, clientset, err := CreateEksKubernetesClient(region, eksClusterName)
+	if err != nil {
+		return fmt.Errorf("failed to get Kubernetes client for cluster %s: %s", eksClusterName, err.Error())
+	}
+
+	namespaceList, err := clientset.CoreV1().Namespaces().List(context.TODO(), v12.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to list namespaces for cluster %s: %s", eksClusterName, err.Error())
+	}
+
+	nonSystemNamespaces := make([]string, 0, len(namespaceList.Items))
+	for _, entry := range namespaceList.Items {
+		str := strings.ToLower(entry.Name)
+		if strings.HasPrefix(str, "kube-") {
+			continue
+		}
+		nonSystemNamespaces = append(nonSystemNamespaces, entry.Name)
+	}
+
+	for _, nonSystemNamespace := range nonSystemNamespaces {
+		log.Printf("Checking and deleting load balancers on EKS %s in region %s vpc %s", eksClusterName, region, vpcId)
+		err = deleteLoadBalancersOnEks(session, ec2Client, clientset, vpcId, nonSystemNamespace)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
 
 func DeleteLoadBalancersOnEks(region string, vpcId string, eksClusterName string, namespace string) error {
 	session := CreateSession(region)
@@ -45,6 +88,10 @@ func DeleteLoadBalancersOnEks(region string, vpcId string, eksClusterName string
 		return fmt.Errorf("failed to get Kubernetes client for cluster %s: %s", eksClusterName, err.Error())
 	}
 
+	return deleteLoadBalancersOnEks(session, ec2Client, clientset, vpcId, namespace)
+}
+
+func deleteLoadBalancersOnEks(session *session.Session, ec2Client *ec2.EC2, clientset *kubernetes.Clientset, vpcId string, namespace string) error {
 	serviceList, err := clientset.CoreV1().Services(namespace).List(context.TODO(), v12.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to list services in namespace %s: %s", namespace, err.Error())
@@ -59,7 +106,7 @@ func DeleteLoadBalancersOnEks(region string, vpcId string, eksClusterName string
 	}
 
 	if len(ingressHostNames) == 0 {
-		log.Printf("Did not find load balancer in namepsace %s, do not delete any load balancer", namespace)
+		log.Printf("Did not find load balancer in namepsace %s, do not delete any load balancer there", namespace)
 		return nil
 	}
 
