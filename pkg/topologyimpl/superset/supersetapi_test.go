@@ -28,7 +28,28 @@ func TestGetAccessToken(t *testing.T) {
 	if supersetUrl == "" {
 		return
 	}
+	token, err := GetAccessToken(supersetUrl, "admin", "admin")
+	assert.Nil(t, err)
+	assert.NotEqual(t, "", token)
+}
 
-	err := GetAccessToken(supersetUrl, "admin", "admin")
+func TestAddDatabase(t *testing.T) {
+	if supersetUrl == "" {
+		return
+	}
+	accessToken, err := GetAccessToken(supersetUrl, "admin", "admin")
+	assert.Nil(t, err)
+	assert.NotEqual(t, "", accessToken)
+
+	csrfToken, err := GetCsrfToken(supersetUrl, accessToken)
+	assert.Nil(t, err)
+	assert.NotEqual(t, "", csrfToken)
+
+	databaseInfo := DatabaseInfo{
+		DatabaseName: "punch-unit-test-01",
+		Engine: "hive",
+		SqlalchemyUri: "hive://hive@kyuubi-svc.kyuubi-01.svc.cluster.local:10009/default",
+	}
+	err = AddDatabase(supersetUrl, csrfToken, databaseInfo)
 	assert.Nil(t, err)
 }

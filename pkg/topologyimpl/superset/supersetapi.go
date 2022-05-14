@@ -32,9 +32,16 @@ type loginResponse struct {
 	AccessToken string `json:"access_token" yaml:"access_token"`
 }
 
+type csrfResponse struct {
+	Result string `json:"result" yaml:"result"`
+}
 
-func GetAccessToken(supersetUrl string, user string, password string) error {
-	loginUrl := fmt.Sprintf("%s/api/v1/security/login", supersetUrl)
+type databaseResponse struct {
+	Id int64 `json:"id" yaml:"id"`
+}
+
+func GetAccessToken(supersetUrl string, user string, password string) (string, error) {
+	requestUrl := fmt.Sprintf("%s/api/v1/security/login", supersetUrl)
 	request := loginRequest{
 		Username: user,
 		Password: password,
@@ -44,9 +51,41 @@ func GetAccessToken(supersetUrl string, user string, password string) error {
 		"Content-Type": []string{"application/json"},
 	}
 	response := loginResponse{}
-	err := common.PostHttpAsJsonParseResponse(loginUrl, header, true, request, &response)
+	err := common.PostHttpAsJsonParseResponse(requestUrl, header, true, request, &response)
 	if err != nil {
-		return fmt.Errorf("failed to get access token from %s: %s", loginUrl, err.Error())
+		return "", fmt.Errorf("failed to get access token from %s: %s", requestUrl, err.Error())
+	}
+	return response.AccessToken, nil
+}
+
+func GetCsrfToken(supersetUrl string, accessToken string) (string, error) {
+	requestUrl := fmt.Sprintf("%s/api/v1/security/csrf_token/", supersetUrl)
+	header := http.Header{
+		"Authorization": []string{
+			fmt.Sprintf("Bearer %s", accessToken),
+		},
+	}
+	response := csrfResponse{}
+	err := common.GetHttpAsJsonParseResponse(requestUrl, header, true, &response)
+	if err != nil {
+		return "", fmt.Errorf("failed to get CSRF token from %s: %s", requestUrl, err.Error())
+	}
+	return response.Result, nil
+}
+
+func AddDatabase(supersetUrl string, csrfToken string, databaseInfo DatabaseInfo) error {
+	loginUrl := fmt.Sprintf("%s/api/v1/security/login", supersetUrl)
+	requestUrl := fmt.Sprintf("%s/api/v1/database/", supersetUrl)
+	request := databaseInfo
+	header := http.Header{
+		"Referrer": []string{loginUrl},
+		"X-CSRFToken": []string{csrfToken},
+		"Content-Type": []string{"application/json"},
+	}
+	response := databaseResponse{}
+	err := common.PostHttpAsJsonParseResponse(requestUrl, header, true, request, &response)
+	if err != nil {
+		return fmt.Errorf("failed to add database to %s: %s", requestUrl, err.Error())
 	}
 	return nil
 }

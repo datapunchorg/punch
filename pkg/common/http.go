@@ -70,8 +70,8 @@ func PostHttpWithHeader(url string, header http.Header, skipVerifyTlsCertificate
 	return sendHttpRequest(url, skipVerifyTlsCertificate, req)
 }
 
-func GetHttpAsJsonWithResponse(url string, skipVerifyTlsCertificate bool, response interface{}) error {
-	responseBytes, err := GetHttp(url, skipVerifyTlsCertificate)
+func GetHttpAsJsonParseResponse(url string, header http.Header, skipVerifyTlsCertificate bool, response interface{}) error {
+	responseBytes, err := GetHttp(url, header, skipVerifyTlsCertificate)
 	if err != nil {
 		return err
 	}
@@ -82,10 +82,13 @@ func GetHttpAsJsonWithResponse(url string, skipVerifyTlsCertificate bool, respon
 	return nil
 }
 
-func GetHttp(url string, skipVerifyTlsCertificate bool) ([]byte, error) {
+func GetHttp(url string, header http.Header, skipVerifyTlsCertificate bool) ([]byte, error) {
 	req, err := http.NewRequest(http.MethodGet, url, bytes.NewReader([]byte{}))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create get request for url %s: %s", url, err.Error())
+	}
+	if header != nil {
+		req.Header = header
 	}
 	return sendHttpRequest(url, skipVerifyTlsCertificate, req)
 }

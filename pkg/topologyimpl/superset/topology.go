@@ -44,7 +44,9 @@ type SupersetTopologySpec struct {
 }
 
 type DatabaseInfo struct {
-	SqlalchemyUri           string `json:"sqlalchemyUri" yaml:"sqlalchemyUri"`
+	DatabaseName string `json:"database_name" yaml:"database_name"`
+	Engine string `json:"engine" yaml:"engine"`
+	SqlalchemyUri string `json:"sqlalchemy_uri" yaml:"sqlalchemy_uri"`
 }
 
 func GenerateSupersetTopology() SupersetTopology {
@@ -77,6 +79,8 @@ func CreateDefaultSupersetTopology(namePrefix string, s3BucketName string) Super
 			Namespace: "superset-01",
 			InitDatabases: []DatabaseInfo{
 				{
+					DatabaseName: "",
+					Engine: "",
 					SqlalchemyUri: "",
 				},
 			},
