@@ -73,7 +73,25 @@ func GetCsrfToken(supersetUrl string, accessToken string) (string, error) {
 	return response.Result, nil
 }
 
-func AddDatabase(supersetUrl string, csrfToken string, databaseInfo DatabaseInfo) error {
+func AddDatabase(supersetUrl string, accessToken string, databaseInfo DatabaseInfo) error {
+	//loginUrl := fmt.Sprintf("%s/api/v1/security/login", supersetUrl)
+	requestUrl := fmt.Sprintf("%s/api/v1/database/", supersetUrl)
+	request := databaseInfo
+	header := http.Header{
+		"Authorization": []string{
+			fmt.Sprintf("Bearer %s", accessToken),
+		},
+		"Content-Type": []string{"application/json"},
+	}
+	response := databaseResponse{}
+	err := common.PostHttpAsJsonParseResponse(requestUrl, header, true, request, &response)
+	if err != nil {
+		return fmt.Errorf("failed to add database to %s: %s", requestUrl, err.Error())
+	}
+	return nil
+}
+
+func AddDatabaseWithCsrfToken(supersetUrl string, csrfToken string, databaseInfo DatabaseInfo) error {
 	//loginUrl := fmt.Sprintf("%s/api/v1/security/login", supersetUrl)
 	requestUrl := fmt.Sprintf("%s/api/v1/database/", supersetUrl)
 	request := databaseInfo
