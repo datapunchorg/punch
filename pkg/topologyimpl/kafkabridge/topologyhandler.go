@@ -109,7 +109,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		kafkaBridgeTopicProduceUrl := c.GetStepOutput("deployStrimziKafkaBridge")["kafkaBridgeTopicProduceUrl"].(string)
 		kafkaBridgeTopicAdminUrl := c.GetStepOutput("deployStrimziKafkaBridge")["kafkaBridgeTopicAdminUrl"].(string)
 		var existingTopics []string
-		err := common.GetHttpAsJsonParseResponse(kafkaBridgeTopicProduceUrl, true, &existingTopics)
+		err := common.GetHttpAsJsonParseResponse(kafkaBridgeTopicProduceUrl, nil,true, &existingTopics)
 		if err != nil {
 			return framework.NewDeploymentStepOutput(), err
 		}

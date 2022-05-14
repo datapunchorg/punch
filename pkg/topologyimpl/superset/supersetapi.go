@@ -74,11 +74,10 @@ func GetCsrfToken(supersetUrl string, accessToken string) (string, error) {
 }
 
 func AddDatabase(supersetUrl string, csrfToken string, databaseInfo DatabaseInfo) error {
-	loginUrl := fmt.Sprintf("%s/api/v1/security/login", supersetUrl)
+	//loginUrl := fmt.Sprintf("%s/api/v1/security/login", supersetUrl)
 	requestUrl := fmt.Sprintf("%s/api/v1/database/", supersetUrl)
 	request := databaseInfo
 	header := http.Header{
-		"Referrer": []string{loginUrl},
 		"X-CSRFToken": []string{csrfToken},
 		"Content-Type": []string{"application/json"},
 	}

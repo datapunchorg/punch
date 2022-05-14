@@ -21,8 +21,8 @@ import (
 	"testing"
 )
 
-// var supersetUrl = ""
-var supersetUrl = "http://aaf74168a724448549a2ac4386f97d81-1339844253.us-west-1.elb.amazonaws.com:8088"
+var supersetUrl = ""
+//var supersetUrl = "http://aaf74168a724448549a2ac4386f97d81-1339844253.us-west-1.elb.amazonaws.com:8088"
 
 func TestGetAccessToken(t *testing.T) {
 	if supersetUrl == "" {
