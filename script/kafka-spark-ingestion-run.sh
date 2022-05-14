@@ -4,6 +4,8 @@
 set -ex
 
 namePrefix=my
+instanceType=t3.xlarge
+instanceCount=3
 
 databaseUser=user1
 databasePassword=password1
@@ -16,7 +18,12 @@ sparkApiGatewayPassword=password1
 
 databaseEndpoint=$(jq -r '.output[] | select(.step=="createDatabase").output.endpoint' RdsDatabase.output.json)
 
-./punch install Eks --set namePrefix=$namePrefix -o Eks.output.json
+./punch install Eks --set namePrefix=$namePrefix \
+  --patch Spec.NodeGroups[0].InstanceTypes[0]=$instanceType \
+  --patch Spec.NodeGroups[0].MinSize=$instanceCount \
+  --patch Spec.NodeGroups[0].MaxSize=$instanceCount \
+  --patch Spec.NodeGroups[0].DesiredSize=$instanceCount \
+  -o Eks.output.json
 
 ./punch install HiveMetastore --set namePrefix=$namePrefix \
   --patch spec.database.externalDb=true \
