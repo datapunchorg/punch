@@ -83,6 +83,8 @@ SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{env('DB_USER')}:{env('DB_PASS
 SQLALCHEMY_TRACK_MODIFICATIONS = True
 SECRET_KEY = env('SECRET_KEY', 'thisISaSECRET_1234')
 
+LOG_LEVEL = "DEBUG"
+
 # Flask-WTF flag for CSRF
 WTF_CSRF_ENABLED = False
 # Add endpoints that need to be exempt from CSRF protection
