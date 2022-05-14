@@ -22,7 +22,7 @@ import (
 )
 
 var supersetUrl = ""
-//var supersetUrl = "http://aaf74168a724448549a2ac4386f97d81-1339844253.us-west-1.elb.amazonaws.com:8088"
+//var supersetUrl = "http://ab951f61f51a74b68a05769bd49d8245-778723904.us-west-1.elb.amazonaws.com:8088"
 
 func TestGetAccessToken(t *testing.T) {
 	if supersetUrl == "" {
@@ -41,15 +41,15 @@ func TestAddDatabase(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotEqual(t, "", accessToken)
 
-	csrfToken, err := GetCsrfToken(supersetUrl, accessToken)
+	/* csrfToken, err := GetCsrfToken(supersetUrl, accessToken)
 	assert.Nil(t, err)
-	assert.NotEqual(t, "", csrfToken)
+	assert.NotEqual(t, "", csrfToken) */
 
 	databaseInfo := DatabaseInfo{
 		DatabaseName: "punch-unit-test-01",
 		Engine: "hive",
 		SqlalchemyUri: "hive://hive@kyuubi-svc.kyuubi-01.svc.cluster.local:10009/default",
 	}
-	err = AddDatabase(supersetUrl, csrfToken, databaseInfo)
+	err = AddDatabase(supersetUrl, accessToken, databaseInfo)
 	assert.Nil(t, err)
 }

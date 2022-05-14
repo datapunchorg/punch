@@ -107,7 +107,7 @@ func sendHttpRequest(url string, skipVerifyTlsCertificate bool, req *http.Reques
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response data from url %s: %s", url, err.Error())
 	}
-	if response.StatusCode != http.StatusOK {
+	if response.StatusCode < http.StatusOK || response.StatusCode >= 300 {
 		return nil, fmt.Errorf("got bad response status %d from url %s, response body: %s", response.StatusCode, url, string(responseBytes))
 	}
 	return responseBytes, nil
