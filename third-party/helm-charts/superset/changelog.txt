@@ -1,0 +1,4 @@
+
+20220513 Update third-party/helm-charts/superset/charts/superset/templates/_helpers.tpl
+LOG_LEVEL = "DEBUG"
+WTF_CSRF_ENABLED = False
