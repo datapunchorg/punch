@@ -88,6 +88,10 @@ echo Submitting Spark steaming application to ingest Kafka data
   --kafkaOption kafka.sasl.client.callback.handler.class=software.amazon.msk.auth.iam.IAMClientCallbackHandler
 
 
+kafkaJsonMessage='{"records":[{"key":"key1","value":"value1"},{"key":"key2","value":"value2"}]}'
+echo Command example to send more data to Kafka: curl -k -X POST $kafkaBridgeTopicProduceUrl/topic_01 -H \'Content-Type: application/vnd.kafka.json.v2+json\' -d \'$kafkaJsonMessage\'
+
+
 echo Installing Kyuubi
 
 ./punch install KyuubiOnEks --set namePrefix=$namePrefix \
@@ -101,6 +105,6 @@ echo KyuubiOnEks deployment output
 
 cat KyuubiOnEks.output.json | jq .
 
-
-kafkaJsonMessage='{"records":[{"key":"key1","value":"value1"},{"key":"key2","value":"value2"}]}'
-echo Command example to send more data to Kafka: curl -k -X POST $kafkaBridgeTopicProduceUrl/topic_01 -H \'Content-Type: application/vnd.kafka.json.v2+json\' -d \'$kafkaJsonMessage\'
+./punch install Superset --set namePrefix=$namePrefix \
+  --print-usage-example \
+  -o Superset.output.json

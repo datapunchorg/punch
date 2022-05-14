@@ -35,10 +35,10 @@ func TestWaitHttpUrlReady(t *testing.T) {
 }
 
 func TestGetHttp(t *testing.T) {
-	bytes, err := GetHttp("http://not_exist_url_abc_123", true)
+	bytes, err := GetHttp("http://not_exist_url_abc_123", nil, true)
 	assert.NotNil(t, err)
 	assert.Nil(t, bytes)
-	bytes, err = GetHttp("https://www.google.com", true)
+	bytes, err = GetHttp("https://www.google.com", nil, true)
 	assert.Nil(t, err)
 	assert.NotNil(t, bytes)
 }
