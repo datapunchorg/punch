@@ -79,9 +79,9 @@ func CreateDefaultSupersetTopology(namePrefix string, s3BucketName string) Super
 			Namespace: "superset-01",
 			InitDatabases: []DatabaseInfo{
 				{
-					DatabaseName: "",
-					Engine: "",
-					SqlalchemyUri: "",
+					DatabaseName: "hive-01",
+					Engine: "hive",
+					SqlalchemyUri: "hive://hive@kyuubi-svc.kyuubi-01.svc.cluster.local:10009/default",
 				},
 			},
 		},

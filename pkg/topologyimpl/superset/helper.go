@@ -22,6 +22,8 @@ import (
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/kubelib"
 	v1 "k8s.io/api/core/v1"
+	"log"
+	"strings"
 )
 
 func DeploySupersetService(commandEnvironment framework.CommandEnvironment, supersetTopologySpec SupersetTopologySpec, region string, eksClusterName string) (string, error) {
@@ -79,6 +81,27 @@ func InstallSupersetHelm(commandEnvironment framework.CommandEnvironment, supers
 	return err
 }
 
-func AddInitDatabases(supersetUrl string, commandEnvironment framework.CommandEnvironment, supersetTopologySpec SupersetTopologySpec, region string, eksClusterName string) error {
+func AddInitDatabases(supersetUrl string, supersetTopologySpec SupersetTopologySpec) error {
+	// TODO use configurable user name and password
+	accessToken, err := GetAccessToken(supersetUrl, "admin", "admin")
+	if err != nil {
+		return fmt.Errorf("failed to get Superset access token: %s", err.Error())
+	}
+	for _, info := range supersetTopologySpec.InitDatabases {
+		log.Printf("Adding database to Superset again: %v", info)
+		err = AddDatabase(supersetUrl, accessToken, info)
+		if err != nil {
+			if strings.Contains(err.Error(), "already exists") {
+				log.Printf("database already exists in Superset, do not add it again: %v", info)
+			} else {
+				return fmt.Errorf("failed to add database to Superset: %s", err.Error())
+			}
+		}
+	}
+	return nil
+}
+
+func AddInitDatabase(supersetUrl string, accessToken string, databaseInfo DatabaseInfo) error {
+
 	return nil
 }

@@ -66,7 +66,7 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 
 func (t *TopologyHandler) PrintUsageExample(topology framework.Topology, deploymentOutput framework.DeploymentOutput) {
 	url := deploymentOutput.Output()["deploySupersetService"]["supersetUrl"].(string)
-	log.Printf("Pinot installed! Open %s in web browser to query data.", url)
+	log.Printf("Superset installed! Open %s in web browser to query data.", url)
 }
 
 func CreateInstallDeployment(topologySpec SupersetTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
@@ -82,7 +82,7 @@ func CreateInstallDeployment(topologySpec SupersetTopologySpec, commandEnvironme
 	})
 	deployment.AddStep("addInitDatabases", "Add initial databases", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 		url := c.GetStepOutput("deploySupersetService")["supersetUrl"].(string)
-		err := AddInitDatabases(url, commandEnvironment, topologySpec, topologySpec.Region, topologySpec.EksClusterName)
+		err := AddInitDatabases(url, topologySpec)
 		if err != nil {
 			return nil, err
 		}
