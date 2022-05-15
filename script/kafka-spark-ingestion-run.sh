@@ -4,7 +4,7 @@
 set -ex
 
 namePrefix=my
-instanceType=t3.xlarge,c5.xlarge,r5.xlarge
+instanceType=t3.xlarge
 instanceCount=3
 
 databaseUser=user1
