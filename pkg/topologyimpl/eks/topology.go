@@ -24,7 +24,9 @@ import (
 
 const (
 	ToBeReplacedS3BucketName           = "todo_use_your_own_bucket_name"
-	DefaultInstanceType                = "t3.xlarge"
+	DefaultInstanceType1                = "t3.xlarge"
+	DefaultInstanceType2                = "c5.xlarge"
+	DefaultInstanceType3                = "r5.xlarge"
 	DefaultNodeGroupSize               = 2
 	DefaultMaxNodeGroupSize            = 10
 	DefaultNginxIngressHelmInstallName = "ingress-nginx"
@@ -179,7 +181,7 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 			NodeGroups: []resource.NodeGroup{
 				{
 					Name:          nodeGroupName,
-					InstanceTypes: []string{DefaultInstanceType},
+					InstanceTypes: []string{DefaultInstanceType1, DefaultInstanceType2, DefaultInstanceType3},
 					DesiredSize:   DefaultNodeGroupSize,
 					MaxSize:       DefaultMaxNodeGroupSize,
 					MinSize:       DefaultNodeGroupSize,
