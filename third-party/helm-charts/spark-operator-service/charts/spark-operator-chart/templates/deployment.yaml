@@ -95,6 +95,7 @@ spec:
         - -api-gateway-s3-region={{ .Values.spark.gateway.s3Region }}
         - -api-gateway-s3-bucket={{ .Values.spark.gateway.s3Bucket }}
         - -api-gateway-config=/etc/api-gateway-config/apiGatewayConfig.yml
+        - -api-gateway-spark-ui-modify-redirect-url=true
         resources:
           {{- toYaml .Values.resources | nindent 10 }}
         volumeMounts:
