@@ -44,11 +44,24 @@ metastoreWarehouseDir=$(jq -r '.output[] | select(.step=="installHiveMetastoreSe
 
 apiGatewayLoadBalancerUrl=$(jq -r '.output[] | select(.step=="deployNginxIngressController").output.loadBalancerPreferredUrl' SparkOnEks.output.json)
 
+
+echo Running test Spark application
+
 ./sparkcli --user $sparkApiGatewayUser --password $sparkApiGatewayPassword --insecure \
-  --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi \
+  --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 submit -o SparkcliSubmit.out.json \
+  --class org.apache.spark.examples.SparkPi \
   --spark-version 3.2 \
   --driver-memory 512m --executor-memory 512m \
   local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar
+
+submissionId=$(jq -r '.submissionId' SparkcliSubmit.output.json)
+
+./sparkcli --user $sparkApiGatewayUser --password $sparkApiGatewayPassword --insecure \
+  --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 status $submissionId
+
+./sparkcli --user $sparkApiGatewayUser --password $sparkApiGatewayPassword --insecure \
+  --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 list
+
 
 metastoreWarehouseDirS3Url=$(echo $metastoreWarehouseDir | sed -e "s/^s3a/s3/")
 
