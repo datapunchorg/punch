@@ -48,7 +48,7 @@ apiGatewayLoadBalancerUrl=$(jq -r '.output[] | select(.step=="deployNginxIngress
 echo Running test Spark application
 
 ./sparkcli --user $sparkApiGatewayUser --password $sparkApiGatewayPassword --insecure \
-  --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 submit -o SparkcliSubmit.out.json \
+  --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 submit -o SparkcliSubmit.output.json \
   --class org.apache.spark.examples.SparkPi \
   --spark-version 3.2 \
   --driver-memory 512m --executor-memory 512m \
