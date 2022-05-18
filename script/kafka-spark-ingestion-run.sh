@@ -62,6 +62,9 @@ submissionId=$(jq -r '.submissionId' SparkcliSubmit.output.json)
 ./sparkcli --user $sparkApiGatewayUser --password $sparkApiGatewayPassword --insecure \
   --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 list
 
+./sparkcli --user $sparkApiGatewayUser --password $sparkApiGatewayPassword --insecure \
+  --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 delete $submissionId
+
 
 metastoreWarehouseDirS3Url=$(echo $metastoreWarehouseDir | sed -e "s/^s3a/s3/")
 
