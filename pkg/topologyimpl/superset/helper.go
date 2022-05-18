@@ -88,7 +88,7 @@ func AddInitDatabases(supersetUrl string, supersetTopologySpec SupersetTopologyS
 		return fmt.Errorf("failed to get Superset access token: %s", err.Error())
 	}
 	for _, info := range supersetTopologySpec.InitDatabases {
-		log.Printf("Adding database to Superset again: %v", info)
+		log.Printf("Adding database to Superset: %v", info)
 		err = AddDatabase(supersetUrl, accessToken, info)
 		if err != nil {
 			if strings.Contains(err.Error(), "already exists") {

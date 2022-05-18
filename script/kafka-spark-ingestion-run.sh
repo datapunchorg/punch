@@ -97,15 +97,8 @@ curl -k -X POST $kafkaBridgeTopicProduceUrl/topic_01 -H 'Content-Type: applicati
 
 echo Submitting Spark steaming application to ingest Kafka data
 
-# Disable exit on non zero exit
-set +e
 ./sparkcli --user $sparkApiGatewayUser --password $sparkApiGatewayPassword --insecure \
-  --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 delete kafka-ingestion
-# Enable exit on non zero exit
-set -e
-
-./sparkcli --user $sparkApiGatewayUser --password $sparkApiGatewayPassword --insecure \
-  --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 submit --id kafka-ingestion \
+  --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 submit --id kafka-ingestion --overwrite \
   --class org.datapunch.sparkapp.KafkaIngestion \
   --spark-version 3.2 \
   --driver-memory 1g --executor-memory 1g \
