@@ -71,7 +71,7 @@ release: build
 	cp hack/pyspark-iceberg-example.py dist/examples/
 	cp hack/pyspark-hive-example.py dist/examples/
 	cp script/* dist/script/
-	curl -L -o dist/sparkcli.tar.gz https://github.com/datapunchorg/spark-on-k8s-operator/releases/download/0.4.0/sparkcli.tar.gz
+	curl -L -o dist/sparkcli.tar.gz https://github.com/datapunchorg/spark-on-k8s-operator/releases/download/0.5.0/sparkcli.tar.gz
 	tar xzvf dist/sparkcli.tar.gz -C dist
 	rm dist/sparkcli.tar.gz
 	zip -r dist.zip dist

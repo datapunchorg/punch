@@ -94,8 +94,16 @@ curl -k -X POST $kafkaBridgeTopicProduceUrl/topic_01 -H 'Content-Type: applicati
 
 echo Submitting Spark steaming application to ingest Kafka data
 
+# Disable exit on non zero exit
+set +e
 ./sparkcli --user $sparkApiGatewayUser --password $sparkApiGatewayPassword --insecure \
-  --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 submit --class org.datapunch.sparkapp.KafkaIngestion \
+  --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 delete kafka-ingestion
+# Enable exit on non zero exit
+set -e
+
+./sparkcli --user $sparkApiGatewayUser --password $sparkApiGatewayPassword --insecure \
+  --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 submit --id kafka-ingestion \
+  --class org.datapunch.sparkapp.KafkaIngestion \
   --spark-version 3.2 \
   --driver-memory 1g --executor-memory 1g \
   --conf spark.jars=s3a://datapunch-public-01/jars/aws-msk-iam-auth-1.1.0-all.jar \
@@ -106,6 +114,12 @@ echo Submitting Spark steaming application to ingest Kafka data
   --kafkaOption kafka.security.protocol=SASL_SSL --kafkaOption kafka.sasl.mechanism=AWS_MSK_IAM \
   --kafkaOption kafka.sasl.jaas.config="software.amazon.msk.auth.iam.IAMLoginModule required;" \
   --kafkaOption kafka.sasl.client.callback.handler.class=software.amazon.msk.auth.iam.IAMClientCallbackHandler
+
+./sparkcli --user $sparkApiGatewayUser --password $sparkApiGatewayPassword --insecure \
+  --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 list
+
+./sparkcli --user $sparkApiGatewayUser --password $sparkApiGatewayPassword --insecure \
+  --url ${apiGatewayLoadBalancerUrl}/sparkapi/v1 status kafka-ingestion
 
 
 kafkaJsonMessage='{"records":[{"key":"key1","value":"value1"},{"key":"key2","value":"value2"}]}'
