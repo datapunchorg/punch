@@ -52,6 +52,16 @@ build:
 	@echo "building rdsdatabase plugin ..."
 	go build -buildmode=plugin -o dist/plugin/rdsdatabase.so ./pkg/topologyimpl/rdsdatabase/
 
+# Build sparkcli binary
+.PHONY: sparkcli
+sparkcli:
+	@echo "fetching and building sparkcli ..."
+	mkdir -p dist/temp
+	rm -rf dist/temp/spark-on-k8s-operator
+	git clone -b master-datapunch https://github.com/datapunchorg/spark-on-k8s-operator.git dist/temp/spark-on-k8s-operator
+	cd dist/temp/spark-on-k8s-operator && go build -o ../../sparkcli sparkcli/main.go
+	rm -rf dist/temp
+
 # Run the tests after building
 .PHONY: test
 test:
@@ -60,7 +70,7 @@ test:
 
 # Generate release
 .PHONY: release
-release: build
+release: build sparkcli
 	@echo "generating release ..."
 	mkdir -p dist
 	mkdir -p dist/script
@@ -71,9 +81,6 @@ release: build
 	cp hack/pyspark-iceberg-example.py dist/examples/
 	cp hack/pyspark-hive-example.py dist/examples/
 	cp script/* dist/script/
-	curl -L -o dist/sparkcli.tar.gz https://github.com/datapunchorg/spark-on-k8s-operator/releases/download/0.6.0/sparkcli.tar.gz
-	tar xzvf dist/sparkcli.tar.gz -C dist
-	rm dist/sparkcli.tar.gz
 	zip -r dist.zip dist
 
 # Clean up
