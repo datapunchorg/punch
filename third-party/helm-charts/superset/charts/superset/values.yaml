@@ -162,8 +162,8 @@ configMountPath: "/app/pythonpath"
 extraConfigMountPath: "/app/configs"
 
 image:
-  repository: apache/superset
-  tag: latest
+  repository: ghcr.io/datapunchorg/superset
+  tag: superset-e4dbf482d5bb527db5fef06120bdb2cd4363c3a0
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
