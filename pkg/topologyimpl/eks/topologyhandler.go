@@ -120,12 +120,18 @@ func CreateInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fr
 	} else {
 		deployment.AddStep("createS3Bucket", "Create S3 bucket", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 			err := awslib.CreateS3Bucket(topologySpec.Region, topologySpec.S3BucketName)
-			return framework.DeployableOutput{"bucketName": topologySpec.S3BucketName}, err
+			if err != nil {
+				return framework.NewDeploymentStepOutput(), err
+			}
+			return framework.DeployableOutput{"bucketName": topologySpec.S3BucketName}, nil
 		})
 
 		deployment.AddStep("createInstanceIamRole", "Create EKS instance IAM role", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-			roleName := CreateInstanceIamRole(topologySpec)
-			return framework.DeployableOutput{"roleName": roleName}, nil
+			roleName, err := CreateInstanceIamRole(topologySpec)
+			if err != nil {
+				return framework.NewDeploymentStepOutput(), err
+			}
+			return framework.DeployableOutput{"roleName": roleName}, err
 		})
 
 		deployment.AddStep("createEksCluster", "Create EKS cluster", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {

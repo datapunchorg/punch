@@ -53,14 +53,13 @@ func ValidateEksTopologySpec(spec EksTopologySpec, metadata framework.TopologyMe
 	return nil
 }
 
-func CreateInstanceIamRole(topology EksTopologySpec) string {
+func CreateInstanceIamRole(topology EksTopologySpec) (string, error) {
 	region := topology.Region
 	roleName, err := resource.CreateIamRoleWithMorePolicies(region, topology.EksCluster.InstanceRole, []resource.IamPolicy{topology.S3Policy, topology.KafkaPolicy})
 	if err != nil {
-		// TODO remove Fatalf
-		log.Fatalf("Failed to create instance IAM role: %s", err.Error())
+		return "", fmt.Errorf("failed to create instance IAM role: %s", err.Error())
 	}
-	return roleName
+	return roleName, nil
 }
 
 // CreateClusterAutoscalerIamRole returns IAM Role name like: AmazonEKSClusterAutoscalerRole-xxx

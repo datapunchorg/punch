@@ -18,6 +18,7 @@ package kafkabridge
 
 import (
 	"fmt"
+	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/common"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/resource"
@@ -140,7 +141,12 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
 	currentTopology := topology.(*KafkaBridgeTopology)
+	spec := currentTopology.Spec
 	deployment := kafkaonmsk.CreateUninstallDeployment(currentTopology.Spec.KafkaOnMskSpec)
+	deployment.AddStep("deleteLoadBalancer", "Delete Load Balancer", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+		err := awslib.DeleteLoadBalancersOnEks(spec.Region, spec.EksVpcId, spec.EksClusterName, spec.KafkaBridge.Namespace)
+		return framework.NewDeploymentStepOutput(), err
+	})
 	// TODO delete kafka bridge service
 	err := deployment.Run()
 	return deployment.GetOutput(), err
