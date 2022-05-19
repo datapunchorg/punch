@@ -100,7 +100,10 @@ func CreateInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fr
 		return framework.NewDeployment(), fmt.Errorf("please provide helm chart file location for Cluster Autoscaler")
 	}
 
-	kubelib.CheckHelmOrFatal(commandEnvironment.Get(framework.CmdEnvHelmExecutable))
+	err := kubelib.CheckHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable))
+	if err != nil {
+		return framework.NewDeployment(), err
+	}
 	if commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
 		commandEnvironment.Set(framework.CmdEnvKubeConfig, kubelib.GetKubeConfigPath())
 		deployment.AddStep("minikubeProfile", "Set Minikube Profile", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
@@ -204,7 +207,10 @@ func CreateInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fr
 			})
 
 			deployment.AddStep("deployClusterAutoscaler", "Deploy Cluster Autoscaler", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-				DeployClusterAutoscaler(commandEnvironment, topologySpec)
+				err := InstallClusterAutoscalerHelm(commandEnvironment, topologySpec)
+				if err != nil {
+					return framework.NewDeploymentStepOutput(), err
+				}
 				return framework.NewDeploymentStepOutput(), nil
 			})
 		}
@@ -212,7 +218,7 @@ func CreateInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fr
 
 	if commandEnvironment.Get(CmdEnvNginxHelmChart) != "" {
 		deployment.AddStep("deployNginxIngressController", "Deploy Nginx ingress controller", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-			return DeployNginxIngressController(commandEnvironment, topologySpec), nil
+			return DeployNginxIngressController(commandEnvironment, topologySpec)
 		})
 	}
 

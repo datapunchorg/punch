@@ -17,18 +17,19 @@ limitations under the License.
 package kubelib
 
 import (
+	"fmt"
 	"log"
 	"os/exec"
 	"strings"
 )
 
-func CheckHelmOrFatal(helmExeLocation string) {
+func CheckHelm(helmExeLocation string) error {
 	helmCmd := exec.Command(helmExeLocation, "version")
 	helmOut, err := helmCmd.Output()
 	if err != nil {
-		log.Fatalf("helm not installed: %s", err.Error())
+		return fmt.Errorf("helm not installed: %s\n%s", err.Error(), string(helmOut))
 	}
-	log.Printf("helm version: %s", string(helmOut))
+	return nil
 }
 
 func RunHelm(helmExeLocation string, arguments []string) {

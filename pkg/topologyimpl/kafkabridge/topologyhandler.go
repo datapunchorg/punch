@@ -82,7 +82,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		}
 		urls, err := resource.GetEksNginxLoadBalancerUrls(commandEnvironment, spec.Region, spec.EksClusterName, spec.NginxNamespace, spec.NginxServiceName, eks.NodePortLocalHttps)
 		if err != nil {
-			log.Fatalf("Failed to get NGINX load balancer urls: %s", err.Error())
+			return framework.NewDeploymentStepOutput(), fmt.Errorf("failed to get NGINX load balancer urls: %s", err.Error())
 		}
 		loadBalancerUrl := resource.GetLoadBalancerPreferredUrl(urls)
 		if loadBalancerUrl == "" {

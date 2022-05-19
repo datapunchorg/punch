@@ -19,7 +19,6 @@ package eks
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/datapunchorg/punch/pkg/awslib"
@@ -148,8 +147,7 @@ func WaitEksServiceAccount(commandEnvironment framework.CommandEnvironment, topo
 	return nil
 }
 
-// TODO remove log.Fatalf
-func DeployNginxIngressController(commandEnvironment framework.CommandEnvironment, topology EksTopologySpec) map[string]interface{} {
+func DeployNginxIngressController(commandEnvironment framework.CommandEnvironment, topology EksTopologySpec) (map[string]interface{}, error) {
 	nginxNamespace := topology.NginxIngress.Namespace
 	helmInstallName := topology.NginxIngress.HelmInstallName
 	nginxServiceName := DefaultNginxServiceName
@@ -157,7 +155,7 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 	eksClusterName := topology.EksCluster.ClusterName
 	kubeConfig, err := awslib.CreateKubeConfig(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
 	if err != nil {
-		log.Fatalf("Failed to get kube config: %s", err)
+		return nil, fmt.Errorf("failed to get kube config: %s", err.Error())
 	}
 
 	defer kubeConfig.Cleanup()
@@ -177,16 +175,16 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 
 	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
 	if err != nil {
-		log.Fatalf("Failed to create Kubernetes client: %s", err.Error())
+		return nil, fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
 	}
 	err = kubelib.WaitPodsInPhases(clientset, nginxNamespace, nginxServiceName, []v1.PodPhase{v1.PodRunning})
 	if err != nil {
-		log.Fatalf("Pod %s*** in namespace %s is not in phase %s", nginxServiceName, nginxNamespace, v1.PodRunning)
+		return nil, fmt.Errorf("pod %s*** in namespace %s is not in phase %s", nginxServiceName, nginxNamespace, v1.PodRunning)
 	}
 
 	urls, err := resource.GetEksNginxLoadBalancerUrls(commandEnvironment, region, eksClusterName, nginxNamespace, nginxServiceName, NodePortLocalHttps)
 	if err != nil {
-		log.Fatalf("Failed to get NGINX load balancer urls: %s", err.Error())
+		return nil, fmt.Errorf("failed to get NGINX load balancer urls: %s", err.Error())
 	}
 
 	output := make(map[string]interface{})
@@ -195,7 +193,7 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 	preferredUrl := resource.GetLoadBalancerPreferredUrl(urls)
 	output["loadBalancerPreferredUrl"] = preferredUrl
 
-	return output
+	return output, nil
 }
 
 func DeleteEksCluster(region string, clusterName string) {

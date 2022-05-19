@@ -37,8 +37,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// TODO remove log.Fatalf
-
 func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, sparkComponentSpec  SparkComponentSpec, region string, eksClusterName string, s3Bucket string) error {
 	operatorNamespace := sparkComponentSpec.Operator.Namespace
 
@@ -224,7 +222,7 @@ func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, s
 	return err
 }
 
-func CreateSparkServiceAccount(clientset *kubernetes.Clientset, sparkOperatorNamespace string, sparkApplicationNamespace string, sparkServiceAccountName string) {
+func CreateSparkServiceAccount(clientset *kubernetes.Clientset, sparkOperatorNamespace string, sparkApplicationNamespace string, sparkServiceAccountName string) error {
 	_, err := clientset.CoreV1().ServiceAccounts(sparkApplicationNamespace).Create(
 		context.TODO(),
 		&v1.ServiceAccount{
@@ -233,7 +231,7 @@ func CreateSparkServiceAccount(clientset *kubernetes.Clientset, sparkOperatorNam
 		metav1.CreateOptions{})
 	if err != nil {
 		if !awslib.AlreadyExistsMessage(err.Error()) {
-			log.Fatalf("Failed to create Spark service account %s in namespace %s: %v", sparkServiceAccountName, sparkApplicationNamespace, err)
+			return fmt.Errorf("failed to create Spark service account %s in namespace %s: %s", sparkServiceAccountName, sparkApplicationNamespace, err.Error())
 		} else {
 			log.Printf("Spark service account %s in namespace %s already exists, do not create it again", sparkServiceAccountName, sparkApplicationNamespace)
 		}
@@ -267,7 +265,7 @@ func CreateSparkServiceAccount(clientset *kubernetes.Clientset, sparkOperatorNam
 		metav1.CreateOptions{})
 	if err != nil {
 		if !awslib.AlreadyExistsMessage(err.Error()) {
-			log.Fatalf("Failed to create Spark service account role %s in namespace %s: %v", roleName, sparkApplicationNamespace, err)
+			return fmt.Errorf("failed to create Spark service account role %s in namespace %s: %s", roleName, sparkApplicationNamespace, err.Error())
 		} else {
 			log.Printf("Spark service account role %s in namespace %s already exists, do not create it again", roleName, sparkApplicationNamespace)
 		}
@@ -296,13 +294,14 @@ func CreateSparkServiceAccount(clientset *kubernetes.Clientset, sparkOperatorNam
 		metav1.CreateOptions{})
 	if err != nil {
 		if !awslib.AlreadyExistsMessage(err.Error()) {
-			log.Fatalf("Failed to create Spark service account role binding %s in namespace %s: %v", roleBindingName, sparkApplicationNamespace, err)
+			return fmt.Errorf("failed to create Spark service account role binding %s in namespace %s: %s", roleBindingName, sparkApplicationNamespace, err.Error())
 		} else {
 			log.Printf("Spark service account role binding %s in namespace %s already exists, do not create it again", roleBindingName, sparkApplicationNamespace)
 		}
 	} else {
 		log.Printf("Created Spark service account role binding %s in namespace %s", roleBindingName, sparkApplicationNamespace)
 	}
+	return nil
 }
 
 func CreateApiGatewayIngress(clientset *kubernetes.Clientset, namespace string, ingressName string, serviceName string) error {

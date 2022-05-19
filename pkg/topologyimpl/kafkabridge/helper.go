@@ -22,7 +22,6 @@ import (
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/kubelib"
 	v1 "k8s.io/api/core/v1"
-	"log"
 )
 
 func DeployKafkaBridge(commandEnvironment framework.CommandEnvironment, spec KafkaBridgeTopologySpec) error {
@@ -51,7 +50,7 @@ func DeployKafkaBridge(commandEnvironment framework.CommandEnvironment, spec Kaf
 func InstallKafkaBridgeHelm(commandEnvironment framework.CommandEnvironment, spec KafkaBridgeTopologySpec) error {
 	kubeConfig, err := awslib.CreateKubeConfig(spec.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), spec.EksClusterName)
 	if err != nil {
-		log.Fatalf("Failed to get kube config: %s", err)
+		return fmt.Errorf("failed to get kube config: %s", err)
 	}
 
 	defer kubeConfig.Cleanup()

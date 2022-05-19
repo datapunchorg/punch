@@ -22,19 +22,14 @@ import (
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/kubelib"
 	v1 "k8s.io/api/core/v1"
-	"log"
 )
 
-func DeployClusterAutoscaler(commandEnvironment framework.CommandEnvironment, topology EksTopologySpec) {
-	InstallClusterAutoscalerHelm(commandEnvironment, topology)
-}
-
-func InstallClusterAutoscalerHelm(commandEnvironment framework.CommandEnvironment, topology EksTopologySpec) {
+func InstallClusterAutoscalerHelm(commandEnvironment framework.CommandEnvironment, topology EksTopologySpec) error {
 	// helm install cluster-autoscaler third-party/helm-charts/cluster-autoscaler --set autoDiscovery.clusterName=my-eks-01 --set awsRegion=us-west-1
 
 	kubeConfig, err := awslib.CreateKubeConfig(topology.Region, commandEnvironment.Get(framework.CmdEnvKubeConfig), topology.EksCluster.ClusterName)
 	if err != nil {
-		log.Fatalf("Failed to get kube config: %s", err)
+		return fmt.Errorf("failed to get kube config: %s", err.Error())
 	}
 
 	defer kubeConfig.Cleanup()
@@ -57,12 +52,13 @@ func InstallClusterAutoscalerHelm(commandEnvironment framework.CommandEnvironmen
 
 	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), clusterName)
 	if err != nil {
-		log.Fatalf("Failed to create Kubernetes client: %s", err.Error())
+		return fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
 	}
 
 	podNamePrefix := "cluster-autoscaler-aws-cluster-autoscaler"
 	err = kubelib.WaitPodsInPhases(clientset, installNamespace, podNamePrefix, []v1.PodPhase{v1.PodRunning})
 	if err != nil {
-		log.Fatalf("Pod %s*** in namespace %s is not in phase %s", podNamePrefix, installNamespace, v1.PodRunning)
+		return fmt.Errorf("pod %s*** in namespace %s is not in phase %s", podNamePrefix, installNamespace, v1.PodRunning)
 	}
+	return nil
 }
