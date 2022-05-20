@@ -39,7 +39,7 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 	// The HTTP Client returned by conf.Client will refresh the token as necessary.
 	client := conf.Client(ctx, tok)
 
-	resp, err := client.Get("http://some-server.example.com/")
+	resp, err := client.Get("http://localhost:8080/health")
 	if err != nil {
 		log.Fatal(err)
 	} else {
