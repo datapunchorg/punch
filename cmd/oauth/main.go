@@ -1,5 +1,5 @@
 // The code in this file is copied from https://gist.github.com/marians/3b55318106df0e4e648158f1ffb43d38,
-// and may be modified.
+// and is modified.
 
 package main
 
@@ -25,8 +25,7 @@ var (
 func callbackHandler(w http.ResponseWriter, r *http.Request) {
 	queryParts, _ := url.ParseQuery(r.URL.RawQuery)
 
-	// Use the authorization code that is pushed to the redirect
-	// URL.
+	// Use the authorization code that is pushed to the redirect URL.
 	code := queryParts["code"][0]
 	log.Printf("code: %s\n", code)
 
@@ -49,7 +48,7 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 
 	// show succes page
 	msg := "<p><strong>Success!</strong></p>"
-	msg = msg + "<p>You are authenticated and can now return to the CLI.</p>"
+	msg = msg + "<p>You are authenticated and can now return to the CLI. It is also OK to close this web page.</p>"
 	fmt.Fprintf(w, msg)
 }
 
@@ -86,5 +85,4 @@ func main() {
 
 	http.HandleFunc("/oauth/callback", callbackHandler)
 	log.Fatal(http.ListenAndServe(":9999", nil))
-
 }
