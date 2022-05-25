@@ -127,6 +127,20 @@ func (t *TemplateDataWithRegion) DefaultVpcId() string {
 	return vpcId
 }
 
+func (t *TemplateDataWithRegion) DefaultVpcCidrBlock() string {
+	region := t.Region()
+	session := awslib.CreateSession(region)
+	ec2Client := ec2.New(session)
+
+	vpcId, err := awslib.GetFirstVpcCidrBlock(ec2Client)
+	if err != nil {
+		log.Printf("[WARN] Failed to get first VPC: %s", err.Error())
+		return "error-no-value"
+	}
+
+	return vpcId
+}
+
 func (t *TemplateDataWithRegion) DefaultS3BucketName() string {
 	namePrefix := t.NamePrefix()
 	region := t.Region()

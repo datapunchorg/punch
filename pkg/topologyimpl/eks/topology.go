@@ -142,7 +142,7 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 								IPProtocol: "-1",
 								FromPort:   -1,
 								ToPort:     -1,
-								IPRanges:   []string{"0.0.0.0/0"},
+								IPRanges:   []string{"{{ or .Values.vpcCidrBlock .DefaultVpcCidrBlock }}"},
 							},
 						},
 					},

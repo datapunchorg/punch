@@ -35,6 +35,19 @@ func GetFirstVpcId(ec2Client *ec2.EC2) (string, error) {
 	return *describeVpcsResult.Vpcs[0].VpcId, nil
 }
 
+func GetFirstVpcCidrBlock(ec2Client *ec2.EC2) (string, error) {
+	describeVpcsResult, err := ec2Client.DescribeVpcs(nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to get VPCs: %s", err.Error())
+	}
+
+	if len(describeVpcsResult.Vpcs) == 0 {
+		return "", fmt.Errorf("did not find any VPCs. Please add a VPC in your AWS account")
+	}
+
+	return *describeVpcsResult.Vpcs[0].CidrBlock, nil
+}
+
 func CheckOrGetFirstVpcId(ec2Client *ec2.EC2, vpcId string) (string, error) {
 	var err error
 	if vpcId == "" {
