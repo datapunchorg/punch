@@ -177,10 +177,12 @@ func CreateInstallDeployment(topologySpec SparkOnEksTopologySpec, commandEnviron
 		err := DeploySparkOperator(commandEnvironment, topologySpec.Spark, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName, topologySpec.Eks.S3BucketName)
 		return nil, err
 	})
-	deployment.AddStep("deploySparkHistoryServer", "Deploy Spark History Server", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-		err := DeployHistoryServer(commandEnvironment, topologySpec.Spark, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName)
-		return nil, err
-	})
+	if topologySpec.Spark.HistoryServer.Enable {
+		deployment.AddStep("deploySparkHistoryServer", "Deploy Spark History Server", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+			err := DeployHistoryServer(commandEnvironment, topologySpec.Spark, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName)
+			return nil, err
+		})
+	}
 	return deployment, nil
 }
 

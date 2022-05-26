@@ -75,6 +75,7 @@ type SparkOperator struct {
 }
 
 type SparkHistoryServer struct {
+	Enable bool `json:"enable" yaml:"enable"`
 	HelmInstallName string `json:"helmInstallName" yaml:"helmInstallName"`
 	Namespace       string `json:"namespace" yaml:"namespace"`
 	ImageRepository string `json:"imageRepository" yaml:"imageRepository"`
@@ -120,6 +121,7 @@ func CreateDefaultSparkOnEksTopology(namePrefix string, s3BucketName string) Spa
 					SparkApplicationNamespace: DefaultSparkApplicationNamespace,
 				},
 				HistoryServer: SparkHistoryServer{
+					Enable: false,
 					HelmInstallName: DefaultSparkHistoryServerHelmInstallName,
 					ImageRepository: DefaultSparkHistoryServerImageRepository,
 					ImageTag:        DefaultSparkHistoryServerImageTag,

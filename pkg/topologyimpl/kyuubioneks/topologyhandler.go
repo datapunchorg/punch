@@ -99,10 +99,12 @@ func CreateInstallDeployment(topologySpec KyuubiOnEksTopologySpec, commandEnviro
 		err := sparkoneks.DeploySparkOperator(commandEnvironment, topologySpec.Spark, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName, topologySpec.Eks.S3BucketName)
 		return nil, err
 	})
-	deployment.AddStep("deploySparkHistoryServer", "Deploy Spark History Server", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-		err := sparkoneks.DeployHistoryServer(commandEnvironment, topologySpec.Spark, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName)
-		return nil, err
-	})
+	if topologySpec.Spark.HistoryServer.Enable {
+		deployment.AddStep("deploySparkHistoryServer", "Deploy Spark History Server", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+			err := sparkoneks.DeployHistoryServer(commandEnvironment, topologySpec.Spark, topologySpec.Eks.Region, topologySpec.Eks.EksCluster.ClusterName)
+			return nil, err
+		})
+	}
 	deployment.AddStep("deployKyuubiServer", "Deploy Kyuubi Server", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 		loadBalancerUrl := deployment.GetContext().GetStepOutput("deployNginxIngressController")["loadBalancerPreferredUrl"].(string)
 		sparkApiGatewayUrl := loadBalancerUrl + sparkoneks.SparkApiRelativeUrl
