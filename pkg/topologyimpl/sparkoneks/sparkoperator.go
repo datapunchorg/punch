@@ -37,20 +37,22 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, sparkComponentSpec  SparkComponentSpec, region string, eksClusterName string, s3Bucket string) error {
+func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, sparkComponentSpec SparkComponentSpec, region string, eksClusterName string, s3Bucket string) error {
 	operatorNamespace := sparkComponentSpec.Operator.Namespace
 
 	eventLogDir := sparkComponentSpec.Gateway.SparkEventLogDir
-	if strings.HasPrefix(strings.ToLower(eventLogDir), "s3") {
-		dummyFileUrl := eventLogDir
-		if !strings.HasSuffix(dummyFileUrl, "/") {
-			dummyFileUrl += "/"
-		}
-		dummyFileUrl += "dummy.txt"
-		log.Printf("Uploading dummy file %s to Spark event log directory %s to make sure the directry exits (Spark application and history server will fail if the directory does not exist)", dummyFileUrl, eventLogDir)
-		err := awslib.UploadDataToS3Url(region, dummyFileUrl, strings.NewReader(""))
-		if err != nil {
-			return fmt.Errorf("failed to create dummy file %s in Spark event log directory %s to make sure the directry exits (Spark application and history server will fail if the directory does not exist): %s", dummyFileUrl, eventLogDir, err.Error())
+	if !commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
+		if strings.HasPrefix(strings.ToLower(eventLogDir), "s3") {
+			dummyFileUrl := eventLogDir
+			if !strings.HasSuffix(dummyFileUrl, "/") {
+				dummyFileUrl += "/"
+			}
+			dummyFileUrl += "dummy.txt"
+			log.Printf("Uploading dummy file %s to Spark event log directory %s to make sure the directry exits (Spark application and history server will fail if the directory does not exist)", dummyFileUrl, eventLogDir)
+			err := awslib.UploadDataToS3Url(region, dummyFileUrl, strings.NewReader(""))
+			if err != nil {
+				return fmt.Errorf("failed to create dummy file %s in Spark event log directory %s to make sure the directry exits (Spark application and history server will fail if the directory does not exist): %s", dummyFileUrl, eventLogDir, err.Error())
+			}
 		}
 	}
 
@@ -125,8 +127,8 @@ func CreateApiGatewayService(clientset *kubernetes.Clientset, namespace string, 
 		context.TODO(),
 		&v1.Service{
 			ObjectMeta: v12.ObjectMeta{
-				Namespace:   namespace,
-				Name:        serviceName,
+				Namespace: namespace,
+				Name:      serviceName,
 				Annotations: map[string]string{
 					// "service.beta.kubernetes.io/aws-load-balancer-healthcheck-protocol": "http",
 					// "service.beta.kubernetes.io/aws-load-balancer-healthcheck-path": "/health",
@@ -175,7 +177,7 @@ func CreateApiGatewayService(clientset *kubernetes.Clientset, namespace string, 
 	return nil
 }
 
-func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, sparkComponentSpec  SparkComponentSpec, region string, eksClusterName string, s3Bucket string) error {
+func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, sparkComponentSpec SparkComponentSpec, region string, eksClusterName string, s3Bucket string) error {
 	// helm install my-release spark-operator/spark-operator --namespace spark-operator --create-namespace --set sparkJobNamespace=default
 
 	kubeConfig, err := awslib.CreateKubeConfig(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)

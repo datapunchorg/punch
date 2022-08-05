@@ -112,7 +112,7 @@ func CreateInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fr
 		})
 
 		deployment.AddStep("minikubeStart", "Start Minikube Cluster", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-			_, err := resource.MinikubeExec("start", "--memory", "4096", "--ports", "32443:32443", "--kubernetes-version=v1.22.6") // TODO make memory size configurable
+			_, err := resource.MinikubeExec("start", "--memory", "4096", "--ports", "32443:32443", "--kubernetes-version=v1.23.3") // TODO make memory size configurable
 			return framework.NewDeploymentStepOutput(), err
 		})
 
@@ -281,4 +281,3 @@ func CreateUninstallDeployment(topologySpec EksTopologySpec, commandEnvironment 
 	}
 	return deployment, nil
 }
-
