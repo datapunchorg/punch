@@ -1,13 +1,13 @@
 
-## Pre-requisite to Run punch command
+## Pre-requisite to Run `punch` command
 
 ### Install Helm
 
 1. See https://helm.sh/docs/intro/install/
 
-## Run punch on AWS
+## Run `punch` on AWS
 
-### Extra Pre-requisite: Set up AWS environment
+### Set up AWS environment
 
 1. Create AWS account, then download AWS Command Line Interface (https://aws.amazon.com/cli/).
 
