@@ -56,7 +56,7 @@ Go to `dist` folder, check [User Guide](UserGuide.md) to see how to run `punch` 
 
 ## User Guide - Run Spark on AWS EKS
 
-Again, use one command like `punch install SparkOnEks` to deploy a runnable Spark environment on EKS.
+Use single command like `punch install SparkOnEks` to deploy a runnable Spark environment on EKS.
 
 See [User Guide](UserGuide.md) for more details in section: `Run punch on AWS`.
 
