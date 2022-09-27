@@ -54,6 +54,7 @@ func CreateNodeGroup(region string, clusterName string, nodeGroup NodeGroup, nod
 		ClusterName:   aws.String(clusterName),
 		NodegroupName: aws.String(nodeGroup.Name),
 		InstanceTypes: aws.StringSlice(nodeGroup.InstanceTypes),
+		DiskSize:      aws.Int64(200),
 		ScalingConfig: &eks.NodegroupScalingConfig{
 			DesiredSize: aws.Int64(int64(nodeGroup.DesiredSize)),
 			MaxSize:     aws.Int64(int64(nodeGroup.MaxSize)),
