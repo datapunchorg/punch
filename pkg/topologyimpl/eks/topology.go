@@ -24,9 +24,10 @@ import (
 
 const (
 	ToBeReplacedS3BucketName           = "todo_use_your_own_bucket_name"
-	DefaultInstanceType1                = "t3.xlarge"
-	DefaultInstanceType2                = "c5.xlarge"
-	DefaultInstanceType3                = "r5.xlarge"
+	DefaultInstanceType1               = "t3.xlarge"
+	DefaultInstanceType2               = "c5.xlarge"
+	DefaultInstanceType3               = "r5.xlarge"
+	DefaultNodeGroupDiskSizeGb         = 200
 	DefaultNodeGroupSize               = 2
 	DefaultMaxNodeGroupSize            = 10
 	DefaultNginxIngressHelmInstallName = "ingress-nginx"
@@ -41,21 +42,21 @@ const (
 )
 
 type EksTopology struct {
-	framework.TopologyBase               `json:",inline" yaml:",inline"`
-	Spec       EksTopologySpec            `json:"spec"`
+	framework.TopologyBase `json:",inline" yaml:",inline"`
+	Spec                   EksTopologySpec `json:"spec"`
 }
 
 type EksTopologySpec struct {
-	NamePrefix        string                   `json:"namePrefix" yaml:"namePrefix"`
-	Region            string                   `json:"region" yaml:"region"`
-	VpcId             string                   `json:"vpcId" yaml:"vpcId"`
-	S3BucketName      string              `json:"s3BucketName" yaml:"s3BucketName"`
-	S3Policy          resource.IamPolicy  `json:"s3Policy" yaml:"s3Policy"`
-	KafkaPolicy resource.IamPolicy   `json:"kafkaPolicy" yaml:"kafkaPolicy"`
-	EksCluster  resource.EksCluster  `json:"eksCluster" yaml:"eksCluster"`
-	NodeGroups  []resource.NodeGroup `json:"nodeGroups" yaml:"nodeGroups"`
-	NginxIngress      NginxIngress             `json:"nginxIngress" yaml:"nginxIngress"`
-	AutoScaling       resource.AutoScalingSpec `json:"autoScaling" yaml:"autoScaling"`
+	NamePrefix   string                   `json:"namePrefix" yaml:"namePrefix"`
+	Region       string                   `json:"region" yaml:"region"`
+	VpcId        string                   `json:"vpcId" yaml:"vpcId"`
+	S3BucketName string                   `json:"s3BucketName" yaml:"s3BucketName"`
+	S3Policy     resource.IamPolicy       `json:"s3Policy" yaml:"s3Policy"`
+	KafkaPolicy  resource.IamPolicy       `json:"kafkaPolicy" yaml:"kafkaPolicy"`
+	EksCluster   resource.EksCluster      `json:"eksCluster" yaml:"eksCluster"`
+	NodeGroups   []resource.NodeGroup     `json:"nodeGroups" yaml:"nodeGroups"`
+	NginxIngress NginxIngress             `json:"nginxIngress" yaml:"nginxIngress"`
+	AutoScaling  resource.AutoScalingSpec `json:"autoScaling" yaml:"autoScaling"`
 }
 
 type NginxIngress struct {
@@ -85,12 +86,12 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 			Metadata: framework.TopologyMetadata{
 				Name: topologyName,
 				CommandEnvironment: map[string]string{
-					framework.CmdEnvHelmExecutable: framework.DefaultHelmExecutable,
+					framework.CmdEnvHelmExecutable:    framework.DefaultHelmExecutable,
 					framework.CmdEnvKubectlExecutable: framework.DefaultKubectlExecutable,
-					framework.CmdEnvWithMinikube: "false",
-					CmdEnvNginxHelmChart: "third-party/helm-charts/ingress-nginx/charts/ingress-nginx",
-					CmdEnvClusterAutoscalerHelmChart: "third-party/helm-charts/cluster-autoscaler/charts/cluster-autoscaler",
-					framework.CmdEnvKubeConfig: "",
+					framework.CmdEnvWithMinikube:      "false",
+					CmdEnvNginxHelmChart:              "third-party/helm-charts/ingress-nginx/charts/ingress-nginx",
+					CmdEnvClusterAutoscalerHelmChart:  "third-party/helm-charts/cluster-autoscaler/charts/cluster-autoscaler",
+					framework.CmdEnvKubeConfig:        "",
 				},
 				Notes: map[string]string{},
 			},
@@ -100,7 +101,7 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 			Region:       fmt.Sprintf("{{ or .Values.region `%s` }}", framework.DefaultRegion),
 			VpcId:        "{{ or .Values.vpcId .DefaultVpcId }}",
 			S3BucketName: s3BucketName,
-			S3Policy:     resource.IamPolicy{
+			S3Policy: resource.IamPolicy{
 				Name: fmt.Sprintf("%s-s3", s3BucketName),
 				PolicyDocument: fmt.Sprintf(`{"Version":"2012-10-17","Statement":[
 {"Effect":"Allow","Action":"s3:*","Resource":["arn:aws:s3:::%s", "arn:aws:s3:::%s/*"]}
@@ -114,7 +115,7 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 			},
 			EksCluster: resource.EksCluster{
 				ClusterName: eksClusterName,
-				EksVersion: "1.21",
+				EksVersion:  "1.21",
 				// TODO fill in default value for SubnetIds
 				ControlPlaneRole: resource.IamRole{
 					Name:                     controlPlaneRoleName,
@@ -182,6 +183,7 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 				{
 					Name:          nodeGroupName,
 					InstanceTypes: []string{DefaultInstanceType1, DefaultInstanceType2, DefaultInstanceType3},
+					DiskSizeGb:    DefaultNodeGroupDiskSizeGb,
 					DesiredSize:   DefaultNodeGroupSize,
 					MaxSize:       DefaultMaxNodeGroupSize,
 					MinSize:       DefaultNodeGroupSize,
