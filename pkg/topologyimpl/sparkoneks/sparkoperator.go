@@ -61,7 +61,7 @@ func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, sparkC
 		return fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
 	}
 
-	sparkApplicationNamespace := "spark-01"
+	sparkApplicationNamespace := sparkComponentSpec.Operator.SparkApplicationNamespace
 
 	namespace, err := clientset.CoreV1().Namespaces().Create(
 		context.TODO(),
