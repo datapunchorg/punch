@@ -22,6 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
+	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/datapunchorg/punch/pkg/common"
 	"github.com/datapunchorg/punch/pkg/kubelib"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -219,22 +220,16 @@ func WaitServiceLoadBalancerHostPorts(region string, kubeConfig string, eksClust
 func WaitLoadBalancersReadyByDnsNames(region string, dnsNames []string) error {
 	for _, dnsName := range dnsNames {
 		session := CreateSession(region)
-		elbClient := elb.New(session)
+		elbClient := elbv2.New(session)
 		err := common.RetryUntilTrue(func() (bool, error) {
-			instanceStates, err := GetLoadBalancerInstanceStatesByDnsName(elbClient, dnsName)
+			state, err := GetLoadBalancerStatesByDnsNameV2(elbClient, dnsName)
 			if err != nil {
 				return false, err
 			}
-			if len(instanceStates) == 0 {
-				log.Printf("Did not find instances for load balancer %s, wait and retry", dnsName)
-				return false, nil
+			if strings.EqualFold(*state.Code, "Active") {
+				return true, nil
 			}
-			for _, entry := range instanceStates {
-				if strings.EqualFold(*entry.State, "InService") {
-					return true, nil
-				}
-			}
-			log.Printf("No ready instance for load balancer %s, wait and retry", dnsName)
+			log.Printf("No active for load balancer %s, wait and retry", dnsName)
 			return false, nil
 		},
 			10*time.Minute,

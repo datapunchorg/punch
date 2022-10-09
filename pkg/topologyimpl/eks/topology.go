@@ -62,6 +62,7 @@ type EksTopologySpec struct {
 type NginxIngress struct {
 	HelmInstallName string `json:"helmInstallName" yaml:"helmInstallName"`
 	Namespace       string `json:"namespace" yaml:"namespace"`
+	Annotations     string `json:"annotations" yaml:"annotations"`
 	EnableHttp      bool   `json:"enableHttp" yaml:"enableHttp"`
 	EnableHttps     bool   `json:"enableHttps" yaml:"enableHttps"`
 }

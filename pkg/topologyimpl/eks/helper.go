@@ -19,6 +19,7 @@ package eks
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/datapunchorg/punch/pkg/awslib"
@@ -160,9 +161,15 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 
 	defer kubeConfig.Cleanup()
 
+	annotations := strings.TrimSpace(topology.NginxIngress.Annotations)
+	annotations = strings.Trim(annotations, "\n")
+	annotations = strings.ReplaceAll(annotations, "\"", "\\\"")
+	annotations = "\"" + annotations + "\""
+
 	arguments := []string{
 		"--set", fmt.Sprintf("controller.service.enableHttp=%t", topology.NginxIngress.EnableHttp),
 		"--set", fmt.Sprintf("controller.service.enableHttps=%t", topology.NginxIngress.EnableHttps),
+		"--set", fmt.Sprintf("controller.service.annotations=%s", annotations),
 	}
 
 	if commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
