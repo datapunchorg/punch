@@ -148,7 +148,7 @@ func WaitEksServiceAccount(commandEnvironment framework.CommandEnvironment, topo
 	return nil
 }
 
-func DeployNginxIngressController(commandEnvironment framework.CommandEnvironment, topology EksTopologySpec) (map[string]interface{}, error) {
+func InstallNginxIngressController(commandEnvironment framework.CommandEnvironment, topology EksTopologySpec) (map[string]interface{}, error) {
 	nginxNamespace := topology.NginxIngress.Namespace
 	helmInstallName := topology.NginxIngress.HelmInstallName
 	nginxServiceName := DefaultNginxServiceName
@@ -208,6 +208,36 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 	preferredUrl := resource.GetLoadBalancerPreferredUrl(urls)
 	output["loadBalancerPreferredUrl"] = preferredUrl
 
+	return output, nil
+}
+
+func UninstallNginxIngressController(commandEnvironment framework.CommandEnvironment, topology EksTopologySpec) (map[string]interface{}, error) {
+	nginxNamespace := topology.NginxIngress.Namespace
+	helmInstallName := topology.NginxIngress.HelmInstallName
+	nginxServiceName := DefaultNginxServiceName
+	region := topology.Region
+	eksClusterName := topology.EksCluster.ClusterName
+	kubeConfig, err := awslib.CreateKubeConfig(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get kube config: %s", err.Error())
+	}
+
+	defer kubeConfig.Cleanup()
+
+	arguments := []string{}
+
+	kubelib.UninstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvNginxHelmChart), kubeConfig, arguments, helmInstallName, nginxNamespace)
+
+	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
+	}
+	err = kubelib.WaitPodsDeleted(clientset, nginxNamespace, nginxServiceName)
+	if err != nil {
+		return nil, fmt.Errorf("pod %s*** in namespace %s is not deleted", nginxServiceName, nginxNamespace)
+	}
+
+	output := make(map[string]interface{})
 	return output, nil
 }
 

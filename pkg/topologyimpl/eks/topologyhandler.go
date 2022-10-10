@@ -217,8 +217,8 @@ func CreateInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fr
 	}
 
 	if commandEnvironment.Get(CmdEnvNginxHelmChart) != "" {
-		deployment.AddStep("deployNginxIngressController", "Deploy Nginx ingress controller", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-			return DeployNginxIngressController(commandEnvironment, topologySpec)
+		deployment.AddStep("installNginxIngressController", "Install Nginx ingress controller", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+			return InstallNginxIngressController(commandEnvironment, topologySpec)
 		})
 	}
 
@@ -244,6 +244,9 @@ func CreateUninstallDeployment(topologySpec EksTopologySpec, commandEnvironment 
 			return framework.NewDeploymentStepOutput(), err
 		})
 	} else {
+		deployment.AddStep("uninstallNginxIngressController", "Uninstall Nginx ingress controller", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+			return UninstallNginxIngressController(commandEnvironment, topologySpec)
+		})
 		deployment.AddStep("deleteLoadBalancers", "Delete Load Balancers in EKS Cluster", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 			err := awslib.DeleteAllLoadBalancersOnEks(topologySpec.Region, topologySpec.VpcId, topologySpec.EksCluster.ClusterName)
 			return framework.NewDeploymentStepOutput(), err

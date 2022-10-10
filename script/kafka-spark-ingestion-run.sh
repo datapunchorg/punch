@@ -42,7 +42,7 @@ metastoreWarehouseDir=$(jq -r '.output[] | select(.step=="installHiveMetastoreSe
   --print-usage-example \
   -o SparkOnEks.output.json
 
-apiGatewayLoadBalancerUrl=$(jq -r '.output[] | select(.step=="deployNginxIngressController").output.loadBalancerPreferredUrl' SparkOnEks.output.json)
+apiGatewayLoadBalancerUrl=$(jq -r '.output[] | select(.step=="installNginxIngressController").output.loadBalancerPreferredUrl' SparkOnEks.output.json)
 
 
 echo Running test Spark application

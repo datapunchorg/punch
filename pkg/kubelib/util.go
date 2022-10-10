@@ -80,10 +80,44 @@ func CheckPodsInPhases(clientset *kubernetes.Clientset, namespace string, podNam
 	}
 }
 
+func CheckPodsDeleted(clientset *kubernetes.Clientset, namespace string, podNamePrefix string) (bool, error) {
+	podList, err := clientset.CoreV1().Pods(namespace).List(
+		context.TODO(),
+		metav1.ListOptions{})
+	if err != nil {
+		return false, err
+	}
+	podsCount := 0
+	for _, pod := range podList.Items {
+		if !strings.HasPrefix(pod.Name, podNamePrefix) {
+			continue
+		}
+		podsCount++
+	}
+	if podsCount == 0 {
+		return true, nil
+	} else {
+		return false, nil
+	}
+}
+
 func WaitPodsInPhases(clientset *kubernetes.Clientset, namespace string, podNamePrefix string, podPhases []v1.PodPhase) error {
 	return common.RetryUntilTrue(func() (bool, error) {
 		log.Printf("Checking whether pod %s*** in namespace %s is in phase %s", podNamePrefix, namespace, podPhases)
 		result, err := CheckPodsInPhases(clientset, namespace, podNamePrefix, podPhases)
+		if err != nil {
+			return result, err
+		}
+		return result, err
+	},
+		10*time.Minute,
+		10*time.Second)
+}
+
+func WaitPodsDeleted(clientset *kubernetes.Clientset, namespace string, podNamePrefix string) error {
+	return common.RetryUntilTrue(func() (bool, error) {
+		log.Printf("Checking whether pod %s*** in namespace %s deleted", podNamePrefix, namespace)
+		result, err := CheckPodsDeleted(clientset, namespace, podNamePrefix)
 		if err != nil {
 			return result, err
 		}
