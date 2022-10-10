@@ -272,13 +272,13 @@ func WaitLoadBalancersReadyByDnsNames(region string, dnsNames []string) error {
 			if strings.EqualFold(*state.Code, "Active") {
 				return true, nil
 			}
-			log.Printf("No active for load balancer %s, wait and retry", dnsName)
+			log.Printf("Not active for load balancer %s, wait and retry", dnsName)
 			return false, nil
 		},
 			10*time.Minute,
 			10*time.Second)
 		if err != nil {
-			return fmt.Errorf("no ready instance for load balancer %s", dnsName)
+			return fmt.Errorf("not active for load balancer %s", dnsName)
 		}
 	}
 	return nil
