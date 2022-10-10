@@ -43,6 +43,26 @@ func ListLoadBalancers(elbClient *elb.ELB) ([]*elb.LoadBalancerDescription, erro
 	return result, nil
 }
 
+func ListLoadBalancersV2(elbClient *elbv2.ELBV2) ([]*elbv2.LoadBalancer, error) {
+	var result = make([]*elbv2.LoadBalancer, 0, 100)
+	var hasMoreResult = true
+	var marker *string = nil
+	for hasMoreResult {
+		describeLoadBalancersOutput, err := elbClient.DescribeLoadBalancers(&elbv2.DescribeLoadBalancersInput{
+			Marker: marker,
+		})
+		if err != nil {
+			return nil, err
+		}
+		for _, entry := range describeLoadBalancersOutput.LoadBalancers {
+			result = append(result, entry)
+		}
+		marker = describeLoadBalancersOutput.NextMarker
+		hasMoreResult = marker != nil && *marker != ""
+	}
+	return result, nil
+}
+
 func GetLoadBalancerByDNSName(elbClient *elb.ELB, dnsName string) (*elb.LoadBalancerDescription, error) {
 	var hasMoreResult = true
 	var marker *string = nil
