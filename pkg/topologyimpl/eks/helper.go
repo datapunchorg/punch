@@ -170,8 +170,8 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 		arguments = append(arguments, "--set", fmt.Sprintf("controller.service.targetPorts.https=%s", topology.NginxIngress.HttpsBackendPort))
 	}
 
-	if len(topology.NginxIngress.Annotations) > 0 {
-		annotationsJsonBytes, err := json.Marshal(topology.NginxIngress.Annotations)
+	if len(topology.NginxIngress.ControllerServiceAnnotations) > 0 {
+		annotationsJsonBytes, err := json.Marshal(topology.NginxIngress.ControllerServiceAnnotations)
 		if err != nil {
 			return nil, fmt.Errorf("failed to marshal topology.NginxIngress.Annotations: %s", err.Error())
 		}
