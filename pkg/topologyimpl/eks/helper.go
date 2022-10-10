@@ -226,7 +226,7 @@ func UninstallNginxIngressController(commandEnvironment framework.CommandEnviron
 
 	arguments := []string{}
 
-	kubelib.UninstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvNginxHelmChart), kubeConfig, arguments, helmInstallName, nginxNamespace)
+	kubelib.UninstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), kubeConfig, arguments, helmInstallName, nginxNamespace)
 
 	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
 	if err != nil {

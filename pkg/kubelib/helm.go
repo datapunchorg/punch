@@ -63,8 +63,8 @@ func InstallHelm(helmExeLocation string, helmChartLocation string, kubeConfig Ku
 	return nil
 }
 
-func UninstallHelm(helmExeLocation string, helmChartLocation string, kubeConfig KubeConfig, extraArguments []string, installName string, namespace string) error {
-	arguments := []string{"uninstall", installName, helmChartLocation,
+func UninstallHelm(helmExeLocation string, kubeConfig KubeConfig, extraArguments []string, installName string, namespace string) error {
+	arguments := []string{"uninstall", installName,
 		"--namespace", namespace}
 
 	arguments = AppendHelmKubeArguments(arguments, kubeConfig)
