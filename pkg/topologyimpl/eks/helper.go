@@ -18,8 +18,8 @@ package eks
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/datapunchorg/punch/pkg/awslib"
@@ -161,15 +161,19 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 
 	defer kubeConfig.Cleanup()
 
-	annotations := strings.TrimSpace(topology.NginxIngress.Annotations)
-	annotations = strings.Trim(annotations, "\n")
-	annotations = strings.ReplaceAll(annotations, "\"", "\\\"")
-	annotations = "\"" + annotations + "\""
-
 	arguments := []string{
 		"--set", fmt.Sprintf("controller.service.enableHttp=%t", topology.NginxIngress.EnableHttp),
 		"--set", fmt.Sprintf("controller.service.enableHttps=%t", topology.NginxIngress.EnableHttps),
-		"--set", fmt.Sprintf("controller.service.annotations=%s", annotations),
+	}
+
+	if len(topology.NginxIngress.Annotations) > 0 {
+		annotationsJsonBytes, err := json.Marshal(topology.NginxIngress.Annotations)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal topology.NginxIngress.Annotations: %s", err.Error())
+		}
+		annotationsJson := string(annotationsJsonBytes)
+		arguments = append(arguments, "--set-json")
+		arguments = append(arguments, fmt.Sprintf("controller.service.annotations=%s", annotationsJson))
 	}
 
 	if commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
