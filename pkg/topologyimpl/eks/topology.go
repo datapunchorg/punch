@@ -42,6 +42,13 @@ const (
 	CmdEnvClusterAutoscalerHelmChart = "ClusterAutoscalerHelmChart"
 )
 
+var DefaultControllerServiceAnnotations = map[string]string{
+	"service.beta.kubernetes.io/aws-load-balancer-type":                              "nlb",
+	"service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled": "true",
+	"service.beta.kubernetes.io/aws-load-balancer-backend-protocol":                  "http",
+	"service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout":           "60",
+}
+
 type EksTopology struct {
 	framework.TopologyBase `json:",inline" yaml:",inline"`
 	Spec                   EksTopologySpec `json:"spec"`
@@ -193,11 +200,12 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 				},
 			},
 			NginxIngress: NginxIngress{
-				HelmInstallName:  DefaultNginxIngressHelmInstallName,
-				Namespace:        DefaultNginxIngressNamespace,
-				EnableHttp:       DefaultNginxEnableHttp,
-				EnableHttps:      DefaultNginxEnableHttps,
-				HttpsBackendPort: DefaultHttpsBackendPort,
+				HelmInstallName:              DefaultNginxIngressHelmInstallName,
+				Namespace:                    DefaultNginxIngressNamespace,
+				EnableHttp:                   DefaultNginxEnableHttp,
+				EnableHttps:                  DefaultNginxEnableHttps,
+				HttpsBackendPort:             DefaultHttpsBackendPort,
+				ControllerServiceAnnotations: DefaultControllerServiceAnnotations,
 			},
 		},
 	}
