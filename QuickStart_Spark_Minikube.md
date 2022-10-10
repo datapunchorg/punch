@@ -31,6 +31,7 @@ https://docs.brew.sh/Installation
 https://helm.sh/docs/intro/install/
 
 ```
+brew update
 brew install helm
 ```
 

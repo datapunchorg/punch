@@ -166,6 +166,10 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 		"--set", fmt.Sprintf("controller.service.enableHttps=%t", topology.NginxIngress.EnableHttps),
 	}
 
+	if topology.NginxIngress.HttpsBackendPort != "" {
+		arguments = append(arguments, "--set", fmt.Sprintf("controller.service.targetPorts.https=%s", topology.NginxIngress.HttpsBackendPort))
+	}
+
 	if len(topology.NginxIngress.Annotations) > 0 {
 		annotationsJsonBytes, err := json.Marshal(topology.NginxIngress.Annotations)
 		if err != nil {

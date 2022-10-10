@@ -34,6 +34,7 @@ const (
 	DefaultNginxIngressNamespace       = "ingress-nginx"
 	DefaultNginxEnableHttp             = true
 	DefaultNginxEnableHttps            = true
+	DefaultHttpsBackendPort            = "http"
 
 	KindEksTopology = "Eks"
 
@@ -60,11 +61,12 @@ type EksTopologySpec struct {
 }
 
 type NginxIngress struct {
-	HelmInstallName string            `json:"helmInstallName" yaml:"helmInstallName"`
-	Namespace       string            `json:"namespace" yaml:"namespace"`
-	Annotations     map[string]string `json:"annotations" yaml:"annotations"`
-	EnableHttp      bool              `json:"enableHttp" yaml:"enableHttp"`
-	EnableHttps     bool              `json:"enableHttps" yaml:"enableHttps"`
+	HelmInstallName              string            `json:"helmInstallName" yaml:"helmInstallName"`
+	Namespace                    string            `json:"namespace" yaml:"namespace"`
+	EnableHttp                   bool              `json:"enableHttp" yaml:"enableHttp"`
+	EnableHttps                  bool              `json:"enableHttps" yaml:"enableHttps"`
+	HttpsBackendPort             string            `json:"httpsBackendPort" yaml:"httpsBackendPort"`
+	ControllerServiceAnnotations map[string]string `json:"controllerServiceAnnotations" yaml:"controllerServiceAnnotations"`
 }
 
 func GenerateEksTopology() EksTopology {
@@ -191,10 +193,11 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 				},
 			},
 			NginxIngress: NginxIngress{
-				HelmInstallName: DefaultNginxIngressHelmInstallName,
-				Namespace:       DefaultNginxIngressNamespace,
-				EnableHttp:      DefaultNginxEnableHttp,
-				EnableHttps:     DefaultNginxEnableHttps,
+				HelmInstallName:  DefaultNginxIngressHelmInstallName,
+				Namespace:        DefaultNginxIngressNamespace,
+				EnableHttp:       DefaultNginxEnableHttp,
+				EnableHttps:      DefaultNginxEnableHttps,
+				HttpsBackendPort: DefaultHttpsBackendPort,
 			},
 		},
 	}
