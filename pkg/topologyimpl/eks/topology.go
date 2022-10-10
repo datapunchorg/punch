@@ -47,6 +47,8 @@ var DefaultControllerServiceAnnotations = map[string]string{
 	"service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled": "true",
 	"service.beta.kubernetes.io/aws-load-balancer-backend-protocol":                  "http",
 	"service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout":           "60",
+	// "service.beta.kubernetes.io/aws-load-balancer-ssl-cert": "arn:aws:acm:us-east-1:xxxxxxxxxxxx:certificate/xxx"
+	// "service.beta.kubernetes.io/aws-load-balancer-ssl-ports": "https"
 }
 
 type EksTopology struct {
