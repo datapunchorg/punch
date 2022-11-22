@@ -70,6 +70,7 @@ type EksTopologySpec struct {
 }
 
 type NginxIngress struct {
+	Ignore                       bool              `json:"ignore" yaml:"ignore"`
 	HelmInstallName              string            `json:"helmInstallName" yaml:"helmInstallName"`
 	Namespace                    string            `json:"namespace" yaml:"namespace"`
 	EnableHttp                   bool              `json:"enableHttp" yaml:"enableHttp"`
@@ -202,6 +203,7 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 				},
 			},
 			NginxIngress: NginxIngress{
+				Ignore:                       false,
 				HelmInstallName:              DefaultNginxIngressHelmInstallName,
 				Namespace:                    DefaultNginxIngressNamespace,
 				EnableHttp:                   DefaultNginxEnableHttp,
