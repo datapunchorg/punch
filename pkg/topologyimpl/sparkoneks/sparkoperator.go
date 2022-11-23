@@ -104,7 +104,7 @@ func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, sparkC
 	// Retry and handle error like following
 	// Failed to create ingress spark-operator-01 in namespace spark-operator-01 for service spark-operator-01: Internal error occurred: failed calling webhook "validate.nginx.ingress.kubernetes.io": Post "https://ingress-nginx-controller-admission.ingress-nginx.svc:443/networking/v1/ingresses?timeout=10s": context deadline exceeded
 	return common.RetryUntilTrue(func() (bool, error) {
-		err := CreateApiGatewayIngress(clientset, operatorNamespace, helmInstallName, helmInstallName)
+		err := CreateApiGatewayIngress(clientset, operatorNamespace, helmInstallName, helmInstallName, sparkComponentSpec.Gateway.IngressHot)
 		ignoreErrorMsg := "failed calling webhook \"validate.nginx.ingress.kubernetes.io\""
 		if err != nil {
 			if strings.Contains(err.Error(), ignoreErrorMsg) {
@@ -127,8 +127,8 @@ func CreateApiGatewayService(clientset *kubernetes.Clientset, namespace string, 
 		context.TODO(),
 		&v1.Service{
 			ObjectMeta: v12.ObjectMeta{
-				Namespace: namespace,
-				Name:      serviceName,
+				Namespace:   namespace,
+				Name:        serviceName,
 				Annotations: map[string]string{
 					// "service.beta.kubernetes.io/aws-load-balancer-healthcheck-protocol": "http",
 					// "service.beta.kubernetes.io/aws-load-balancer-healthcheck-path": "/health",
@@ -306,7 +306,7 @@ func CreateSparkServiceAccount(clientset *kubernetes.Clientset, sparkOperatorNam
 	return nil
 }
 
-func CreateApiGatewayIngress(clientset *kubernetes.Clientset, namespace string, ingressName string, serviceName string) error {
+func CreateApiGatewayIngress(clientset *kubernetes.Clientset, namespace string, ingressName string, serviceName string, ingressHost string) error {
 	path := "/sparkapi/"
 	pathType := v13.PathTypePrefix
 	log.Printf("Creating ingress %s in namespace %s for sevice %s", ingressName, namespace, serviceName)
@@ -326,6 +326,7 @@ func CreateApiGatewayIngress(clientset *kubernetes.Clientset, namespace string, 
 				IngressClassName: aws.String("nginx"),
 				Rules: []v13.IngressRule{
 					v13.IngressRule{
+						Host: ingressHost,
 						IngressRuleValue: v13.IngressRuleValue{
 							HTTP: &v13.HTTPIngressRuleValue{
 								Paths: []v13.HTTPIngressPath{
