@@ -21,6 +21,7 @@ import (
 
 	"github.com/datapunchorg/punch/pkg/framework"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/eks"
+	_ "github.com/datapunchorg/punch/pkg/topologyimpl/gke"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/hivemetastore"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/kafkabridge"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/kafkaonmsk"
