@@ -23,10 +23,12 @@ import "testing"
 // export GOOGLE_APPLICATION_CREDENTIALS=/Users/admin/temp/logging-key.json
 
 func TestCreateGkeCluster(t *testing.T) {
+	projectId := "myproject001-367500"
+	zone := "us-central1-c"
 	gkeCluster := GkeCluster{
 		ClusterName: "cluster-1",
 	}
-	CreateGkeCluster(gkeCluster)
+	CreateGkeCluster(projectId, zone, gkeCluster)
 }
 
 func TestDeleteGkeCluster(t *testing.T) {

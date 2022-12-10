@@ -18,6 +18,7 @@ package common
 
 import (
 	"fmt"
+	"reflect"
 	"time"
 )
 
@@ -44,4 +45,16 @@ func RetryUntilTrue(run func() (bool, error), maxWait time.Duration, retryInterv
 		currentTime = time.Now()
 	}
 	return fmt.Errorf("timed out after running %d seconds while max wait time is %d seconds", int(currentTime.Sub(startTime).Seconds()), int(maxWait.Seconds()))
+}
+
+func GetReflectTypeName(obj interface{}) string {
+	t := reflect.TypeOf(obj)
+	if t == nil {
+		return "nil"
+	}
+	if t.Kind() == reflect.Ptr {
+		return "*" + t.Elem().Name()
+	} else {
+		return t.Name()
+	}
 }
