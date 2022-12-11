@@ -18,6 +18,7 @@ package eks
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -147,7 +148,7 @@ func WaitEksServiceAccount(commandEnvironment framework.CommandEnvironment, topo
 	return nil
 }
 
-func DeployNginxIngressController(commandEnvironment framework.CommandEnvironment, topology EksTopologySpec) (map[string]interface{}, error) {
+func InstallNginxIngressController(commandEnvironment framework.CommandEnvironment, topology EksTopologySpec) (map[string]interface{}, error) {
 	nginxNamespace := topology.NginxIngress.Namespace
 	helmInstallName := topology.NginxIngress.HelmInstallName
 	nginxServiceName := DefaultNginxServiceName
@@ -163,6 +164,20 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 	arguments := []string{
 		"--set", fmt.Sprintf("controller.service.enableHttp=%t", topology.NginxIngress.EnableHttp),
 		"--set", fmt.Sprintf("controller.service.enableHttps=%t", topology.NginxIngress.EnableHttps),
+	}
+
+	if topology.NginxIngress.HttpsBackendPort != "" {
+		arguments = append(arguments, "--set", fmt.Sprintf("controller.service.targetPorts.https=%s", topology.NginxIngress.HttpsBackendPort))
+	}
+
+	if len(topology.NginxIngress.ControllerServiceAnnotations) > 0 {
+		annotationsJsonBytes, err := json.Marshal(topology.NginxIngress.ControllerServiceAnnotations)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal topology.NginxIngress.Annotations: %s", err.Error())
+		}
+		annotationsJson := string(annotationsJsonBytes)
+		arguments = append(arguments, "--set-json")
+		arguments = append(arguments, fmt.Sprintf("controller.service.annotations=%s", annotationsJson))
 	}
 
 	if commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
@@ -193,6 +208,36 @@ func DeployNginxIngressController(commandEnvironment framework.CommandEnvironmen
 	preferredUrl := resource.GetLoadBalancerPreferredUrl(urls)
 	output["loadBalancerPreferredUrl"] = preferredUrl
 
+	return output, nil
+}
+
+func UninstallNginxIngressController(commandEnvironment framework.CommandEnvironment, topology EksTopologySpec) (map[string]interface{}, error) {
+	nginxNamespace := topology.NginxIngress.Namespace
+	helmInstallName := topology.NginxIngress.HelmInstallName
+	nginxServiceName := DefaultNginxServiceName
+	region := topology.Region
+	eksClusterName := topology.EksCluster.ClusterName
+	kubeConfig, err := awslib.CreateKubeConfig(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get kube config: %s", err.Error())
+	}
+
+	defer kubeConfig.Cleanup()
+
+	arguments := []string{}
+
+	kubelib.UninstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), kubeConfig, arguments, helmInstallName, nginxNamespace)
+
+	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
+	}
+	err = kubelib.WaitPodsDeleted(clientset, nginxNamespace, nginxServiceName)
+	if err != nil {
+		return nil, fmt.Errorf("pod %s*** in namespace %s is not deleted", nginxServiceName, nginxNamespace)
+	}
+
+	output := make(map[string]interface{})
 	return output, nil
 }
 

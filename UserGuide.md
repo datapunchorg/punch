@@ -1,39 +1,13 @@
 
-## Pre-requisite to Run punch command
+## Pre-requisite to Run `punch` command
 
 ### Install Helm
 
 1. See https://helm.sh/docs/intro/install/
 
-## Run punch on Minikube
+## Run `punch` on AWS
 
-### Extra Pre-requisite: Install Docker and Minikube
-
-1. Install Docker Desktop: https://docs.docker.com/desktop/mac/install/
-2. Increase memory to 5G in Docker Desktop: [instructions](docs/IncreaseDockerMemory.md)
-3. Install Minikube: only do step 1 "Installation" in https://minikube.sigs.k8s.io/docs/start
-
-### How to Install SparkOnEks on Minikube
-
-1. Run punch command:
-
-```
-./punch install SparkOnEks --env withMinikube=true --patch spec.spark.gateway.password=password1 --print-usage-example
-```
-
-### How to uninstall SparkOnEks on Minikube
-
-1. In your terminal, run `make release`, and enter `dist` folder.
-
-2. Run punch command:
-
-```
-./punch uninstall SparkOnEks --env withMinikube=true
-```
-
-## Run punch on AWS
-
-### Extra Pre-requisite: Set up AWS environment
+### Set up AWS environment
 
 1. Create AWS account, then download AWS Command Line Interface (https://aws.amazon.com/cli/).
 
@@ -95,12 +69,6 @@ brew install sparkcli
 ```
 
 To use `sparkcli`, you need to have a Spark API Gateway which is installed by `punch`. 
-
-If SparkOnEks is installed on minikube, set load balancer domain name as below:
-
-```
-export LB_NAME=localhost:32443
-```
 
 If SparkOnEks is installed on AWS, set it as below (replace the value with real load balancer url from `punch install` command output):
 ```

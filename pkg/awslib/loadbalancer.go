@@ -19,9 +19,11 @@ package awslib
 import (
 	"context"
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
+	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/datapunchorg/punch/pkg/common"
 	"github.com/datapunchorg/punch/pkg/kubelib"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -30,6 +32,13 @@ import (
 	"strings"
 	"time"
 )
+
+type LoadBalancerInfo struct {
+	LoadBalancerName        string
+	DNSName                 string
+	SourceSecurityGroupName string
+	SecurityGroupIds        []string
+}
 
 func DeleteAllLoadBalancersOnEks(region string, vpcId string, eksClusterName string) error {
 	session := CreateSession(region)
@@ -110,42 +119,77 @@ func deleteLoadBalancersOnEks(session *session.Session, ec2Client *ec2.EC2, clie
 		return nil
 	}
 
-	elbClient := elb.New(session)
+	loadBalancersToDelete := make([]LoadBalancerInfo, 0, 100)
 
+	elbClient := elb.New(session)
 	loadBalancers, err := ListLoadBalancers(elbClient)
 	if err != nil {
 		return fmt.Errorf("failed to list load balancers in namespace %s: %s", namespace, err.Error())
 	}
-
-	loadBalancersToDelete := make([]*elb.LoadBalancerDescription, 0, 100)
 	for _, hostName := range ingressHostNames {
 		for _, loadBalancer := range loadBalancers {
 			if strings.EqualFold(*loadBalancer.DNSName, hostName) {
-				loadBalancersToDelete = append(loadBalancersToDelete, loadBalancer)
+				loadBalancerInfo := LoadBalancerInfo{
+					LoadBalancerName: *loadBalancer.LoadBalancerName,
+					DNSName:          *loadBalancer.DNSName,
+				}
+				if loadBalancer.SourceSecurityGroup != nil {
+					loadBalancerInfo.SourceSecurityGroupName = *loadBalancer.SourceSecurityGroup.GroupName
+				}
+				if loadBalancer.SecurityGroups != nil {
+					loadBalancerInfo.SecurityGroupIds = make([]string, 0, len(loadBalancer.SecurityGroups))
+					for _, entry := range loadBalancer.SecurityGroups {
+						loadBalancerInfo.SecurityGroupIds = append(loadBalancerInfo.SecurityGroupIds, *entry)
+					}
+				}
+				loadBalancersToDelete = append(loadBalancersToDelete, loadBalancerInfo)
+			}
+		}
+	}
+
+	elbClientV2 := elbv2.New(session)
+	loadBalancersV2, err := ListLoadBalancersV2(elbClientV2)
+	if err != nil {
+		return fmt.Errorf("failed to list load balancers in namespace %s: %s", namespace, err.Error())
+	}
+	for _, hostName := range ingressHostNames {
+		for _, loadBalancer := range loadBalancersV2 {
+			if strings.EqualFold(*loadBalancer.DNSName, hostName) {
+				loadBalancerInfo := LoadBalancerInfo{
+					LoadBalancerName: *loadBalancer.LoadBalancerName,
+					DNSName:          *loadBalancer.DNSName,
+				}
+				if loadBalancer.SecurityGroups != nil {
+					loadBalancerInfo.SecurityGroupIds = make([]string, 0, len(loadBalancer.SecurityGroups))
+					for _, entry := range loadBalancer.SecurityGroups {
+						loadBalancerInfo.SecurityGroupIds = append(loadBalancerInfo.SecurityGroupIds, *entry)
+					}
+				}
+				loadBalancersToDelete = append(loadBalancersToDelete, loadBalancerInfo)
 			}
 		}
 	}
 
 	for _, loadBalancer := range loadBalancersToDelete {
-		log.Printf("Deleting load balancer %s (%s)", *loadBalancer.LoadBalancerName, *loadBalancer.DNSName)
+		log.Printf("Deleting load balancer %s (%s)", loadBalancer.LoadBalancerName, loadBalancer.DNSName)
 		_, err := elbClient.DeleteLoadBalancer(&elb.DeleteLoadBalancerInput{
-			LoadBalancerName: loadBalancer.LoadBalancerName,
+			LoadBalancerName: aws.String(loadBalancer.LoadBalancerName),
 		})
 		if err != nil {
-			log.Printf("Failed to delete load balancer %s (%s): %v", *loadBalancer.LoadBalancerName, *loadBalancer.DNSName, err)
+			log.Printf("Failed to delete load balancer %s (%s): %s", loadBalancer.LoadBalancerName, loadBalancer.DNSName, err.Error())
 		} else {
-			log.Printf("Deleted load balancer %s (%s)", *loadBalancer.LoadBalancerName, *loadBalancer.DNSName)
+			log.Printf("Deleted load balancer %s (%s)", loadBalancer.LoadBalancerName, loadBalancer.DNSName)
 			log.Printf("Sleeping a while for underlying resource is cleaned up so we could delete related security groups")
 			time.Sleep(30 * time.Second)
 		}
 
-		log.Printf("Deleting security groups on load balancer %s (%s)", *loadBalancer.LoadBalancerName, *loadBalancer.DNSName)
+		log.Printf("Deleting security groups on load balancer %s (%s)", loadBalancer.LoadBalancerName, loadBalancer.DNSName)
 
-		if loadBalancer.SourceSecurityGroup != nil {
-			securityGroupName := *loadBalancer.SourceSecurityGroup.GroupName
+		if loadBalancer.SourceSecurityGroupName != "" {
+			securityGroupName := loadBalancer.SourceSecurityGroupName
 			securityGroupId, err := GetSecurityGroupId(ec2Client, vpcId, securityGroupName)
 			if err != nil {
-				log.Printf("[WARN] Failed to get security group id for %s on load balancer %s: %s", securityGroupName, *loadBalancer.LoadBalancerName, err.Error())
+				log.Printf("[WARN] Failed to get security group id for %s on load balancer %s: %s", securityGroupName, loadBalancer.LoadBalancerName, err.Error())
 			} else {
 				common.RetryUntilTrue(func() (bool, error) {
 					networkInterfaces, err := ListNetworkInterfaces(ec2Client, vpcId, securityGroupId)
@@ -162,7 +206,7 @@ func deleteLoadBalancersOnEks(session *session.Session, ec2Client *ec2.EC2, clie
 					10*time.Minute,
 					10*time.Second)
 
-				log.Printf("Deleting source security group %s (%s) on load balancer %s", securityGroupId, securityGroupName, *loadBalancer.DNSName)
+				log.Printf("Deleting source security group %s (%s) on load balancer %s", securityGroupId, securityGroupName, loadBalancer.DNSName)
 				err := ListAndDeleteSecurityGroupRulesBySourceOrDestinationSecurityGroupId(ec2Client, vpcId, securityGroupId)
 				if err != nil {
 					log.Printf("[WARN] failed to delete security group rules by source or destination security group id %s: %s", securityGroupId, err.Error())
@@ -170,13 +214,13 @@ func deleteLoadBalancersOnEks(session *session.Session, ec2Client *ec2.EC2, clie
 				DeleteSecurityGroupByIdIgnoreError(ec2Client, securityGroupId, 20*time.Minute)
 			}
 		}
-		for _, securityGroupId := range loadBalancer.SecurityGroups {
-			log.Printf("Deleting security group %s on load balancer %s", *securityGroupId, *loadBalancer.DNSName)
-			err := ListAndDeleteSecurityGroupRulesBySourceOrDestinationSecurityGroupId(ec2Client, vpcId, *securityGroupId)
+		for _, securityGroupId := range loadBalancer.SecurityGroupIds {
+			log.Printf("Deleting security group %s on load balancer %s", securityGroupId, loadBalancer.DNSName)
+			err := ListAndDeleteSecurityGroupRulesBySourceOrDestinationSecurityGroupId(ec2Client, vpcId, securityGroupId)
 			if err != nil {
-				log.Printf("[WARN] failed to delete security group rules by source or destination security group id %s: %s", *securityGroupId, err.Error())
+				log.Printf("[WARN] failed to delete security group rules by source or destination security group id %s: %s", securityGroupId, err.Error())
 			}
-			DeleteSecurityGroupByIdIgnoreError(ec2Client, *securityGroupId, 20*time.Minute)
+			DeleteSecurityGroupByIdIgnoreError(ec2Client, securityGroupId, 20*time.Minute)
 		}
 	}
 
@@ -219,28 +263,22 @@ func WaitServiceLoadBalancerHostPorts(region string, kubeConfig string, eksClust
 func WaitLoadBalancersReadyByDnsNames(region string, dnsNames []string) error {
 	for _, dnsName := range dnsNames {
 		session := CreateSession(region)
-		elbClient := elb.New(session)
+		elbClient := elbv2.New(session)
 		err := common.RetryUntilTrue(func() (bool, error) {
-			instanceStates, err := GetLoadBalancerInstanceStatesByDnsName(elbClient, dnsName)
+			state, err := GetLoadBalancerStatesByDnsNameV2(elbClient, dnsName)
 			if err != nil {
 				return false, err
 			}
-			if len(instanceStates) == 0 {
-				log.Printf("Did not find instances for load balancer %s, wait and retry", dnsName)
-				return false, nil
+			if strings.EqualFold(*state.Code, "Active") {
+				return true, nil
 			}
-			for _, entry := range instanceStates {
-				if strings.EqualFold(*entry.State, "InService") {
-					return true, nil
-				}
-			}
-			log.Printf("No ready instance for load balancer %s, wait and retry", dnsName)
+			log.Printf("Not active for load balancer %s, wait and retry", dnsName)
 			return false, nil
 		},
 			10*time.Minute,
 			10*time.Second)
 		if err != nil {
-			return fmt.Errorf("no ready instance for load balancer %s", dnsName)
+			return fmt.Errorf("not active for load balancer %s", dnsName)
 		}
 	}
 	return nil

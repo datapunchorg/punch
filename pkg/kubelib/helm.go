@@ -63,6 +63,25 @@ func InstallHelm(helmExeLocation string, helmChartLocation string, kubeConfig Ku
 	return nil
 }
 
+func UninstallHelm(helmExeLocation string, kubeConfig KubeConfig, extraArguments []string, installName string, namespace string) error {
+	arguments := []string{"uninstall", installName,
+		"--namespace", namespace}
+
+	arguments = AppendHelmKubeArguments(arguments, kubeConfig)
+	arguments = append(arguments, extraArguments...)
+
+	helmCmd := exec.Command(helmExeLocation, arguments...)
+	log.Printf("Running helm: %s", helmCmd.String())
+	helmOut, err := helmCmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Failed to run helm\n%s\n%s", err.Error(), string(helmOut))
+	} else {
+		log.Printf("Finished running helm\n%s", string(helmOut))
+	}
+
+	return nil
+}
+
 func EscapeHelmSetValue(str string) string {
 	if strings.Contains(str, ",") {
 		str = strings.ReplaceAll(str, ",", "\\,")

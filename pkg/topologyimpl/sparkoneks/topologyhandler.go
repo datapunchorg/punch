@@ -92,7 +92,11 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 func (t *TopologyHandler) PrintUsageExample(topology framework.Topology, deploymentOutput framework.DeploymentOutput) {
 	currentTopology := topology.(*SparkOnEksTopology)
 
-	loadBalancerUrl := deploymentOutput.Output()["deployNginxIngressController"]["loadBalancerPreferredUrl"].(string)
+	loadBalancerUrl := ""
+	outputValue := deploymentOutput.Output()["installNginxIngressController"]["loadBalancerPreferredUrl"]
+	if outputValue != nil {
+		loadBalancerUrl = outputValue.(string)
+	}
 	if loadBalancerUrl != "" {
 		apiGatewayUrl := loadBalancerUrl + SparkApiRelativeUrl
 		if _, ok := deploymentOutput.Output()["minikubeStart"]; ok {

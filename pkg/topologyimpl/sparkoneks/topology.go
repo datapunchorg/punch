@@ -59,8 +59,9 @@ type SparkComponentSpec struct {
 }
 
 type SparkApiGateway struct {
-	User         string `json:"user" yaml:"user"`
-	Password string `json:"password" yaml:"password"`
+	IngressHot           string `json:"ingressHot" yaml:"ingressHot"`
+	User                 string `json:"user" yaml:"user"`
+	Password             string `json:"password" yaml:"password"`
 	SparkEventLogDir     string `json:"sparkEventLogDir" yaml:"sparkEventLogDir"`
 	HiveMetastoreUris    string `json:"hiveMetastoreUris" yaml:"hiveMetastoreUris"`
 	SparkSqlWarehouseDir string `json:"sparkSqlWarehouseDir" yaml:"sparkSqlWarehouseDir"`
@@ -75,7 +76,7 @@ type SparkOperator struct {
 }
 
 type SparkHistoryServer struct {
-	Enable bool `json:"enable" yaml:"enable"`
+	Enable          bool   `json:"enable" yaml:"enable"`
 	HelmInstallName string `json:"helmInstallName" yaml:"helmInstallName"`
 	Namespace       string `json:"namespace" yaml:"namespace"`
 	ImageRepository string `json:"imageRepository" yaml:"imageRepository"`
@@ -121,7 +122,7 @@ func CreateDefaultSparkOnEksTopology(namePrefix string, s3BucketName string) Spa
 					SparkApplicationNamespace: DefaultSparkApplicationNamespace,
 				},
 				HistoryServer: SparkHistoryServer{
-					Enable: false,
+					Enable:          false,
 					HelmInstallName: DefaultSparkHistoryServerHelmInstallName,
 					ImageRepository: DefaultSparkHistoryServerImageRepository,
 					ImageTag:        DefaultSparkHistoryServerImageTag,

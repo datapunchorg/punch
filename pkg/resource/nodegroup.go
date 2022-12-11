@@ -30,9 +30,10 @@ import (
 type NodeGroup struct {
 	Name          string   `json:"name" yaml:"name"`
 	InstanceTypes []string `json:"instanceTypes" yaml:"instanceTypes"`
-	DesiredSize   int64
-	MaxSize       int64
-	MinSize       int64
+	DiskSizeGb    int64    `json:"diskSizeGb" yaml:"diskSizeGb"`
+	DesiredSize   int64    `json:"desiredSize" yaml:"desiredSize"`
+	MaxSize       int64    `json:"maxSize" yaml:"maxSize"`
+	MinSize       int64    `json:"minSize" yaml:"minSize"`
 }
 
 func CreateNodeGroup(region string, clusterName string, nodeGroup NodeGroup, nodeRoleArn string) error {
@@ -54,6 +55,7 @@ func CreateNodeGroup(region string, clusterName string, nodeGroup NodeGroup, nod
 		ClusterName:   aws.String(clusterName),
 		NodegroupName: aws.String(nodeGroup.Name),
 		InstanceTypes: aws.StringSlice(nodeGroup.InstanceTypes),
+		DiskSize:      aws.Int64(nodeGroup.DiskSizeGb),
 		ScalingConfig: &eks.NodegroupScalingConfig{
 			DesiredSize: aws.Int64(int64(nodeGroup.DesiredSize)),
 			MaxSize:     aws.Int64(int64(nodeGroup.MaxSize)),

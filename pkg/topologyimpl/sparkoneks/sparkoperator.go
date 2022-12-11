@@ -37,20 +37,22 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, sparkComponentSpec  SparkComponentSpec, region string, eksClusterName string, s3Bucket string) error {
+func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, sparkComponentSpec SparkComponentSpec, region string, eksClusterName string, s3Bucket string) error {
 	operatorNamespace := sparkComponentSpec.Operator.Namespace
 
 	eventLogDir := sparkComponentSpec.Gateway.SparkEventLogDir
-	if strings.HasPrefix(strings.ToLower(eventLogDir), "s3") {
-		dummyFileUrl := eventLogDir
-		if !strings.HasSuffix(dummyFileUrl, "/") {
-			dummyFileUrl += "/"
-		}
-		dummyFileUrl += "dummy.txt"
-		log.Printf("Uploading dummy file %s to Spark event log directory %s to make sure the directry exits (Spark application and history server will fail if the directory does not exist)", dummyFileUrl, eventLogDir)
-		err := awslib.UploadDataToS3Url(region, dummyFileUrl, strings.NewReader(""))
-		if err != nil {
-			return fmt.Errorf("failed to create dummy file %s in Spark event log directory %s to make sure the directry exits (Spark application and history server will fail if the directory does not exist): %s", dummyFileUrl, eventLogDir, err.Error())
+	if !commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
+		if strings.HasPrefix(strings.ToLower(eventLogDir), "s3") {
+			dummyFileUrl := eventLogDir
+			if !strings.HasSuffix(dummyFileUrl, "/") {
+				dummyFileUrl += "/"
+			}
+			dummyFileUrl += "dummy.txt"
+			log.Printf("Uploading dummy file %s to Spark event log directory %s to make sure the directry exits (Spark application and history server will fail if the directory does not exist)", dummyFileUrl, eventLogDir)
+			err := awslib.UploadDataToS3Url(region, dummyFileUrl, strings.NewReader(""))
+			if err != nil {
+				return fmt.Errorf("failed to create dummy file %s in Spark event log directory %s to make sure the directry exits (Spark application and history server will fail if the directory does not exist): %s", dummyFileUrl, eventLogDir, err.Error())
+			}
 		}
 	}
 
@@ -59,7 +61,7 @@ func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, sparkC
 		return fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
 	}
 
-	sparkApplicationNamespace := "spark-01"
+	sparkApplicationNamespace := sparkComponentSpec.Operator.SparkApplicationNamespace
 
 	namespace, err := clientset.CoreV1().Namespaces().Create(
 		context.TODO(),
@@ -102,7 +104,7 @@ func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, sparkC
 	// Retry and handle error like following
 	// Failed to create ingress spark-operator-01 in namespace spark-operator-01 for service spark-operator-01: Internal error occurred: failed calling webhook "validate.nginx.ingress.kubernetes.io": Post "https://ingress-nginx-controller-admission.ingress-nginx.svc:443/networking/v1/ingresses?timeout=10s": context deadline exceeded
 	return common.RetryUntilTrue(func() (bool, error) {
-		err := CreateApiGatewayIngress(clientset, operatorNamespace, helmInstallName, helmInstallName)
+		err := CreateApiGatewayIngress(clientset, operatorNamespace, helmInstallName, helmInstallName, sparkComponentSpec.Gateway.IngressHot)
 		ignoreErrorMsg := "failed calling webhook \"validate.nginx.ingress.kubernetes.io\""
 		if err != nil {
 			if strings.Contains(err.Error(), ignoreErrorMsg) {
@@ -175,7 +177,7 @@ func CreateApiGatewayService(clientset *kubernetes.Clientset, namespace string, 
 	return nil
 }
 
-func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, sparkComponentSpec  SparkComponentSpec, region string, eksClusterName string, s3Bucket string) error {
+func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, sparkComponentSpec SparkComponentSpec, region string, eksClusterName string, s3Bucket string) error {
 	// helm install my-release spark-operator/spark-operator --namespace spark-operator --create-namespace --set sparkJobNamespace=default
 
 	kubeConfig, err := awslib.CreateKubeConfig(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
@@ -304,7 +306,7 @@ func CreateSparkServiceAccount(clientset *kubernetes.Clientset, sparkOperatorNam
 	return nil
 }
 
-func CreateApiGatewayIngress(clientset *kubernetes.Clientset, namespace string, ingressName string, serviceName string) error {
+func CreateApiGatewayIngress(clientset *kubernetes.Clientset, namespace string, ingressName string, serviceName string, ingressHost string) error {
 	path := "/sparkapi/"
 	pathType := v13.PathTypePrefix
 	log.Printf("Creating ingress %s in namespace %s for sevice %s", ingressName, namespace, serviceName)
@@ -324,6 +326,7 @@ func CreateApiGatewayIngress(clientset *kubernetes.Clientset, namespace string, 
 				IngressClassName: aws.String("nginx"),
 				Rules: []v13.IngressRule{
 					v13.IngressRule{
+						Host: ingressHost,
 						IngressRuleValue: v13.IngressRuleValue{
 							HTTP: &v13.HTTPIngressRuleValue{
 								Paths: []v13.HTTPIngressPath{
