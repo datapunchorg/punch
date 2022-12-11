@@ -61,9 +61,9 @@ func AddDryRunCommandFlag(command *cobra.Command) {
 		"Dry run to print out information without really making change")
 }
 
-func AddPrintUsageExampleCommandFlags(command *cobra.Command) {
-	command.Flags().BoolVarP(&PrintUsageExample, "print-usage-example", "", false,
-		"print out usage example (IMPORTANT: maybe insecure since the example may contain user password, please use this with caution)")
+func AddPrintNotesCommandFlags(command *cobra.Command) {
+	command.Flags().BoolVarP(&PrintNotes, "print-notes", "", false,
+		"print out notes (IMPORTANT: maybe insecure since the notes may contain user password, please use this with caution)")
 }
 
 func Execute() {
@@ -114,4 +114,3 @@ func searchFileOrFatal(fileName string) string {
 	log.Fatalf("Cannot find file %s under search paths: %s", fileName, searchDirs)
 	return ""
 }
-

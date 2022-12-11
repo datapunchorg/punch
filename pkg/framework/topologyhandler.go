@@ -31,8 +31,8 @@ type TopologyHandler interface {
 	Uninstall(topology Topology) (DeploymentOutput, error)
 }
 
-type AbleToPrintUsageExample interface {
-	PrintUsageExample(topology Topology, deploymentOutput DeploymentOutput)
+type AblePrintNotes interface {
+	PrintNotes(topology Topology, deploymentOutput DeploymentOutput)
 }
 
 type TopologyHandlerManager struct {

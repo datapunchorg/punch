@@ -39,7 +39,7 @@ metastoreWarehouseDir=$(jq -r '.output[] | select(.step=="installHiveMetastoreSe
   --patch spec.spark.gateway.password=$sparkApiGatewayPassword \
   --patch spec.spark.gateway.hiveMetastoreUris=$metastoreUri \
   --patch spec.spark.gateway.sparkSqlWarehouseDir=$metastoreWarehouseDir \
-  --print-usage-example \
+  --print-notes \
   -o SparkOnEks.output.json
 
 apiGatewayLoadBalancerUrl=$(jq -r '.output[] | select(.step=="installNginxIngressController").output.loadBalancerPreferredUrl' SparkOnEks.output.json)

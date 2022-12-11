@@ -9,7 +9,7 @@ Use following commands to run [Pinot Quick Start](https://github.com/apache/pino
 ```
 make release
 cd dist
-./punch install PinotQuickStart --print-usage-example
+./punch install PinotQuickStart --print-notes
 ```
 
 Long Version
@@ -71,7 +71,7 @@ In the terminal, go the `dist` folder.
 Run punch command:
 
 ```
-./punch install PinotQuickStart --print-usage-example
+./punch install PinotQuickStart --print-notes
 ```
 
 The upper `punch install` will print out an AWS load balancer URL which you could browse to query data in Pinot, like following:

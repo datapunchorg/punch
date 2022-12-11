@@ -38,7 +38,7 @@ var PatchValues []string
 
 var DryRun bool
 
-var PrintUsageExample bool
+var PrintNotes bool
 
 func createKeyValueMap(keyValuePairs []string) map[string]string {
 	result := map[string]string{}

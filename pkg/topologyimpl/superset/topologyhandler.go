@@ -64,7 +64,7 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 	return framework.NewDeployment().GetOutput(), nil
 }
 
-func (t *TopologyHandler) PrintUsageExample(topology framework.Topology, deploymentOutput framework.DeploymentOutput) {
+func (t *TopologyHandler) PrintNotes(topology framework.Topology, deploymentOutput framework.DeploymentOutput) {
 	url := deploymentOutput.Output()["deploySupersetService"]["supersetUrl"].(string)
 	log.Printf("Superset installed! Open %s in web browser to query data.", url)
 }
@@ -90,4 +90,3 @@ func CreateInstallDeployment(topologySpec SupersetTopologySpec, commandEnvironme
 	})
 	return deployment, nil
 }
-
