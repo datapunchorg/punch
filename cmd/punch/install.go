@@ -72,10 +72,10 @@ var provisionCmd = &cobra.Command{
 			writeOutputFile(outputFile, deploymentOutputStr)
 		}
 
-		if PrintUsageExample {
-			ableToPrintUsageExample, ok := handler.(framework.AbleToPrintUsageExample)
+		if PrintNotes {
+			ablePrintNotes, ok := handler.(framework.AblePrintNotes)
 			if ok {
-				ableToPrintUsageExample.PrintUsageExample(resolvedTopology, deploymentOutput)
+				ablePrintNotes.PrintNotes(resolvedTopology, deploymentOutput)
 			} else {
 				log.Printf("Topology handler does not support printing usage example")
 			}
@@ -88,5 +88,5 @@ func init() {
 	AddKeyValueCommandFlags(provisionCmd)
 	AddDryRunCommandFlag(provisionCmd)
 	AddOutputCommandFlag(provisionCmd)
-	AddPrintUsageExampleCommandFlags(provisionCmd)
+	AddPrintNotesCommandFlags(provisionCmd)
 }

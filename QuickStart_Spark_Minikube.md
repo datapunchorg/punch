@@ -9,7 +9,7 @@ Use following commands to run a Spark application on Minikube:
 ```
 make release
 cd dist
-./punch install SparkOnEks --env withMinikube=true --patch spec.spark.gateway.password=password1 --print-usage-example
+./punch install SparkOnEks --env withMinikube=true --patch spec.spark.gateway.password=password1 --print-notes
 ./sparkcli --user user1 --password password1 --insecure --url https://localhost:32443/sparkapi/v1 submit --class org.apache.spark.examples.SparkPi --spark-version 3.2 --driver-memory 512m --executor-memory 512m local:///opt/spark/examples/jars/spark-examples_2.12-3.2.1.jar
 ```
 
@@ -68,7 +68,7 @@ In the terminal, go the `dist` folder.
 Run punch command:
 
 ```
-./punch install SparkOnEks --env withMinikube=true --patch spec.spark.gateway.password=password1 --print-usage-example
+./punch install SparkOnEks --env withMinikube=true --patch spec.spark.gateway.password=password1 --print-notes
 ```
 
 The upper `punch install` will print out example commands to run Spark application when it finishes.

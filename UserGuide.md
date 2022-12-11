@@ -24,7 +24,7 @@ aws configure
 2. Run punch command:
 
 ```
-./punch install SparkOnEks --patch spec.spark.gateway.password=password1 --print-usage-example
+./punch install SparkOnEks --patch spec.spark.gateway.password=password1 --print-notes
 ```
 
 The upper punch command will create an EKS cluster and Spark REST Service, then people could submit Spark application via that REST service. Please note:
@@ -36,7 +36,7 @@ You could also generate a topology template file, manually modify that file, and
 
 ```
 ./punch generate SparkOnEks -o /tmp/SparkOnEks.yaml
-./punch install -f /tmp/SparkOnEks.yaml --patch spec.spark.gateway.password=password1 --print-usage-example
+./punch install -f /tmp/SparkOnEks.yaml --patch spec.spark.gateway.password=password1 --print-notes
 ```
 
 ### How to uninstall SparkOnEks on AWS

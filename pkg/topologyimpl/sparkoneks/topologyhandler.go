@@ -89,7 +89,7 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 	return deployment.GetOutput(), err
 }
 
-func (t *TopologyHandler) PrintUsageExample(topology framework.Topology, deploymentOutput framework.DeploymentOutput) {
+func (t *TopologyHandler) PrintNotes(topology framework.Topology, deploymentOutput framework.DeploymentOutput) {
 	currentTopology := topology.(*SparkOnEksTopology)
 
 	loadBalancerUrl := ""
@@ -105,7 +105,7 @@ func (t *TopologyHandler) PrintUsageExample(topology framework.Topology, deploym
 			printExampleCommandToRunSparkOnAws(apiGatewayUrl, *currentTopology)
 		}
 	} else {
-		log.Printf("Did not find load balancer url, cannot print usage example command")
+		log.Printf("Did not find load balancer url, cannot print notes to show usage example command")
 	}
 }
 

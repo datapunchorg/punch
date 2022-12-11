@@ -86,7 +86,7 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 	return deployment.GetOutput(), err
 }
 
-func (t *TopologyHandler) PrintUsageExample(topology framework.Topology, deploymentOutput framework.DeploymentOutput) {
+func (t *TopologyHandler) PrintNotes(topology framework.Topology, deploymentOutput framework.DeploymentOutput) {
 	log.Printf("Kyuubi Installed")
 }
 
