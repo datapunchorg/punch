@@ -1,6 +1,9 @@
 package resource
 
-import "testing"
+import (
+	"github.com/stretchr/testify/require"
+	"testing"
+)
 
 // gcloud projects \
 //    add-iam-policy-binding \
@@ -28,9 +31,11 @@ func TestCreateGkeCluster(t *testing.T) {
 	gkeCluster := GkeCluster{
 		ClusterName: "cluster-1",
 	}
-	CreateGkeCluster(projectId, zone, gkeCluster)
+	err := CreateGkeCluster(projectId, zone, gkeCluster)
+	require.Nil(t, err)
 }
 
 func TestDeleteGkeCluster(t *testing.T) {
-	DeleteGkeCluster("myproject001-367500", "us-central1-c", "cluster-1")
+	err := DeleteGkeCluster("myproject001-367500", "us-central1-c", "cluster-1")
+	require.Nil(t, err)
 }
