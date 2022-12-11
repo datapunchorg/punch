@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package eks
+package gke
 
 import (
 	"fmt"
@@ -45,7 +45,7 @@ func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) 
 }
 
 func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (framework.Topology, error) {
-	currentTopology := topology.(*EksTopology)
+	currentTopology := topology.(*Topology)
 	err := ValidateEksTopologySpec(currentTopology.Spec, currentTopology.Metadata, phase)
 	if err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (f
 }
 
 func (t *TopologyHandler) Install(topology framework.Topology) (framework.DeploymentOutput, error) {
-	currentTopology := topology.(*EksTopology)
+	currentTopology := topology.(*Topology)
 
 	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
 
@@ -68,7 +68,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 }
 
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
-	currentTopology := topology.(*EksTopology)
+	currentTopology := topology.(*Topology)
 
 	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
 
@@ -81,8 +81,8 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 	return deployment.GetOutput(), err
 }
 
-func (t *TopologyHandler) PrintUsageExample(topology framework.Topology, deploymentOutput framework.DeploymentOutput) {
-	currentTopology := topology.(*EksTopology)
+func (t *TopologyHandler) PrintNotes(topology framework.Topology, deploymentOutput framework.DeploymentOutput) {
+	currentTopology := topology.(*Topology)
 
 	str := `
 ------------------------------
@@ -93,7 +93,7 @@ Step 2: run: kubectl get pods -A`
 	log.Printf(str, currentTopology.Spec.Region, currentTopology.Spec.EksCluster.ClusterName)
 }
 
-func CreateInstallDeployment(topologySpec EksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
+func CreateInstallDeployment(topologySpec TopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
 	deployment := framework.NewDeployment()
 
 	if topologySpec.AutoScaling.EnableClusterAutoscaler && commandEnvironment.Get(CmdEnvClusterAutoscalerHelmChart) == "" {
@@ -208,7 +208,7 @@ func CreateInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fr
 	return deployment, nil
 }
 
-func CreateUninstallDeployment(topologySpec EksTopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
+func CreateUninstallDeployment(topologySpec TopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
 	deployment := framework.NewDeployment()
 
 	if commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {

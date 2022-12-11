@@ -5,6 +5,8 @@ import (
 	"testing"
 )
 
+// Enable Cloud Resource Manager API: https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=733425931108
+
 // gcloud projects \
 //    add-iam-policy-binding \
 //    myproject001-367500 --member \
@@ -26,12 +28,13 @@ import (
 // export GOOGLE_APPLICATION_CREDENTIALS=/Users/admin/temp/logging-key.json
 
 func TestCreateGkeCluster(t *testing.T) {
-	projectId := "myproject001-367500"
+	projectId, err := GetGcpFirstProjectId()
+	require.Nil(t, err)
 	zone := "us-central1-c"
 	gkeCluster := GkeCluster{
 		ClusterName: "cluster-1",
 	}
-	err := CreateGkeCluster(projectId, zone, gkeCluster)
+	err = CreateGkeCluster(projectId, zone, gkeCluster)
 	require.Nil(t, err)
 }
 

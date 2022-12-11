@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package eks
+package gke
 
 import (
 	"github.com/datapunchorg/punch/pkg/framework"
@@ -31,21 +31,21 @@ func TestGenerateTopology(t *testing.T) {
 
 	log.Printf("-----\n%s\n-----\n", framework.TopologyString(topology))
 
-	currentTopology := topology.(*EksTopology)
+	currentTopology := topology.(*Topology)
 	assert.Equal(t, "{{ or .Values.namePrefix `my` }}", currentTopology.Spec.NamePrefix)
 }
 
 func TestParseTopology(t *testing.T) {
 	handler := &TopologyHandler{}
 	topology, err := handler.Generate()
-	currentTopology := topology.(*EksTopology)
+	currentTopology := topology.(*Topology)
 	currentTopology.Spec.NamePrefix = "foo"
 	yamlContent := framework.TopologyString(topology)
 
 	topology, err = handler.Parse([]byte(yamlContent))
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "Eks", topology.GetKind())
-	currentTopology = topology.(*EksTopology)
+	currentTopology = topology.(*Topology)
 	assert.Equal(t, "foo", currentTopology.Spec.NamePrefix)
 }
 
@@ -55,7 +55,7 @@ func TestResolveTopology(t *testing.T) {
 	env := map[string]string{
 		"nginxHelmChart": "../../../third-party/helm-charts/ingress-nginx/charts/ingress-nginx",
 	}
-	topology.(*EksTopology).Metadata.CommandEnvironment = env
+	topology.(*Topology).Metadata.CommandEnvironment = env
 	resolvedTopology, err := handler.Validate(topology, framework.PhaseBeforeInstall)
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "Eks", resolvedTopology.GetKind())

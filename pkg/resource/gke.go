@@ -1,6 +1,9 @@
 package resource
 
 import (
+	resourcemanager "cloud.google.com/go/resourcemanager/apiv3"
+	resourcemanagerpb "cloud.google.com/go/resourcemanager/apiv3/resourcemanagerpb"
+
 	"context"
 	"fmt"
 	"github.com/datapunchorg/punch/pkg/common"
@@ -13,6 +16,23 @@ import (
 
 type GkeCluster struct {
 	ClusterName string `json:"clusterName" yaml:"clusterName"`
+}
+
+func GetGcpFirstProjectId() (string, error) {
+	ctx := context.Background()
+	c, err := resourcemanager.NewProjectsClient(ctx)
+	if err != nil {
+		return "", fmt.Errorf("failed to create projects client: %w", err)
+	}
+	defer c.Close()
+
+	listProjectsRequest := resourcemanagerpb.ListProjectsRequest{}
+	projectIterator := c.ListProjects(ctx, &listProjectsRequest)
+	project, err := projectIterator.Next()
+	if err != nil {
+		return "", fmt.Errorf("failed to call projectIterator.Next(): %w", err)
+	}
+	return project.ProjectId, nil
 }
 
 func CreateGkeCluster(projectId string, zone string, gkeCluster GkeCluster) error {
@@ -78,7 +98,7 @@ func DeleteGkeCluster(projectId string, zone string, clusterId string) error {
 	log.Printf("Finished operation %s", common.GetReflectTypeName(projectsZonesClustersDeleteCall))
 
 	// TODO wait cluster deleted
-	
+
 	return nil
 }
 

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package eks
+package gke
 
 import (
 	"context"
@@ -34,7 +34,7 @@ var NodePortLocalHttp int32 = 32080
 var NodePortLocalHttps int32 = 32443
 var DefaultNginxServiceName = "ingress-nginx-controller"
 
-func ValidateEksTopologySpec(spec EksTopologySpec, metadata framework.TopologyMetadata, phase string) error {
+func ValidateEksTopologySpec(spec TopologySpec, metadata framework.TopologyMetadata, phase string) error {
 	err := framework.CheckCmdEnvFolderExists(metadata, CmdEnvNginxHelmChart)
 	if err != nil {
 		return err
@@ -52,7 +52,7 @@ func ValidateEksTopologySpec(spec EksTopologySpec, metadata framework.TopologyMe
 	return nil
 }
 
-func CreateInstanceIamRole(topology EksTopologySpec) (string, error) {
+func CreateInstanceIamRole(topology TopologySpec) (string, error) {
 	region := topology.Region
 	roleName, err := resource.CreateIamRoleWithMorePolicies(region, topology.EksCluster.InstanceRole, []resource.IamPolicy{topology.S3Policy, topology.KafkaPolicy})
 	if err != nil {
@@ -62,7 +62,7 @@ func CreateInstanceIamRole(topology EksTopologySpec) (string, error) {
 }
 
 // CreateClusterAutoscalerIamRole returns IAM Role name like: AmazonEKSClusterAutoscalerRole-xxx
-func CreateClusterAutoscalerIamRole(topology EksTopologySpec, oidcId string) (string, error) {
+func CreateClusterAutoscalerIamRole(topology TopologySpec, oidcId string) (string, error) {
 	region := topology.Region
 	session := awslib.CreateSession(region)
 	accountId, err := awslib.GetCurrentAccount(session)
@@ -97,7 +97,7 @@ func CreateClusterAutoscalerIamRole(topology EksTopologySpec, oidcId string) (st
 	return role.Name, nil
 }
 
-func CreateClusterAutoscalerIamServiceAccount(commandEnvironment framework.CommandEnvironment, topology EksTopologySpec, iamRoleName string) error {
+func CreateClusterAutoscalerIamServiceAccount(commandEnvironment framework.CommandEnvironment, topology TopologySpec, iamRoleName string) error {
 	region := topology.Region
 	session := awslib.CreateSession(region)
 	accountId, err := awslib.GetCurrentAccount(session)
@@ -119,7 +119,7 @@ func CreateClusterAutoscalerIamServiceAccount(commandEnvironment framework.Comma
 	return err
 }
 
-func WaitEksServiceAccount(commandEnvironment framework.CommandEnvironment, topology EksTopologySpec, namespace string, serviceAccount string) error {
+func WaitEksServiceAccount(commandEnvironment framework.CommandEnvironment, topology TopologySpec, namespace string, serviceAccount string) error {
 	region := topology.Region
 	clusterName := topology.EksCluster.ClusterName
 
@@ -147,7 +147,7 @@ func WaitEksServiceAccount(commandEnvironment framework.CommandEnvironment, topo
 	return nil
 }
 
-func DeployNginxIngressController(commandEnvironment framework.CommandEnvironment, topology EksTopologySpec) (map[string]interface{}, error) {
+func DeployNginxIngressController(commandEnvironment framework.CommandEnvironment, topology TopologySpec) (map[string]interface{}, error) {
 	nginxNamespace := topology.NginxIngress.Namespace
 	helmInstallName := topology.NginxIngress.HelmInstallName
 	nginxServiceName := DefaultNginxServiceName

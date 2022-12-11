@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package eks
+package gke
 
 import (
 	"fmt"
@@ -40,12 +40,12 @@ const (
 	CmdEnvClusterAutoscalerHelmChart = "ClusterAutoscalerHelmChart"
 )
 
-type EksTopology struct {
+type Topology struct {
 	framework.TopologyBase `json:",inline" yaml:",inline"`
-	Spec                   EksTopologySpec `json:"spec"`
+	Spec                   TopologySpec `json:"spec"`
 }
 
-type EksTopologySpec struct {
+type TopologySpec struct {
 	NamePrefix   string                   `json:"namePrefix" yaml:"namePrefix"`
 	Region       string                   `json:"region" yaml:"region"`
 	VpcId        string                   `json:"vpcId" yaml:"vpcId"`
@@ -65,20 +65,20 @@ type NginxIngress struct {
 	EnableHttps     bool   `json:"enableHttps" yaml:"enableHttps"`
 }
 
-func GenerateEksTopology() EksTopology {
+func GenerateEksTopology() Topology {
 	namePrefix := framework.DefaultNamePrefixTemplate
 	s3BucketName := framework.DefaultS3BucketNameTemplate
 	return CreateDefaultEksTopology(namePrefix, s3BucketName)
 }
 
-func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopology {
+func CreateDefaultEksTopology(namePrefix string, s3BucketName string) Topology {
 	topologyName := fmt.Sprintf("%s-eks-01", namePrefix)
 	eksClusterName := topologyName
 	controlPlaneRoleName := fmt.Sprintf("%s-eks-control-plane", namePrefix)
 	instanceRoleName := fmt.Sprintf("%s-eks-instance", namePrefix)
 	securityGroupName := fmt.Sprintf("%s-eks-sg-01", namePrefix)
 	nodeGroupName := fmt.Sprintf("%s-ng-01", eksClusterName)
-	topology := EksTopology{
+	topology := Topology{
 		TopologyBase: framework.TopologyBase{
 			ApiVersion: framework.DefaultVersion,
 			Kind:       KindGkeTopology,
@@ -95,7 +95,7 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 				Notes: map[string]string{},
 			},
 		},
-		Spec: EksTopologySpec{
+		Spec: TopologySpec{
 			NamePrefix:   namePrefix,
 			Region:       fmt.Sprintf("{{ or .Values.region `%s` }}", framework.DefaultRegion),
 			VpcId:        "{{ or .Values.vpcId .DefaultVpcId }}",
@@ -198,10 +198,10 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) EksTopolog
 	return topology
 }
 
-func (t *EksTopology) GetKind() string {
+func (t *Topology) GetKind() string {
 	return t.Kind
 }
 
-func (t *EksTopology) GetMetadata() *framework.TopologyMetadata {
+func (t *Topology) GetMetadata() *framework.TopologyMetadata {
 	return &t.Metadata
 }

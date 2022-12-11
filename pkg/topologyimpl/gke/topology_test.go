@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package eks
+package gke
 
 import (
 	"bytes"
@@ -48,7 +48,7 @@ func TestTemplate(t *testing.T) {
 	str := buffer.String()
 	fmt.Println(str)
 
-	eksTopology := EksTopology{}
+	eksTopology := Topology{}
 	yaml.Unmarshal([]byte(str), &eksTopology)
 	assert.Equal(t, "bucket123abc", eksTopology.Spec.S3BucketName)
 	assert.Equal(t, "cluster1", eksTopology.Spec.EksCluster.ClusterName)
@@ -73,7 +73,7 @@ func TestTemplateWithAlternativeValue(t *testing.T) {
 	str := buffer.String()
 	fmt.Println(str)
 
-	eksTopology := EksTopology{}
+	eksTopology := Topology{}
 	yaml.Unmarshal([]byte(str), &eksTopology)
 	assert.Equal(t, "abcde12345", eksTopology.Spec.S3BucketName)
 	assert.Equal(t, "", eksTopology.Metadata.CommandEnvironment["kubeConfig"])
@@ -96,7 +96,7 @@ func TestTemplateWithUnresolvedValue(t *testing.T) {
 	str := buffer.String()
 	fmt.Println(str)
 
-	eksTopology := EksTopology{}
+	eksTopology := Topology{}
 	yaml.Unmarshal([]byte(str), &eksTopology)
 	assert.Equal(t, "<no value>", eksTopology.Spec.S3BucketName)
 }
