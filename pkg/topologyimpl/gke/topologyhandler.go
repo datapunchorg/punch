@@ -24,6 +24,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// https://cloud.google.com/docs/authentication/application-default-credentials
+// gcloud auth application-default login
+// or: export GOOGLE_APPLICATION_CREDENTIALS=/foo/credential.json
+
 type TopologyHandler struct {
 }
 

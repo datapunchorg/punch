@@ -16,14 +16,7 @@ limitations under the License.
 
 package gke
 
-import (
-	"fmt"
-	"github.com/datapunchorg/punch/pkg/awslib"
-	"github.com/datapunchorg/punch/pkg/framework"
-	"github.com/datapunchorg/punch/pkg/kubelib"
-	v1 "k8s.io/api/core/v1"
-)
-
+/*
 func InstallClusterAutoscalerHelm(commandEnvironment framework.CommandEnvironment, topology TopologySpec) error {
 	// helm install cluster-autoscaler third-party/helm-charts/cluster-autoscaler --set autoDiscovery.clusterName=my-eks-01 --set awsRegion=us-west-1
 
@@ -62,3 +55,4 @@ func InstallClusterAutoscalerHelm(commandEnvironment framework.CommandEnvironmen
 	}
 	return nil
 }
+*/
