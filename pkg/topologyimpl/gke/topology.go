@@ -38,6 +38,8 @@ const (
 
 	CmdEnvNginxHelmChart             = "nginxHelmChart"
 	CmdEnvClusterAutoscalerHelmChart = "ClusterAutoscalerHelmChart"
+
+	DefaultZone = "us-central1-c"
 )
 
 type Topology struct {
@@ -47,11 +49,13 @@ type Topology struct {
 
 type TopologySpec struct {
 	NamePrefix   string                   `json:"namePrefix" yaml:"namePrefix"`
-	Region       string                   `json:"region" yaml:"region"`
+	ProjectId    string                   `json:"projectId" yaml:"projectId"`
+	Location     string                   `json:"location" yaml:"location"`
 	VpcId        string                   `json:"vpcId" yaml:"vpcId"`
 	S3BucketName string                   `json:"s3BucketName" yaml:"s3BucketName"`
 	S3Policy     resource.IamPolicy       `json:"s3Policy" yaml:"s3Policy"`
 	KafkaPolicy  resource.IamPolicy       `json:"kafkaPolicy" yaml:"kafkaPolicy"`
+	GkeCluster   resource.GkeCluster      `json:"gkeCluster" yaml:"gkeCluster"`
 	EksCluster   resource.EksCluster      `json:"eksCluster" yaml:"eksCluster"`
 	NodeGroups   []resource.NodeGroup     `json:"nodeGroups" yaml:"nodeGroups"`
 	NginxIngress NginxIngress             `json:"nginxIngress" yaml:"nginxIngress"`
@@ -73,11 +77,11 @@ func GenerateEksTopology() Topology {
 
 func CreateDefaultEksTopology(namePrefix string, s3BucketName string) Topology {
 	topologyName := fmt.Sprintf("%s-eks-01", namePrefix)
-	eksClusterName := topologyName
+	gkeClusterName := topologyName
 	controlPlaneRoleName := fmt.Sprintf("%s-eks-control-plane", namePrefix)
 	instanceRoleName := fmt.Sprintf("%s-eks-instance", namePrefix)
 	securityGroupName := fmt.Sprintf("%s-eks-sg-01", namePrefix)
-	nodeGroupName := fmt.Sprintf("%s-ng-01", eksClusterName)
+	nodeGroupName := fmt.Sprintf("%s-ng-01", gkeClusterName)
 	topology := Topology{
 		TopologyBase: framework.TopologyBase{
 			ApiVersion: framework.DefaultVersion,
@@ -97,7 +101,8 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) Topology {
 		},
 		Spec: TopologySpec{
 			NamePrefix:   namePrefix,
-			Region:       fmt.Sprintf("{{ or .Values.region `%s` }}", framework.DefaultRegion),
+			ProjectId:    fmt.Sprintf("{{ .Values.projectId }}"),
+			Location:     fmt.Sprintf("{{ or .Values.location `%s` }}", DefaultZone),
 			VpcId:        "{{ or .Values.vpcId .DefaultVpcId }}",
 			S3BucketName: s3BucketName,
 			S3Policy: resource.IamPolicy{
@@ -112,8 +117,11 @@ func CreateDefaultEksTopology(namePrefix string, s3BucketName string) Topology {
 {"Effect":"Allow","Action":"kafka-cluster:*","Resource":"*"}
 ]}`,
 			},
+			GkeCluster: resource.GkeCluster{
+				ClusterName: gkeClusterName,
+			},
 			EksCluster: resource.EksCluster{
-				ClusterName: eksClusterName,
+				ClusterName: gkeClusterName,
 				EksVersion:  "1.21",
 				// TODO fill in default value for SubnetIds
 				ControlPlaneRole: resource.IamRole{

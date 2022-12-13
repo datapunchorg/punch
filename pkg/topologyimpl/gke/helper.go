@@ -17,27 +17,22 @@ limitations under the License.
 package gke
 
 import (
-	"context"
 	"fmt"
-	"time"
-
 	"github.com/datapunchorg/punch/pkg/awslib"
-	"github.com/datapunchorg/punch/pkg/common"
 	"github.com/datapunchorg/punch/pkg/framework"
-	"github.com/datapunchorg/punch/pkg/kubelib"
-	"github.com/datapunchorg/punch/pkg/resource"
-	v1 "k8s.io/api/core/v1"
-	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var NodePortLocalHttp int32 = 32080
 var NodePortLocalHttps int32 = 32443
 var DefaultNginxServiceName = "ingress-nginx-controller"
 
-func ValidateEksTopologySpec(spec TopologySpec, metadata framework.TopologyMetadata, phase string) error {
+func ValidateGkeTopologySpec(spec TopologySpec, metadata framework.TopologyMetadata, phase string) error {
 	err := framework.CheckCmdEnvFolderExists(metadata, CmdEnvNginxHelmChart)
 	if err != nil {
 		return err
+	}
+	if spec.ProjectId == "" {
+		return fmt.Errorf("spec.projectId is empty")
 	}
 	if spec.AutoScaling.EnableClusterAutoscaler {
 		err := framework.CheckCmdEnvFolderExists(metadata, CmdEnvClusterAutoscalerHelmChart)
@@ -52,6 +47,7 @@ func ValidateEksTopologySpec(spec TopologySpec, metadata framework.TopologyMetad
 	return nil
 }
 
+/*
 func CreateInstanceIamRole(topology TopologySpec) (string, error) {
 	region := topology.Region
 	roleName, err := resource.CreateIamRoleWithMorePolicies(region, topology.EksCluster.InstanceRole, []resource.IamPolicy{topology.S3Policy, topology.KafkaPolicy})
@@ -218,3 +214,4 @@ func DeleteEksCluster(region string, clusterName string) {
 			})
 	}
 }
+*/

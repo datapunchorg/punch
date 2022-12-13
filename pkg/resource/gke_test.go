@@ -28,13 +28,14 @@ import (
 // export GOOGLE_APPLICATION_CREDENTIALS=/Users/admin/temp/logging-key.json
 
 func TestCreateGkeCluster(t *testing.T) {
-	projectId, err := GetGcpFirstProjectId()
-	require.Nil(t, err)
+	//projectId, err := GetGcpFirstProjectId()
+	//require.Nil(t, err)
+	projectId := "myproject001-367500"
 	zone := "us-central1-c"
 	gkeCluster := GkeCluster{
 		ClusterName: "cluster-1",
 	}
-	err = CreateGkeCluster(projectId, zone, gkeCluster)
+	err := CreateGkeCluster(projectId, zone, gkeCluster)
 	require.Nil(t, err)
 }
 

@@ -20,13 +20,28 @@ type GkeCluster struct {
 
 func GetGcpFirstProjectId() (string, error) {
 	ctx := context.Background()
+
+	foldersClient, err := resourcemanager.NewFoldersClient(ctx)
+	if err != nil {
+		return "", fmt.Errorf("failed to create folders client: %w", err)
+	}
+	listFoldersRequest := resourcemanagerpb.ListFoldersRequest{}
+	folderIterator := foldersClient.ListFolders(ctx, &listFoldersRequest)
+	folder, err := folderIterator.Next()
+	if err != nil {
+		return "", fmt.Errorf("failed to call projectIterator.Next(): %w", err)
+	}
+	log.Printf("%v", folder)
+
 	c, err := resourcemanager.NewProjectsClient(ctx)
 	if err != nil {
 		return "", fmt.Errorf("failed to create projects client: %w", err)
 	}
 	defer c.Close()
 
-	listProjectsRequest := resourcemanagerpb.ListProjectsRequest{}
+	listProjectsRequest := resourcemanagerpb.ListProjectsRequest{
+		Parent: "folders/",
+	}
 	projectIterator := c.ListProjects(ctx, &listProjectsRequest)
 	project, err := projectIterator.Next()
 	if err != nil {
