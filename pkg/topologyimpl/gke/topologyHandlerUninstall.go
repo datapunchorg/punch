@@ -24,31 +24,6 @@ import (
 func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.DeploymentOutput, error) {
 	currentTopology := topology.(*Topology)
 
-	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
-
-	deployment, err := CreateUninstallDeployment(currentTopology.Spec, commandEnvironment)
-	if err != nil {
-		return deployment.GetOutput(), err
-	}
-
-	err = deployment.Run()
-	return deployment.GetOutput(), err
-}
-
-/*
-func (t *TopologyHandler) PrintNotes(topology framework.Topology, deploymentOutput framework.DeploymentOutput) {
-	currentTopology := topology.(*Topology)
-
-	str := `
-------------------------------
-Example commands to use EKS cluster:
-------------------------------
-Step 1: run: aws eks update-kubeconfig --region %s --name %s
-Step 2: run: kubectl get pods -A`
-	log.Printf(str, currentTopology.Spec.Region, currentTopology.Spec.EksCluster.ClusterName)
-}*/
-
-func CreateUninstallDeployment(topologySpec TopologySpec, commandEnvironment framework.CommandEnvironment) (framework.Deployment, error) {
 	deployment := framework.NewDeployment()
 
 	/*deployment.AddStep("deleteLoadBalancers", "Delete Load Balancers in EKS Cluster", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
@@ -82,9 +57,10 @@ func CreateUninstallDeployment(topologySpec TopologySpec, commandEnvironment fra
 		return framework.NewDeploymentStepOutput(), nil
 	}) */
 	deployment.AddStep("deleteGkeCluster", "Delete GKE Cluster", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-		resource.DeleteGkeCluster(topologySpec.ProjectId, topologySpec.Location, topologySpec.GkeCluster.ClusterName)
+		resource.DeleteGkeCluster(currentTopology.Spec.ProjectId, currentTopology.Spec.Location, currentTopology.Spec.GkeCluster.ClusterName)
 		return framework.NewDeploymentStepOutput(), nil
 	})
 
-	return deployment, nil
+	err := deployment.Run()
+	return deployment.GetOutput(), err
 }

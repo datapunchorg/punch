@@ -17,27 +17,14 @@ limitations under the License.
 package gke
 
 import (
-	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
-	"github.com/datapunchorg/punch/pkg/kubelib"
 	"github.com/datapunchorg/punch/pkg/resource"
 )
 
 func (t *TopologyHandler) Install(topology framework.Topology) (framework.DeploymentOutput, error) {
 	currentTopology := topology.(*Topology)
 
-	commandEnvironment := framework.CreateCommandEnvironment(currentTopology.Metadata.CommandEnvironment)
-
 	deployment := framework.NewDeployment()
-
-	if currentTopology.Spec.AutoScaling.EnableClusterAutoscaler && commandEnvironment.Get(CmdEnvClusterAutoscalerHelmChart) == "" {
-		return nil, fmt.Errorf("please provide helm chart file location for Cluster Autoscaler")
-	}
-
-	err := kubelib.CheckHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable))
-	if err != nil {
-		return nil, err
-	}
 
 	/*deployment.AddStep("createS3Bucket", "Create S3 bucket", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 		err := awslib.CreateS3Bucket(topologySpec.Region, topologySpec.S3BucketName)
@@ -140,10 +127,6 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		})
 	}*/
 
-	if err != nil {
-		return deployment.GetOutput(), err
-	}
-
-	err = deployment.Run()
+	err := deployment.Run()
 	return deployment.GetOutput(), err
 }
