@@ -2,6 +2,7 @@ package gcplib
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"github.com/datapunchorg/punch/pkg/common"
 	"github.com/datapunchorg/punch/pkg/kubelib"
@@ -86,7 +87,10 @@ func CreateGkeKubeConfig(projectId, zone, clusterName string) (kubelib.KubeConfi
 		return kubelib.KubeConfig{}, fmt.Errorf("failed to run %s: %w", common.GetReflectTypeName(projectsZonesClustersGetCall), err)
 	}
 
-	ca := getClusterResult.MasterAuth.ClusterCaCertificate
+	ca, err := base64.StdEncoding.DecodeString(getClusterResult.MasterAuth.ClusterCaCertificate)
+	if err != nil {
+		return kubelib.KubeConfig{}, fmt.Errorf("failed to decode ClusterCaCertificate: %w", err)
+	}
 	caFile, err := os.CreateTemp("", "ca.txt")
 	if err != nil {
 		caFile.Close()
@@ -96,11 +100,13 @@ func CreateGkeKubeConfig(projectId, zone, clusterName string) (kubelib.KubeConfi
 	ioutil.WriteFile(caFile.Name(), []byte(ca), fs.ModePerm)
 
 	kubeConfig := kubelib.KubeConfig{
-		ApiServer: getClusterResult.Endpoint,
+		ApiServer: fmt.Sprintf("https://%s", getClusterResult.Endpoint),
 		CAFile:    caFile.Name(),
-		CA:        []byte(ca),
+		CA:        ca,
 		KubeToken: getClusterResult.MasterAuth.ClientKey,
 	}
+
+	// clientcmd.NewNonInteractiveClientConfig().ClientConfig()
 
 	return kubeConfig, nil
 }
