@@ -59,6 +59,12 @@ type TopologyMetadata struct {
 	Notes              map[string]string `json:"notes" yaml:"notes"`
 }
 
+// TODO use interface for CommandEnvironment?
+func (t *TopologyMetadata) GetCommandEnvironment() *CommandEnvironment {
+	commandEnvironment := CreateCommandEnvironment(t.CommandEnvironment)
+	return &commandEnvironment
+}
+
 func TopologyString(topology Topology) string {
 	s, ok := topology.(fmt.Stringer)
 	if ok {

@@ -17,8 +17,12 @@ limitations under the License.
 package gke
 
 import (
+	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
+	"github.com/datapunchorg/punch/pkg/gcplib"
+	"github.com/datapunchorg/punch/pkg/kubelib"
 	"github.com/datapunchorg/punch/pkg/resource"
+	v1 "k8s.io/api/core/v1"
 )
 
 func (t *TopologyHandler) Install(topology framework.Topology) (framework.DeploymentOutput, error) {
@@ -48,12 +52,13 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 			return framework.NewDeploymentStepOutput(), err
 		}
 		return framework.DeployableOutput{}, nil
-		/*clusterSummary, err := resource.DescribeEksCluster(topologySpec.Region, topologySpec.EksCluster.ClusterName)
-		if err != nil {
-			return framework.NewDeploymentStepOutput(), err
-		}
-		return framework.DeployableOutput{"oidcIssuer": clusterSummary.OidcIssuer}, nil*/
 	})
+
+	if currentTopology.GetMetadata().GetCommandEnvironment().Get(CmdEnvNginxHelmChart) != "" {
+		deployment.AddStep("deployNginxIngressController", "Deploy Nginx ingress controller", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
+			return DeployNginxIngressController(*currentTopology.GetMetadata().GetCommandEnvironment(), currentTopology.Spec)
+		})
+	}
 
 	/*deployment.AddStep("createNodeGroups", "Create node groups", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 		stepOutput := c.GetStepOutput("createInstanceIamRole")
@@ -120,13 +125,56 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 			return framework.NewDeploymentStepOutput(), nil
 		})
 	}
-
-	if commandEnvironment.Get(CmdEnvNginxHelmChart) != "" {
-		deployment.AddStep("deployNginxIngressController", "Deploy Nginx ingress controller", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-			return DeployNginxIngressController(commandEnvironment, topologySpec)
-		})
-	}*/
+	*/
 
 	err := deployment.Run()
 	return deployment.GetOutput(), err
+}
+
+func DeployNginxIngressController(commandEnvironment framework.CommandEnvironment, topology TopologySpec) (map[string]interface{}, error) {
+	nginxNamespace := topology.NginxIngress.Namespace
+	helmInstallName := topology.NginxIngress.HelmInstallName
+	nginxServiceName := DefaultNginxServiceName
+	eksClusterName := topology.GkeCluster.ClusterName
+	kubeConfig, err := gcplib.CreateKubeConfig(commandEnvironment.Get(framework.CmdEnvKubeConfig), topology.ProjectId, topology.Location, eksClusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get kube config: %s", err.Error())
+	}
+
+	defer kubeConfig.Cleanup()
+
+	arguments := []string{
+		"--set", fmt.Sprintf("controller.service.enableHttp=%t", topology.NginxIngress.EnableHttp),
+		"--set", fmt.Sprintf("controller.service.enableHttps=%t", topology.NginxIngress.EnableHttps),
+	}
+
+	if commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
+		arguments = append(arguments, "--set", "controller.service.type=NodePort")
+		arguments = append(arguments, "--set", fmt.Sprintf("controller.service.nodePorts.http=%d", NodePortLocalHttp))
+		arguments = append(arguments, "--set", fmt.Sprintf("controller.service.nodePorts.https=%d", NodePortLocalHttps))
+	}
+
+	kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvNginxHelmChart), kubeConfig, arguments, helmInstallName, nginxNamespace)
+
+	_, clientset, err := gcplib.CreateKubernetesClient(commandEnvironment.Get(framework.CmdEnvKubeConfig), topology.ProjectId, topology.Location, eksClusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
+	}
+	err = kubelib.WaitPodsInPhases(clientset, nginxNamespace, nginxServiceName, []v1.PodPhase{v1.PodRunning})
+	if err != nil {
+		return nil, fmt.Errorf("pod %s*** in namespace %s is not in phase %s", nginxServiceName, nginxNamespace, v1.PodRunning)
+	}
+
+	//urls, err := resource.GetEksNginxLoadBalancerUrls(commandEnvironment, region, eksClusterName, nginxNamespace, nginxServiceName, NodePortLocalHttps)
+	//if err != nil {
+	//	return nil, fmt.Errorf("failed to get NGINX load balancer urls: %s", err.Error())
+	//}
+
+	output := make(map[string]interface{})
+	//output["loadBalancerUrls"] = urls
+
+	//preferredUrl := resource.GetLoadBalancerPreferredUrl(urls)
+	//output["loadBalancerPreferredUrl"] = preferredUrl
+
+	return output, nil
 }

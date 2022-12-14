@@ -50,12 +50,7 @@ type TopologySpec struct {
 	NamePrefix   string                   `json:"namePrefix" yaml:"namePrefix"`
 	ProjectId    string                   `json:"projectId" yaml:"projectId"`
 	Location     string                   `json:"location" yaml:"location"`
-	VpcId        string                   `json:"vpcId" yaml:"vpcId"`
-	S3BucketName string                   `json:"s3BucketName" yaml:"s3BucketName"`
-	S3Policy     resource.IamPolicy       `json:"s3Policy" yaml:"s3Policy"`
-	KafkaPolicy  resource.IamPolicy       `json:"kafkaPolicy" yaml:"kafkaPolicy"`
 	GkeCluster   resource.GkeCluster      `json:"gkeCluster" yaml:"gkeCluster"`
-	EksCluster   resource.EksCluster      `json:"eksCluster" yaml:"eksCluster"`
 	NodeGroups   []resource.NodeGroup     `json:"nodeGroups" yaml:"nodeGroups"`
 	NginxIngress NginxIngress             `json:"nginxIngress" yaml:"nginxIngress"`
 	AutoScaling  resource.AutoScalingSpec `json:"autoScaling" yaml:"autoScaling"`
@@ -74,4 +69,11 @@ func (t *Topology) GetKind() string {
 
 func (t *Topology) GetMetadata() *framework.TopologyMetadata {
 	return &t.Metadata
+}
+
+// https://cloud.google.com/docs/authentication/application-default-credentials
+// gcloud auth application-default login
+// or: export GOOGLE_APPLICATION_CREDENTIALS=/foo/credential.json
+
+type TopologyHandler struct {
 }

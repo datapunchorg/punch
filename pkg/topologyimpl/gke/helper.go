@@ -116,54 +116,7 @@ func WaitEksServiceAccount(commandEnvironment framework.CommandEnvironment, topo
 	return nil
 }
 
-func DeployNginxIngressController(commandEnvironment framework.CommandEnvironment, topology TopologySpec) (map[string]interface{}, error) {
-	nginxNamespace := topology.NginxIngress.Namespace
-	helmInstallName := topology.NginxIngress.HelmInstallName
-	nginxServiceName := DefaultNginxServiceName
-	region := topology.Region
-	eksClusterName := topology.EksCluster.ClusterName
-	kubeConfig, err := awslib.CreateKubeConfig(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get kube config: %s", err.Error())
-	}
 
-	defer kubeConfig.Cleanup()
-
-	arguments := []string{
-		"--set", fmt.Sprintf("controller.service.enableHttp=%t", topology.NginxIngress.EnableHttp),
-		"--set", fmt.Sprintf("controller.service.enableHttps=%t", topology.NginxIngress.EnableHttps),
-	}
-
-	if commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
-		arguments = append(arguments, "--set", "controller.service.type=NodePort")
-		arguments = append(arguments, "--set", fmt.Sprintf("controller.service.nodePorts.http=%d", NodePortLocalHttp))
-		arguments = append(arguments, "--set", fmt.Sprintf("controller.service.nodePorts.https=%d", NodePortLocalHttps))
-	}
-
-	kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvNginxHelmChart), kubeConfig, arguments, helmInstallName, nginxNamespace)
-
-	_, clientset, err := awslib.CreateKubernetesClient(region, commandEnvironment.Get(framework.CmdEnvKubeConfig), eksClusterName)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
-	}
-	err = kubelib.WaitPodsInPhases(clientset, nginxNamespace, nginxServiceName, []v1.PodPhase{v1.PodRunning})
-	if err != nil {
-		return nil, fmt.Errorf("pod %s*** in namespace %s is not in phase %s", nginxServiceName, nginxNamespace, v1.PodRunning)
-	}
-
-	urls, err := resource.GetEksNginxLoadBalancerUrls(commandEnvironment, region, eksClusterName, nginxNamespace, nginxServiceName, NodePortLocalHttps)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get NGINX load balancer urls: %s", err.Error())
-	}
-
-	output := make(map[string]interface{})
-	output["loadBalancerUrls"] = urls
-
-	preferredUrl := resource.GetLoadBalancerPreferredUrl(urls)
-	output["loadBalancerPreferredUrl"] = preferredUrl
-
-	return output, nil
-}
 
 func DeleteEksCluster(region string, clusterName string) {
 	err := awslib.DeleteEKSCluster(region, clusterName)
