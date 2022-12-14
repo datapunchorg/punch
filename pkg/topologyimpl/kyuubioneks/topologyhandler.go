@@ -17,12 +17,10 @@ limitations under the License.
 package kyuubioneks
 
 import (
-	"fmt"
 	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	"github.com/datapunchorg/punch/pkg/topologyimpl/sparkoneks"
-	"gopkg.in/yaml.v3"
 	"log"
 )
 
@@ -36,15 +34,6 @@ type TopologyHandler struct {
 
 func (t *TopologyHandler) Generate() (framework.Topology, error) {
 	topology := GenerateKyuubiOnEksTopology()
-	return &topology, nil
-}
-
-func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) {
-	topology := GenerateKyuubiOnEksTopology()
-	err := yaml.Unmarshal(yamlContent, &topology)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse YAML (%s): \n%s", err.Error(), string(yamlContent))
-	}
 	return &topology, nil
 }
 

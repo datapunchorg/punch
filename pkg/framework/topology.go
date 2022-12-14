@@ -22,20 +22,20 @@ import (
 )
 
 const (
-	DefaultVersion    = "datapunch.org/v1alpha1"
+	DefaultVersion = "datapunch.org/v1alpha1"
 
-	CmdEnvHelmExecutable             = "helmExecutable"
-	CmdEnvKubectlExecutable             = "kubectlExecutable"
-	CmdEnvWithMinikube               = "withMinikube"
-	CmdEnvKubeConfig                 = "kubeConfig"
+	CmdEnvHelmExecutable    = "helmExecutable"
+	CmdEnvKubectlExecutable = "kubectlExecutable"
+	CmdEnvWithMinikube      = "withMinikube"
+	CmdEnvKubeConfig        = "kubeConfig"
 
-	DefaultRegion         = "us-west-1"
-	DefaultNamePrefix     = "my"
-	DefaultNamePrefixTemplate     = "{{ or .Values.namePrefix `my` }}"
+	DefaultRegion             = "us-west-1"
+	DefaultNamePrefix         = "my"
+	DefaultNamePrefixTemplate = "{{ or .Values.namePrefix `my` }}"
 
 	DefaultS3BucketNameTemplate = "{{ or .Values.s3BucketName .DefaultS3BucketName }}"
 
-	DefaultHelmExecutable = "helm"
+	DefaultHelmExecutable    = "helm"
 	DefaultKubectlExecutable = "kubectl"
 
 	DefaultEKSAssumeRolePolicyDocument = `{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":["eks.amazonaws.com"]},"Action":["sts:AssumeRole"]}]}`
@@ -43,9 +43,9 @@ const (
 )
 
 type TopologyBase struct {
-	ApiVersion string                     `json:"apiVersion" yaml:"apiVersion"`
-	Kind       string                     `json:"kind" yaml:"kind"`
-	Metadata   TopologyMetadata 		  `json:"metadata"`
+	ApiVersion string           `json:"apiVersion" yaml:"apiVersion"`
+	Kind       string           `json:"kind" yaml:"kind"`
+	Metadata   TopologyMetadata `json:"metadata"`
 }
 
 type Topology interface {
@@ -70,4 +70,16 @@ func TopologyString(topology Topology) string {
 		}
 		return string(topologyBytes)
 	}
+}
+
+func ParseTopology(yamlContent []byte, topologyHandler TopologyHandler) (Topology, error) {
+	topology, err := topologyHandler.Generate()
+	if err != nil {
+		return topology, nil
+	}
+	err = yaml.Unmarshal(yamlContent, topology)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse topology YAML (%s): %s", err.Error(), string(yamlContent))
+	}
+	return topology, nil
 }

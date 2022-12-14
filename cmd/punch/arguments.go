@@ -94,7 +94,8 @@ func getTopologyFromArguments(args []string) framework.Topology {
 
 	kind := getKind(transformedTopologyBytes)
 	handler := getTopologyHandlerPlugin(kind)
-	topology, err := handler.Parse(transformedTopologyBytes)
+
+	topology, err := framework.ParseTopology(transformedTopologyBytes, handler)
 	if err != nil {
 		log.Fatalf("Failed to parse topology file %s: %s", fileName, err.Error())
 	}

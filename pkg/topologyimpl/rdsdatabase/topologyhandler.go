@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	"github.com/datapunchorg/punch/pkg/framework"
-	"gopkg.in/yaml.v3"
 )
 
 type TopologyHandler struct {
@@ -33,15 +32,6 @@ func (t *TopologyHandler) Generate() (framework.Topology, error) {
 	namePrefix := framework.DefaultNamePrefixTemplate
 	topology := CreateDefaultRdsDatabaseTopology(namePrefix)
 	return &topology, nil
-}
-
-func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) {
-	result := CreateDefaultRdsDatabaseTopology(framework.DefaultNamePrefix)
-	err := yaml.Unmarshal(yamlContent, &result)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse YAML (%s): \n%s", err.Error(), string(yamlContent))
-	}
-	return &result, nil
 }
 
 func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (framework.Topology, error) {

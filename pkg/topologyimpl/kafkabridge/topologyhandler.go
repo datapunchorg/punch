@@ -24,14 +24,13 @@ import (
 	"github.com/datapunchorg/punch/pkg/resource"
 	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	"github.com/datapunchorg/punch/pkg/topologyimpl/kafkaonmsk"
-	"gopkg.in/yaml.v3"
 	"log"
 	"time"
 )
 
 type createTopicRequest struct {
-	NumPartitions int64  `json:"numPartitions" yaml:"numPartitions"`
-	ReplicationFactor int64  `json:"replicationFactor" yaml:"replicationFactor"`
+	NumPartitions     int64 `json:"numPartitions" yaml:"numPartitions"`
+	ReplicationFactor int64 `json:"replicationFactor" yaml:"replicationFactor"`
 }
 
 type createTopicResponse struct {
@@ -43,15 +42,6 @@ type TopologyHandler struct {
 
 func (t *TopologyHandler) Generate() (framework.Topology, error) {
 	topology := GenerateDefaultTopology()
-	return &topology, nil
-}
-
-func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) {
-	topology := GenerateDefaultTopology()
-	err := yaml.Unmarshal(yamlContent, &topology)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse YAML (%s): \n%s", err.Error(), string(yamlContent))
-	}
 	return &topology, nil
 }
 
@@ -94,7 +84,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		}
 		kafkaBridgeUrl := fmt.Sprintf("%s/topics", loadBalancerUrl)
 		maxWaitMinutes := 10
-		err = common.WaitHttpUrlReady(kafkaBridgeUrl, time.Duration(maxWaitMinutes) * time.Minute, 10 * time.Second)
+		err = common.WaitHttpUrlReady(kafkaBridgeUrl, time.Duration(maxWaitMinutes)*time.Minute, 10*time.Second)
 		if err != nil {
 			return framework.NewDeploymentStepOutput(), fmt.Errorf("kafka bridge url %s is not ready after waiting %d minutes: %s", kafkaBridgeUrl, maxWaitMinutes, err.Error())
 		}
@@ -102,7 +92,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		kafkaBridgeTopicAdminUrl := fmt.Sprintf("%s/topicAdmin", loadBalancerUrl)
 		return framework.DeployableOutput{
 			"kafkaBridgeTopicProduceUrl": kafkaBridgeTopicProduceUrl,
-			"kafkaBridgeTopicAdminUrl": kafkaBridgeTopicAdminUrl,
+			"kafkaBridgeTopicAdminUrl":   kafkaBridgeTopicAdminUrl,
 		}, nil
 	})
 	deployment.AddStep("createInitTopics", "Create initial topics", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
@@ -110,7 +100,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		kafkaBridgeTopicProduceUrl := c.GetStepOutput("deployStrimziKafkaBridge")["kafkaBridgeTopicProduceUrl"].(string)
 		kafkaBridgeTopicAdminUrl := c.GetStepOutput("deployStrimziKafkaBridge")["kafkaBridgeTopicAdminUrl"].(string)
 		var existingTopics []string
-		err := common.GetHttpAsJsonParseResponse(kafkaBridgeTopicProduceUrl, nil,true, &existingTopics)
+		err := common.GetHttpAsJsonParseResponse(kafkaBridgeTopicProduceUrl, nil, true, &existingTopics)
 		if err != nil {
 			return framework.NewDeploymentStepOutput(), err
 		}
@@ -121,11 +111,11 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 			}
 			url := fmt.Sprintf("%s/%s", kafkaBridgeTopicAdminUrl, topicToCreate.Name)
 			request := createTopicRequest{
-				NumPartitions: topicToCreate.NumPartitions,
+				NumPartitions:     topicToCreate.NumPartitions,
 				ReplicationFactor: topicToCreate.ReplicationFactor,
 			}
 			var response createTopicResponse
-			err := common.PostHttpAsJsonParseResponse(url, nil,true, request, &response)
+			err := common.PostHttpAsJsonParseResponse(url, nil, true, request, &response)
 			if err != nil {
 				return framework.NewDeploymentStepOutput(), err
 			}

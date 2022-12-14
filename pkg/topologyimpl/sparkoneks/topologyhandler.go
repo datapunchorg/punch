@@ -17,10 +17,8 @@ limitations under the License.
 package sparkoneks
 
 import (
-	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
-	"gopkg.in/yaml.v3"
 	"io/fs"
 	"io/ioutil"
 	"log"
@@ -40,15 +38,6 @@ type TopologyHandler struct {
 func (t *TopologyHandler) Generate() (framework.Topology, error) {
 	topology := GenerateSparkOnEksTopology()
 	return &topology, nil
-}
-
-func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) {
-	result := CreateDefaultSparkOnEksTopology(framework.DefaultNamePrefix, eks.ToBeReplacedS3BucketName)
-	err := yaml.Unmarshal(yamlContent, &result)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse YAML (%s): \n%s", err.Error(), string(yamlContent))
-	}
-	return &result, nil
 }
 
 func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (framework.Topology, error) {

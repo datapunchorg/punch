@@ -17,9 +17,7 @@ limitations under the License.
 package kafkaonmsk
 
 import (
-	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
-	"gopkg.in/yaml.v3"
 	"log"
 )
 
@@ -30,15 +28,6 @@ func (t *TopologyHandler) Generate() (framework.Topology, error) {
 	namePrefix := framework.DefaultNamePrefixTemplate
 	topology := CreateDefaultKafkaOnMskTopology(namePrefix)
 	return &topology, nil
-}
-
-func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) {
-	result := CreateDefaultKafkaOnMskTopology(DefaultNamePrefix)
-	err := yaml.Unmarshal(yamlContent, &result)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse YAML (%s): \n%s", err.Error(), string(yamlContent))
-	}
-	return &result, nil
 }
 
 func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (framework.Topology, error) {
@@ -71,7 +60,7 @@ func CreateInstallDeployment(spec KafkaTopologySpec) framework.Deployment {
 			return framework.NewDeploymentStepOutput(), err
 		}
 		return framework.DeployableOutput{
-			"kafkaClusterArn": cluster.ClusterArn,
+			"kafkaClusterArn":       cluster.ClusterArn,
 			"bootstrapServerString": *bootstrap.BootstrapBrokerStringSaslIam,
 		}, nil
 	})

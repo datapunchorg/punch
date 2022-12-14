@@ -27,7 +27,7 @@ func TestGenerateTopology(t *testing.T) {
 	handler := &TopologyHandler{}
 	topology, err := handler.Generate()
 	assert.Equal(t, nil, err)
-	assert.Equal(t, "Eks", topology.GetKind())
+	assert.Equal(t, "Gke", topology.GetKind())
 
 	log.Printf("-----\n%s\n-----\n", framework.TopologyString(topology))
 
@@ -35,21 +35,7 @@ func TestGenerateTopology(t *testing.T) {
 	assert.Equal(t, "{{ or .Values.namePrefix `my` }}", currentTopology.Spec.NamePrefix)
 }
 
-func TestParseTopology(t *testing.T) {
-	handler := &TopologyHandler{}
-	topology, err := handler.Generate()
-	currentTopology := topology.(*Topology)
-	currentTopology.Spec.NamePrefix = "foo"
-	yamlContent := framework.TopologyString(topology)
-
-	topology, err = handler.Parse([]byte(yamlContent))
-	assert.Equal(t, nil, err)
-	assert.Equal(t, "Eks", topology.GetKind())
-	currentTopology = topology.(*Topology)
-	assert.Equal(t, "foo", currentTopology.Spec.NamePrefix)
-}
-
-func TestResolveTopology(t *testing.T) {
+func TestValidateTopology(t *testing.T) {
 	handler := &TopologyHandler{}
 	topology, err := handler.Generate()
 	env := map[string]string{
@@ -58,5 +44,5 @@ func TestResolveTopology(t *testing.T) {
 	topology.(*Topology).Metadata.CommandEnvironment = env
 	resolvedTopology, err := handler.Validate(topology, framework.PhaseBeforeInstall)
 	assert.Equal(t, nil, err)
-	assert.Equal(t, "Eks", resolvedTopology.GetKind())
+	assert.Equal(t, "Gke", resolvedTopology.GetKind())
 }

@@ -25,8 +25,6 @@ import (
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/kubelib"
 	"github.com/datapunchorg/punch/pkg/resource"
-	"github.com/datapunchorg/punch/pkg/topologyimpl/eks"
-	"gopkg.in/yaml.v3"
 )
 
 type TopologyHandler struct {
@@ -35,15 +33,6 @@ type TopologyHandler struct {
 func (t *TopologyHandler) Generate() (framework.Topology, error) {
 	topology := GenerateHiveMetastoreTopology()
 	return &topology, nil
-}
-
-func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) {
-	result := CreateDefaultHiveMetastoreTopology(framework.DefaultNamePrefix, eks.ToBeReplacedS3BucketName)
-	err := yaml.Unmarshal(yamlContent, &result)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse YAML (%s): \n%s", err.Error(), string(yamlContent))
-	}
-	return &result, nil
 }
 
 func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (framework.Topology, error) {

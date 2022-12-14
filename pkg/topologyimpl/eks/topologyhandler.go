@@ -22,7 +22,6 @@ import (
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/kubelib"
 	"github.com/datapunchorg/punch/pkg/resource"
-	"gopkg.in/yaml.v3"
 	"log"
 	"strings"
 )
@@ -33,15 +32,6 @@ type TopologyHandler struct {
 func (t *TopologyHandler) Generate() (framework.Topology, error) {
 	topology := GenerateEksTopology()
 	return &topology, nil
-}
-
-func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) {
-	result := CreateDefaultEksTopology(framework.DefaultNamePrefix, ToBeReplacedS3BucketName)
-	err := yaml.Unmarshal(yamlContent, &result)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse YAML (%s): \n%s", err.Error(), string(yamlContent))
-	}
-	return &result, nil
 }
 
 func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (framework.Topology, error) {

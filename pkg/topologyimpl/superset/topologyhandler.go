@@ -17,9 +17,7 @@ limitations under the License.
 package superset
 
 import (
-	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
-	"gopkg.in/yaml.v3"
 	"log"
 )
 
@@ -28,15 +26,6 @@ type TopologyHandler struct {
 
 func (t *TopologyHandler) Generate() (framework.Topology, error) {
 	topology := GenerateSupersetTopology()
-	return &topology, nil
-}
-
-func (t *TopologyHandler) Parse(yamlContent []byte) (framework.Topology, error) {
-	topology := GenerateSupersetTopology()
-	err := yaml.Unmarshal(yamlContent, &topology)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse YAML (%s): \n%s", err.Error(), string(yamlContent))
-	}
 	return &topology, nil
 }
 
