@@ -99,14 +99,17 @@ func CreateGkeKubeConfig(projectId, zone, clusterName string) (kubelib.KubeConfi
 	caFile.Close()
 	ioutil.WriteFile(caFile.Name(), []byte(ca), fs.ModePerm)
 
+	token, err := GetCurrentUserAccessToken()
+	if err != nil {
+		return kubelib.KubeConfig{}, fmt.Errorf("failed to get token: %w", err)
+	}
+
 	kubeConfig := kubelib.KubeConfig{
 		ApiServer: fmt.Sprintf("https://%s", getClusterResult.Endpoint),
 		CAFile:    caFile.Name(),
 		CA:        ca,
-		KubeToken: getClusterResult.MasterAuth.ClientKey,
+		KubeToken: token,
 	}
-
-	// clientcmd.NewNonInteractiveClientConfig().ClientConfig()
 
 	return kubeConfig, nil
 }
