@@ -19,44 +19,34 @@ package argocdongke
 import (
 	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
-	"github.com/datapunchorg/punch/pkg/resource"
+	"github.com/datapunchorg/punch/pkg/topologyimpl/gke"
 )
 
 func (t *TopologyHandler) Generate() (framework.Topology, error) {
 	namePrefix := framework.DefaultNamePrefixTemplate
 
-	topologyName := fmt.Sprintf("%s-gke-01", namePrefix)
+	topologyName := fmt.Sprintf("%s-argocdongke-01", namePrefix)
 	gkeClusterName := topologyName
+
+	gkeTopologyHandler := gke.TopologyHandler{}
+	gkeGeneratedTopology, err := gkeTopologyHandler.Generate()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate Gke topology for ArgocdOnGke: %w", err)
+	}
+	gkeTopology := gkeGeneratedTopology.(*gke.Topology)
+
 	topology := Topology{
 		TopologyBase: framework.TopologyBase{
 			ApiVersion: framework.DefaultVersion,
-			Kind:       KindGkeTopology,
-			Metadata: framework.TopologyMetadata{
-				Name: topologyName,
-				CommandEnvironment: map[string]string{
-					framework.CmdEnvHelmExecutable:    framework.DefaultHelmExecutable,
-					framework.CmdEnvKubectlExecutable: framework.DefaultKubectlExecutable,
-					framework.CmdEnvWithMinikube:      "false",
-					CmdEnvNginxHelmChart:              "third-party/helm-charts/ingress-nginx/charts/ingress-nginx",
-					CmdEnvClusterAutoscalerHelmChart:  "third-party/helm-charts/cluster-autoscaler/charts/cluster-autoscaler",
-				},
-				Notes: map[string]string{},
-			},
+			Kind:       KindArgocdOnGkeTopology,
+			Metadata:   gkeTopology.Metadata,
 		},
 		Spec: TopologySpec{
-			NamePrefix: namePrefix,
-			ProjectId:  fmt.Sprintf("{{ .Values.projectId }}"),
-			Location:   fmt.Sprintf("{{ or .Values.location `%s` }}", DefaultZone),
-			GkeCluster: resource.GkeCluster{
-				ClusterName: gkeClusterName,
-			},
-			NginxIngress: NginxIngress{
-				HelmInstallName: DefaultNginxIngressHelmInstallName,
-				Namespace:       DefaultNginxIngressNamespace,
-				EnableHttp:      DefaultNginxEnableHttp,
-				EnableHttps:     DefaultNginxEnableHttps,
-			},
+			TopologySpec: gkeTopology.Spec,
 		},
 	}
+
+	topology.Spec.GkeCluster.ClusterName = gkeClusterName
+
 	return &topology, nil
 }

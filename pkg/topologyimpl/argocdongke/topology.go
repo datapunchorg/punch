@@ -18,7 +18,7 @@ package argocdongke
 
 import (
 	"github.com/datapunchorg/punch/pkg/framework"
-	"github.com/datapunchorg/punch/pkg/resource"
+	"github.com/datapunchorg/punch/pkg/topologyimpl/gke"
 )
 
 const (
@@ -27,7 +27,7 @@ const (
 	DefaultNginxEnableHttp             = true
 	DefaultNginxEnableHttps            = true
 
-	KindGkeTopology = "ArgocdOnGke"
+	KindArgocdOnGkeTopology = "ArgocdOnGke"
 
 	CmdEnvNginxHelmChart             = "nginxHelmChart"
 	CmdEnvClusterAutoscalerHelmChart = "ClusterAutoscalerHelmChart"
@@ -41,19 +41,7 @@ type Topology struct {
 }
 
 type TopologySpec struct {
-	NamePrefix   string              `json:"namePrefix" yaml:"namePrefix"`
-	ProjectId    string              `json:"projectId" yaml:"projectId"`
-	Location     string              `json:"location" yaml:"location"`
-	GkeCluster   resource.GkeCluster `json:"gkeCluster" yaml:"gkeCluster"`
-	NginxIngress NginxIngress        `json:"nginxIngress" yaml:"nginxIngress"`
-}
-
-type NginxIngress struct {
-	HelmInstallName  string `json:"helmInstallName" yaml:"helmInstallName"`
-	Namespace        string `json:"namespace" yaml:"namespace"`
-	EnableHttp       bool   `json:"enableHttp" yaml:"enableHttp"`
-	EnableHttps      bool   `json:"enableHttps" yaml:"enableHttps"`
-	HttpsCertificate string `json:"HttpsCertificate" yaml:"HttpsCertificate"`
+	gke.TopologySpec `json:",inline" yaml:",inline"`
 }
 
 func (t *Topology) GetKind() string {

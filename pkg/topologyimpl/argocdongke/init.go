@@ -21,5 +21,5 @@ import (
 )
 
 func init() {
-	framework.DefaultTopologyHandlerManager.AddHandler(KindGkeTopology, &TopologyHandler{})
+	framework.DefaultTopologyHandlerManager.AddHandler(KindArgocdOnGkeTopology, &TopologyHandler{})
 }
