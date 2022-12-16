@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/topologyimpl/gke"
+	"github.com/datapunchorg/punch/pkg/topologyimpl/sparkoneks"
 )
 
 func (t *TopologyHandler) Generate() (framework.Topology, error) {
@@ -35,16 +36,36 @@ func (t *TopologyHandler) Generate() (framework.Topology, error) {
 	}
 	gkeTopology := gkeGeneratedTopology.(*gke.Topology)
 
+	sparkOnEksTopologyHandler := sparkoneks.TopologyHandler{}
+	sparkOnEksGeneratedTopology, err := sparkOnEksTopologyHandler.Generate()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate SparkOnEks topology for ArgocdOnGke: %w", err)
+	}
+	sparkOnEksTopology := sparkOnEksGeneratedTopology.(*sparkoneks.SparkOnEksTopology)
+
 	topology := Topology{
 		TopologyBase: framework.TopologyBase{
 			ApiVersion: framework.DefaultVersion,
 			Kind:       KindSparkOnGkeTopology,
-			Metadata:   gkeTopology.Metadata,
+			Metadata: framework.TopologyMetadata{
+				Name:               topologyName,
+				CommandEnvironment: map[string]string{},
+				Notes:              map[string]string{},
+			},
 		},
 		Spec: TopologySpec{
 			GkeSpec:           gkeTopology.Spec,
 			ArgocdInstallYaml: "https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml",
+			Spark:             sparkOnEksTopology.Spec.Spark,
 		},
+	}
+
+	for k, v := range sparkOnEksTopology.Metadata.CommandEnvironment {
+		topology.Metadata.CommandEnvironment[k] = v
+	}
+
+	for k, v := range gkeTopology.Metadata.CommandEnvironment {
+		topology.Metadata.CommandEnvironment[k] = v
 	}
 
 	topology.Spec.GkeSpec.GkeCluster.ClusterName = gkeClusterName

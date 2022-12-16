@@ -123,7 +123,7 @@ func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, sparkC
 		}
 	}*/
 
-	_, clientset, err := gcplib.CreateKubernetesClient(projectId, zone, commandEnvironment.Get(framework.CmdEnvKubeConfig), clusterName)
+	_, clientset, err := gcplib.CreateKubernetesClient(commandEnvironment.Get(framework.CmdEnvKubeConfig), projectId, zone, clusterName)
 	if err != nil {
 		return fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
 	}
@@ -140,7 +140,7 @@ func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, sparkC
 		v12.CreateOptions{},
 	)
 	if err != nil {
-		if !awslib.AlreadyExistsMessage(err.Error()) {
+		if !awslib.AlreadyExistsMessage(err.Error()) { // TODO check error more precisely
 			return fmt.Errorf("failed to create Spark application namespace %s: %v", sparkApplicationNamespace, err)
 		} else {
 			log.Printf("Namespace %s already exists, do not create it again", sparkApplicationNamespace)
