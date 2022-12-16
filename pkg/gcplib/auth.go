@@ -29,6 +29,8 @@ type GetOauthTokenResponse struct {
 	AccessToken string `json:"access_token" yaml:"access_token"`
 }
 
+// also see https://gist.github.com/salrashid123/9810b45387adbd45a22bb4e17bdbe9d5
+
 func GetCurrentUserAccessToken() (string, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {

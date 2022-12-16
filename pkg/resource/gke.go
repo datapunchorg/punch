@@ -3,6 +3,8 @@ package resource
 import (
 	resourcemanager "cloud.google.com/go/resourcemanager/apiv3"
 	resourcemanagerpb "cloud.google.com/go/resourcemanager/apiv3/resourcemanagerpb"
+	"github.com/datapunchorg/punch/pkg/framework"
+	"github.com/datapunchorg/punch/pkg/gcplib"
 
 	"context"
 	"fmt"
@@ -131,4 +133,40 @@ func IsErrorGoogleApiAlreadyExits(err error) bool {
 		return true
 	}
 	return false
+}
+
+func GetGkeNginxLoadBalancerUrls(commandEnvironment framework.CommandEnvironment, projectId, zone, clusterName string, nginxNamespace string, nginxServiceName string, explicitHttpsPort int32) ([]string, error) {
+	hostPorts, err := gcplib.GetServiceLoadBalancerHostPorts(commandEnvironment.Get(framework.CmdEnvKubeConfig), projectId, zone, clusterName, nginxNamespace, nginxServiceName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get load balancer urls for nginx controller service %s in namespace %s: %s", nginxServiceName, nginxNamespace, err.Error())
+	}
+
+	dnsNamesMap := make(map[string]bool, len(hostPorts))
+	for _, entry := range hostPorts {
+		dnsNamesMap[entry.Host] = true
+	}
+	dnsNames := make([]string, 0, len(dnsNamesMap))
+	for k := range dnsNamesMap {
+		dnsNames = append(dnsNames, k)
+	}
+
+	//err = awslib.WaitLoadBalancersReadyByDnsNames(region, dnsNames)
+	//if err != nil {
+	//	return nil, fmt.Errorf("failed to wait and get load balancer urls: %s", err.Error())
+	//}
+
+	urls := make([]string, 0, len(hostPorts))
+	for _, entry := range hostPorts {
+		if entry.Port == 443 {
+			urls = append(urls, fmt.Sprintf("https://%s", entry.Host))
+		} else if entry.Port == explicitHttpsPort {
+			urls = append(urls, fmt.Sprintf("https://%s:%d", entry.Host, entry.Port))
+		} else if entry.Port == 80 {
+			urls = append(urls, fmt.Sprintf("http://%s", entry.Host))
+		} else {
+			urls = append(urls, fmt.Sprintf("http://%s:%d", entry.Host, entry.Port))
+		}
+	}
+
+	return urls, nil
 }

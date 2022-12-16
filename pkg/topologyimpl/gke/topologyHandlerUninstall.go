@@ -26,36 +26,6 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 
 	deployment := framework.NewDeployment()
 
-	/*deployment.AddStep("deleteLoadBalancers", "Delete Load Balancers in EKS Cluster", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-		err := awslib.DeleteAllLoadBalancersOnEks(topologySpec.Region, topologySpec.VpcId, topologySpec.EksCluster.ClusterName)
-		return framework.NewDeploymentStepOutput(), err
-	})
-	deployment.AddStep("deleteOidcProvider", "Delete OIDC Provider", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-		clusterSummary, err := resource.DescribeEksCluster(topologySpec.Region, topologySpec.EksCluster.ClusterName)
-		if err != nil {
-			log.Printf("[WARN] Cannot delete OIDC provider, failed to get EKS cluster %s in regsion %s: %s", topologySpec.EksCluster.ClusterName, topologySpec.Region, err.Error())
-			return framework.NewDeploymentStepOutput(), nil
-		}
-		if clusterSummary.OidcIssuer != "" {
-			log.Printf("Deleting OIDC Identity Provider %s", clusterSummary.OidcIssuer)
-			err = awslib.DeleteOidcProvider(topologySpec.Region, clusterSummary.OidcIssuer)
-			if err != nil {
-				log.Printf("[WARN] Failed to delete OIDC provider %s: %s", clusterSummary.OidcIssuer, err.Error())
-				return framework.NewDeploymentStepOutput(), nil
-			}
-			log.Printf("Deleted OIDC Identity Provider %s", clusterSummary.OidcIssuer)
-		}
-		return framework.NewDeploymentStepOutput(), nil
-	})
-	deployment.AddStep("deleteNodeGroups", "Delete Node Groups", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-		for _, nodeGroup := range topologySpec.NodeGroups {
-			err := awslib.DeleteNodeGroup(topologySpec.Region, topologySpec.EksCluster.ClusterName, nodeGroup.Name)
-			if err != nil {
-				return framework.NewDeploymentStepOutput(), err
-			}
-		}
-		return framework.NewDeploymentStepOutput(), nil
-	}) */
 	deployment.AddStep("deleteGkeCluster", "Delete GKE Cluster", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
 		resource.DeleteGkeCluster(currentTopology.Spec.ProjectId, currentTopology.Spec.Location, currentTopology.Spec.GkeCluster.ClusterName)
 		return framework.NewDeploymentStepOutput(), nil

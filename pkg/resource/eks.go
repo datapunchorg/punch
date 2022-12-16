@@ -31,9 +31,9 @@ import (
 )
 
 type EksCluster struct {
-	ClusterName string `json:"clusterName" yaml:"clusterName"`
-	EksVersion  string `json:"eksVersion" yaml:"eksVersion"`
-	SubnetIds         []string                  `json:"subnetIds" yaml:"subnetIds"`
+	ClusterName string   `json:"clusterName" yaml:"clusterName"`
+	EksVersion  string   `json:"eksVersion" yaml:"eksVersion"`
+	SubnetIds   []string `json:"subnetIds" yaml:"subnetIds"`
 	// The Amazon Resource Name (ARN) of the IAM role that provides permissions
 	// for the Kubernetes control plane to make calls to Amazon Web Services API
 	// operations on your behalf. For more information, see Amazon EKS Service IAM
@@ -264,13 +264,17 @@ func GetEksNginxLoadBalancerUrls(commandEnvironment framework.CommandEnvironment
 	return urls, nil
 }
 
-func GetLoadBalancerPreferredUrl(urls []string) string {
+func GetLoadBalancerPreferredUrl(urls []string, preferHttps bool) string {
+	preferHttpScheme := "http://"
+	if preferHttps {
+		preferHttpScheme = "https://"
+	}
 	preferredUrl := ""
 	if len(urls) > 0 {
 		preferredUrl = urls[0]
 		for _, entry := range urls {
 			// Use https url if possible
-			if strings.HasPrefix(strings.ToLower(entry), "https") {
+			if strings.HasPrefix(strings.ToLower(entry), preferHttpScheme) {
 				preferredUrl = entry
 			}
 		}

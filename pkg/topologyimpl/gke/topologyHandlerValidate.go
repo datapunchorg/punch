@@ -28,14 +28,9 @@ func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (f
 	if err != nil {
 		return nil, err
 	}
+
 	if currentTopology.Spec.ProjectId == "" {
 		return nil, fmt.Errorf("spec.projectId is empty")
-	}
-	if currentTopology.Spec.AutoScaling.EnableClusterAutoscaler {
-		err := framework.CheckCmdEnvFolderExists(*topology.GetMetadata(), CmdEnvClusterAutoscalerHelmChart)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	if err != nil {

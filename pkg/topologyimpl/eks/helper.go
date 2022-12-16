@@ -205,7 +205,7 @@ func InstallNginxIngressController(commandEnvironment framework.CommandEnvironme
 	output := make(map[string]interface{})
 	output["loadBalancerUrls"] = urls
 
-	preferredUrl := resource.GetLoadBalancerPreferredUrl(urls)
+	preferredUrl := resource.GetLoadBalancerPreferredUrl(urls, topology.NginxIngress.EnableHttps && topology.NginxIngress.HttpsCertificate != "")
 	output["loadBalancerPreferredUrl"] = preferredUrl
 
 	return output, nil

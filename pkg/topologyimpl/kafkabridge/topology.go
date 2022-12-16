@@ -35,27 +35,28 @@ type KafkaBridgeTopology struct {
 }
 
 type KafkaBridgeTopologySpec struct {
-	NamePrefix        string                   `json:"namePrefix" yaml:"namePrefix"`
-	Region            string                   `json:"region" yaml:"region"`
-	KafkaOnMskSpec    kafkaonmsk.KafkaTopologySpec   `json:"kafkaOnMskSpec" yaml:"kafkaOnMskSpec"`
-	EksClusterName    string                   `json:"eksClusterName" yaml:"eksClusterName"`
-	EksVpcId          string                    `json:"eksVpcId" yaml:"eksVpcId"`
-	NginxNamespace    string                    `json:"nginxNamespace" yaml:"nginxNamespace"`
-	NginxServiceName    string                    `json:"nginxServiceName" yaml:"nginxServiceName"`
-	KafkaBridge   KafkaBridgeSpec  `json:"kafkaBridge" yaml:"kafkaBridge"`
-	InitTopics    []KafkaTopic  `json:"initTopics" yaml:"initTopics"`
+	NamePrefix       string                       `json:"namePrefix" yaml:"namePrefix"`
+	Region           string                       `json:"region" yaml:"region"`
+	KafkaOnMskSpec   kafkaonmsk.KafkaTopologySpec `json:"kafkaOnMskSpec" yaml:"kafkaOnMskSpec"`
+	EksClusterName   string                       `json:"eksClusterName" yaml:"eksClusterName"`
+	EksVpcId         string                       `json:"eksVpcId" yaml:"eksVpcId"`
+	NginxNamespace   string                       `json:"nginxNamespace" yaml:"nginxNamespace"`
+	NginxServiceName string                       `json:"nginxServiceName" yaml:"nginxServiceName"`
+	NginxHttps       bool                         `json:"nginxHttps" yaml:"nginxHttps"`
+	KafkaBridge      KafkaBridgeSpec              `json:"kafkaBridge" yaml:"kafkaBridge"`
+	InitTopics       []KafkaTopic                 `json:"initTopics" yaml:"initTopics"`
 }
 
 type KafkaBridgeSpec struct {
-	HelmInstallName string `json:"helmInstallName" yaml:"helmInstallName"`
-	Namespace  string `json:"namespace" yaml:"namespace"`
-	Image string `json:"image" yaml:"image"`
+	HelmInstallName       string `json:"helmInstallName" yaml:"helmInstallName"`
+	Namespace             string `json:"namespace" yaml:"namespace"`
+	Image                 string `json:"image" yaml:"image"`
 	KafkaBootstrapServers string `json:"kafkaBootstrapServers" yaml:"kafkaBootstrapServers"`
 }
 
 type KafkaTopic struct {
-	Name string `json:"name" yaml:"name"`
-	NumPartitions int64  `json:"numPartitions" yaml:"numPartitions"`
+	Name              string `json:"name" yaml:"name"`
+	NumPartitions     int64  `json:"numPartitions" yaml:"numPartitions"`
 	ReplicationFactor int64  `json:"replicationFactor" yaml:"replicationFactor"`
 }
 
@@ -76,37 +77,37 @@ func CreateDefaultTopology(namePrefix string, s3BucketName string) KafkaBridgeTo
 			ApiVersion: framework.DefaultVersion,
 			Kind:       KindKafkaBridgeTopology,
 			Metadata: framework.TopologyMetadata{
-				Name:               topologyName,
+				Name: topologyName,
 				CommandEnvironment: map[string]string{
 					framework.CmdEnvHelmExecutable: framework.DefaultHelmExecutable,
-					CmdEnvKafkaBridgeHelmChart: "third-party/helm-charts/strimzi/charts/strimzi-kafka-bridge-chart",
+					CmdEnvKafkaBridgeHelmChart:     "third-party/helm-charts/strimzi/charts/strimzi-kafka-bridge-chart",
 				},
-				Notes:              map[string]string{},
+				Notes: map[string]string{},
 			},
 		},
 		Spec: KafkaBridgeTopologySpec{
-			NamePrefix:   namePrefix,
-			Region:       fmt.Sprintf("{{ or .Values.region `%s` }}", framework.DefaultRegion),
-			KafkaOnMskSpec: kafkaOnMskTopology.Spec,
-			EksClusterName: eksTopology.Spec.EksCluster.ClusterName,
-			EksVpcId: eksTopology.Spec.VpcId,
-			NginxNamespace: eks.DefaultNginxIngressNamespace,
+			NamePrefix:       namePrefix,
+			Region:           fmt.Sprintf("{{ or .Values.region `%s` }}", framework.DefaultRegion),
+			KafkaOnMskSpec:   kafkaOnMskTopology.Spec,
+			EksClusterName:   eksTopology.Spec.EksCluster.ClusterName,
+			EksVpcId:         eksTopology.Spec.VpcId,
+			NginxNamespace:   eks.DefaultNginxIngressNamespace,
 			NginxServiceName: eks.DefaultNginxServiceName,
 			KafkaBridge: KafkaBridgeSpec{
-				HelmInstallName: "strimzi-kafka-bridge",
-				Namespace: "kafka-01",
-				Image: "ghcr.io/datapunchorg/strimzi-kafka-bridge:0.22.0-snapshot-1651702291",
+				HelmInstallName:       "strimzi-kafka-bridge",
+				Namespace:             "kafka-01",
+				Image:                 "ghcr.io/datapunchorg/strimzi-kafka-bridge:0.22.0-snapshot-1651702291",
 				KafkaBootstrapServers: "",
 			},
-			InitTopics: []KafkaTopic {
+			InitTopics: []KafkaTopic{
 				{
-					Name: "topic_01",
-					NumPartitions: 1,
+					Name:              "topic_01",
+					NumPartitions:     1,
 					ReplicationFactor: 1,
 				},
 				{
-					Name: "topic_02",
-					NumPartitions: 2,
+					Name:              "topic_02",
+					NumPartitions:     2,
 					ReplicationFactor: 2,
 				},
 			},

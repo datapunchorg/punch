@@ -74,7 +74,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 		if err != nil {
 			return framework.NewDeploymentStepOutput(), fmt.Errorf("failed to get NGINX load balancer urls: %s", err.Error())
 		}
-		loadBalancerUrl := resource.GetLoadBalancerPreferredUrl(urls)
+		loadBalancerUrl := resource.GetLoadBalancerPreferredUrl(urls, currentTopology.Spec.NginxHttps)
 		if loadBalancerUrl == "" {
 			return framework.NewDeploymentStepOutput(), fmt.Errorf("did not find load balancer url")
 		}

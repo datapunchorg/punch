@@ -22,12 +22,6 @@ import (
 )
 
 const (
-	ToBeReplacedS3BucketName           = "todo_use_your_own_bucket_name"
-	DefaultInstanceType1               = "t3.xlarge"
-	DefaultInstanceType2               = "c5.xlarge"
-	DefaultInstanceType3               = "r5.xlarge"
-	DefaultNodeGroupSize               = 2
-	DefaultMaxNodeGroupSize            = 10
 	DefaultNginxIngressHelmInstallName = "ingress-nginx"
 	DefaultNginxIngressNamespace       = "ingress-nginx"
 	DefaultNginxEnableHttp             = true
@@ -47,20 +41,19 @@ type Topology struct {
 }
 
 type TopologySpec struct {
-	NamePrefix   string                   `json:"namePrefix" yaml:"namePrefix"`
-	ProjectId    string                   `json:"projectId" yaml:"projectId"`
-	Location     string                   `json:"location" yaml:"location"`
-	GkeCluster   resource.GkeCluster      `json:"gkeCluster" yaml:"gkeCluster"`
-	NodeGroups   []resource.NodeGroup     `json:"nodeGroups" yaml:"nodeGroups"`
-	NginxIngress NginxIngress             `json:"nginxIngress" yaml:"nginxIngress"`
-	AutoScaling  resource.AutoScalingSpec `json:"autoScaling" yaml:"autoScaling"`
+	NamePrefix   string              `json:"namePrefix" yaml:"namePrefix"`
+	ProjectId    string              `json:"projectId" yaml:"projectId"`
+	Location     string              `json:"location" yaml:"location"`
+	GkeCluster   resource.GkeCluster `json:"gkeCluster" yaml:"gkeCluster"`
+	NginxIngress NginxIngress        `json:"nginxIngress" yaml:"nginxIngress"`
 }
 
 type NginxIngress struct {
-	HelmInstallName string `json:"helmInstallName" yaml:"helmInstallName"`
-	Namespace       string `json:"namespace" yaml:"namespace"`
-	EnableHttp      bool   `json:"enableHttp" yaml:"enableHttp"`
-	EnableHttps     bool   `json:"enableHttps" yaml:"enableHttps"`
+	HelmInstallName  string `json:"helmInstallName" yaml:"helmInstallName"`
+	Namespace        string `json:"namespace" yaml:"namespace"`
+	EnableHttp       bool   `json:"enableHttp" yaml:"enableHttp"`
+	EnableHttps      bool   `json:"enableHttps" yaml:"enableHttps"`
+	HttpsCertificate string `json:"HttpsCertificate" yaml:"HttpsCertificate"`
 }
 
 func (t *Topology) GetKind() string {

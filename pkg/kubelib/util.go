@@ -157,6 +157,14 @@ func GetServiceLoadBalancerHostPorts(clientset *kubernetes.Clientset, namespace 
 					}
 					hostPorts = append(hostPorts, hostPort)
 				}
+			} else if ingress.IP != "" {
+				for _, port := range service.Spec.Ports {
+					hostPort := common.HostPort{
+						Host: ingress.IP,
+						Port: port.Port,
+					}
+					hostPorts = append(hostPorts, hostPort)
+				}
 			}
 		}
 	default:

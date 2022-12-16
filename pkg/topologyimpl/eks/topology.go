@@ -47,8 +47,8 @@ var DefaultControllerServiceAnnotations = map[string]string{
 	"service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled": "true",
 	"service.beta.kubernetes.io/aws-load-balancer-backend-protocol":                  "http",
 	"service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout":           "60",
-	// "service.beta.kubernetes.io/aws-load-balancer-ssl-cert": "arn:aws:acm:us-east-1:xxxxxxxxxxxx:certificate/xxx"
-	// "service.beta.kubernetes.io/aws-load-balancer-ssl-ports": "https"
+	// "service.beta.kubernetes.io/aws-load-balancer-ssl-cert": "arn:aws:acm:us-east-1:xxxxxxxxxxxx:certificate/xxx",
+	"service.beta.kubernetes.io/aws-load-balancer-ssl-ports": "https",
 }
 
 type EksTopology struct {
@@ -75,6 +75,7 @@ type NginxIngress struct {
 	Namespace                    string            `json:"namespace" yaml:"namespace"`
 	EnableHttp                   bool              `json:"enableHttp" yaml:"enableHttp"`
 	EnableHttps                  bool              `json:"enableHttps" yaml:"enableHttps"`
+	HttpsCertificate             string            `json:"httpsCertificate" yaml:"httpsCertificate"` // TODO support this
 	HttpsBackendPort             string            `json:"httpsBackendPort" yaml:"httpsBackendPort"`
 	ControllerServiceAnnotations map[string]string `json:"controllerServiceAnnotations" yaml:"controllerServiceAnnotations"`
 }
