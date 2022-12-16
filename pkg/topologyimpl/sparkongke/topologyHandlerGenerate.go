@@ -26,20 +26,20 @@ import (
 func (t *TopologyHandler) Generate() (framework.Topology, error) {
 	namePrefix := framework.DefaultNamePrefixTemplate
 
-	topologyName := fmt.Sprintf("%s-argocdongke-01", namePrefix)
+	topologyName := fmt.Sprintf("%s-sparkongke-01", namePrefix)
 	gkeClusterName := topologyName
 
 	gkeTopologyHandler := gke.TopologyHandler{}
 	gkeGeneratedTopology, err := gkeTopologyHandler.Generate()
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate Gke topology for ArgocdOnGke: %w", err)
+		return nil, fmt.Errorf("failed to generate Gke topology for %s: %w", KindSparkOnGkeTopology, err)
 	}
 	gkeTopology := gkeGeneratedTopology.(*gke.Topology)
 
 	sparkOnEksTopologyHandler := sparkoneks.TopologyHandler{}
 	sparkOnEksGeneratedTopology, err := sparkOnEksTopologyHandler.Generate()
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate SparkOnEks topology for ArgocdOnGke: %w", err)
+		return nil, fmt.Errorf("failed to generate SparkOnEks topology for %s: %w", KindSparkOnGkeTopology, err)
 	}
 	sparkOnEksTopology := sparkOnEksGeneratedTopology.(*sparkoneks.SparkOnEksTopology)
 
