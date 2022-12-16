@@ -48,7 +48,8 @@ func (t *TopologyHandler) Generate() (framework.Topology, error) {
 			ProjectId:  fmt.Sprintf("{{ .Values.projectId }}"),
 			Location:   fmt.Sprintf("{{ or .Values.location `%s` }}", DefaultZone),
 			GkeCluster: resource.GkeCluster{
-				ClusterName: gkeClusterName,
+				ClusterName:      gkeClusterName,
+				InitialNodeCount: 2,
 			},
 			NginxIngress: NginxIngress{
 				HelmInstallName: DefaultNginxIngressHelmInstallName,

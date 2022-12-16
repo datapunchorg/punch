@@ -17,7 +17,8 @@ import (
 )
 
 type GkeCluster struct {
-	ClusterName string `json:"clusterName" yaml:"clusterName"`
+	ClusterName      string `json:"clusterName" yaml:"clusterName"`
+	InitialNodeCount int64  `json:"initialNodeCount" yaml:"initialNodeCount"`
 }
 
 func GetGcpFirstProjectId() (string, error) {
@@ -64,7 +65,7 @@ func CreateGkeCluster(projectId string, zone string, gkeCluster GkeCluster) erro
 		Parent: fmt.Sprintf("projects/%s/locations/%s", projectId, zone),
 		Cluster: &container.Cluster{
 			Name:             clusterName,
-			InitialNodeCount: 1,
+			InitialNodeCount: gkeCluster.InitialNodeCount,
 		},
 	}
 	projectsZonesClustersCreateCall := containerService.Projects.Zones.Clusters.Create("", "", createClusterRequest)
