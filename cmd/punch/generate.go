@@ -22,6 +22,7 @@ import (
 	"log"
 	"os"
 
+	_ "github.com/datapunchorg/punch/pkg/topologyimpl/argocdongke"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/gke"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/hivemetastore"
