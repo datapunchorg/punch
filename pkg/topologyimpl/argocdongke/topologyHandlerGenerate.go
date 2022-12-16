@@ -42,7 +42,8 @@ func (t *TopologyHandler) Generate() (framework.Topology, error) {
 			Metadata:   gkeTopology.Metadata,
 		},
 		Spec: TopologySpec{
-			GkeSpec: gkeTopology.Spec,
+			GkeSpec:           gkeTopology.Spec,
+			ArgocdInstallYaml: "https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml",
 		},
 	}
 

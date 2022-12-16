@@ -37,11 +37,12 @@ const (
 
 type Topology struct {
 	framework.TopologyBase `json:",inline" yaml:",inline"`
-	Spec                   TopologySpec `json:"spec"`
+	Spec                   TopologySpec `json:"spec" yaml:"spec"`
 }
 
 type TopologySpec struct {
-	GkeSpec gke.TopologySpec `json:",inline" yaml:",inline"`
+	GkeSpec           gke.TopologySpec `json:",inline" yaml:",inline"`
+	ArgocdInstallYaml string           `json:"argocdInstallYaml" yaml:"argocdInstallYaml"`
 }
 
 func (t *Topology) GetKind() string {
