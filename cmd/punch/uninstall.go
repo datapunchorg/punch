@@ -20,7 +20,6 @@ import (
 	"log"
 
 	"github.com/datapunchorg/punch/pkg/framework"
-	_ "github.com/datapunchorg/punch/pkg/topologyimpl/argocdongke"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/eks"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/gke"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/hivemetastore"
@@ -29,6 +28,7 @@ import (
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/kyuubioneks"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/pinotquickstart"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/sparkoneks"
+	_ "github.com/datapunchorg/punch/pkg/topologyimpl/sparkongke"
 	_ "github.com/datapunchorg/punch/pkg/topologyimpl/superset"
 	"github.com/spf13/cobra"
 )

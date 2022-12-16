@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package argocdongke
+package sparkongke
 
 import (
 	"fmt"
@@ -38,7 +38,7 @@ func (t *TopologyHandler) Generate() (framework.Topology, error) {
 	topology := Topology{
 		TopologyBase: framework.TopologyBase{
 			ApiVersion: framework.DefaultVersion,
-			Kind:       KindArgocdOnGkeTopology,
+			Kind:       KindSparkOnGkeTopology,
 			Metadata:   gkeTopology.Metadata,
 		},
 		Spec: TopologySpec{

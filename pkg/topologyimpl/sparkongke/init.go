@@ -14,28 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package argocdongke
+package sparkongke
 
 import (
-	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
 )
 
-func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (framework.Topology, error) {
-	currentTopology := topology.(*Topology)
-
-	err := framework.CheckCmdEnvFolderExists(*topology.GetMetadata(), CmdEnvNginxHelmChart)
-	if err != nil {
-		return nil, err
-	}
-
-	if currentTopology.Spec.GkeSpec.ProjectId == "" {
-		return nil, fmt.Errorf("spec.projectId is empty")
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	return topology, nil
+func init() {
+	framework.DefaultTopologyHandlerManager.AddHandler(KindSparkOnGkeTopology, &TopologyHandler{})
 }
