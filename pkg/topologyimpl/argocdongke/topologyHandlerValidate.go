@@ -29,7 +29,7 @@ func (t *TopologyHandler) Validate(topology framework.Topology, phase string) (f
 		return nil, err
 	}
 
-	if currentTopology.Spec.ProjectId == "" {
+	if currentTopology.Spec.GkeSpec.ProjectId == "" {
 		return nil, fmt.Errorf("spec.projectId is empty")
 	}
 

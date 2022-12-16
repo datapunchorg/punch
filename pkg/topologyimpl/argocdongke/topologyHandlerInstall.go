@@ -17,12 +17,9 @@ limitations under the License.
 package argocdongke
 
 import (
-	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
-	"github.com/datapunchorg/punch/pkg/gcplib"
-	"github.com/datapunchorg/punch/pkg/kubelib"
 	"github.com/datapunchorg/punch/pkg/resource"
-	v1 "k8s.io/api/core/v1"
+	"github.com/datapunchorg/punch/pkg/topologyimpl/gke"
 )
 
 func (t *TopologyHandler) Install(topology framework.Topology) (framework.DeploymentOutput, error) {
@@ -31,7 +28,7 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 	deployment := framework.NewDeployment()
 
 	deployment.AddStep("createGkeCluster", "Create GKE cluster", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-		err := resource.CreateGkeCluster(currentTopology.Spec.ProjectId, currentTopology.Spec.Location, currentTopology.Spec.GkeCluster)
+		err := resource.CreateGkeCluster(currentTopology.Spec.GkeSpec.ProjectId, currentTopology.Spec.GkeSpec.Location, currentTopology.Spec.GkeSpec.GkeCluster)
 		if err != nil {
 			return framework.NewDeploymentStepOutput(), err
 		}
@@ -40,58 +37,10 @@ func (t *TopologyHandler) Install(topology framework.Topology) (framework.Deploy
 
 	if currentTopology.GetMetadata().GetCommandEnvironment().Get(CmdEnvNginxHelmChart) != "" {
 		deployment.AddStep("deployNginxIngressController", "Deploy Nginx ingress controller", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-			return DeployNginxIngressController(*currentTopology.GetMetadata().GetCommandEnvironment(), currentTopology.Spec)
+			return gke.DeployNginxIngressController(*currentTopology.GetMetadata().GetCommandEnvironment(), currentTopology.Spec.GkeSpec)
 		})
 	}
 
 	err := deployment.Run()
 	return deployment.GetOutput(), err
-}
-
-func DeployNginxIngressController(commandEnvironment framework.CommandEnvironment, topology TopologySpec) (map[string]interface{}, error) {
-	nginxNamespace := topology.NginxIngress.Namespace
-	helmInstallName := topology.NginxIngress.HelmInstallName
-	nginxServiceName := DefaultNginxServiceName
-	gkeClusterName := topology.GkeCluster.ClusterName
-	kubeConfig, err := gcplib.CreateKubeConfig(commandEnvironment.Get(framework.CmdEnvKubeConfig), topology.ProjectId, topology.Location, gkeClusterName)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get kube config: %s", err.Error())
-	}
-
-	defer kubeConfig.Cleanup()
-
-	arguments := []string{
-		"--set", fmt.Sprintf("controller.service.enableHttp=%t", topology.NginxIngress.EnableHttp),
-		"--set", fmt.Sprintf("controller.service.enableHttps=%t", topology.NginxIngress.EnableHttps),
-	}
-
-	if commandEnvironment.GetBoolOrElse(framework.CmdEnvWithMinikube, false) {
-		arguments = append(arguments, "--set", "controller.service.type=NodePort")
-		arguments = append(arguments, "--set", fmt.Sprintf("controller.service.nodePorts.http=%d", NodePortLocalHttp))
-		arguments = append(arguments, "--set", fmt.Sprintf("controller.service.nodePorts.https=%d", NodePortLocalHttps))
-	}
-
-	kubelib.InstallHelm(commandEnvironment.Get(framework.CmdEnvHelmExecutable), commandEnvironment.Get(CmdEnvNginxHelmChart), kubeConfig, arguments, helmInstallName, nginxNamespace)
-
-	_, clientset, err := gcplib.CreateKubernetesClient(commandEnvironment.Get(framework.CmdEnvKubeConfig), topology.ProjectId, topology.Location, gkeClusterName)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create Kubernetes client: %s", err.Error())
-	}
-	err = kubelib.WaitPodsInPhases(clientset, nginxNamespace, nginxServiceName, []v1.PodPhase{v1.PodRunning})
-	if err != nil {
-		return nil, fmt.Errorf("pod %s*** in namespace %s is not in phase %s", nginxServiceName, nginxNamespace, v1.PodRunning)
-	}
-
-	urls, err := resource.GetGkeNginxLoadBalancerUrls(commandEnvironment, topology.ProjectId, topology.Location, gkeClusterName, nginxNamespace, nginxServiceName, NodePortLocalHttps)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get NGINX load balancer urls: %s", err.Error())
-	}
-
-	output := make(map[string]interface{})
-	output["loadBalancerUrls"] = urls
-
-	preferredUrl := resource.GetLoadBalancerPreferredUrl(urls, topology.NginxIngress.EnableHttps && topology.NginxIngress.HttpsCertificate != "")
-	output["loadBalancerPreferredUrl"] = preferredUrl
-
-	return output, nil
 }

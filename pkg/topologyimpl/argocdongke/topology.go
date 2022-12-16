@@ -41,7 +41,7 @@ type Topology struct {
 }
 
 type TopologySpec struct {
-	gke.TopologySpec `json:",inline" yaml:",inline"`
+	GkeSpec gke.TopologySpec `json:",inline" yaml:",inline"`
 }
 
 func (t *Topology) GetKind() string {

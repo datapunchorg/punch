@@ -42,11 +42,11 @@ func (t *TopologyHandler) Generate() (framework.Topology, error) {
 			Metadata:   gkeTopology.Metadata,
 		},
 		Spec: TopologySpec{
-			TopologySpec: gkeTopology.Spec,
+			GkeSpec: gkeTopology.Spec,
 		},
 	}
 
-	topology.Spec.GkeCluster.ClusterName = gkeClusterName
+	topology.Spec.GkeSpec.GkeCluster.ClusterName = gkeClusterName
 
 	return &topology, nil
 }

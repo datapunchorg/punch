@@ -27,7 +27,7 @@ func (t *TopologyHandler) Uninstall(topology framework.Topology) (framework.Depl
 	deployment := framework.NewDeployment()
 
 	deployment.AddStep("deleteGkeCluster", "Delete GKE Cluster", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-		resource.DeleteGkeCluster(currentTopology.Spec.ProjectId, currentTopology.Spec.Location, currentTopology.Spec.GkeCluster.ClusterName)
+		resource.DeleteGkeCluster(currentTopology.Spec.GkeSpec.ProjectId, currentTopology.Spec.GkeSpec.Location, currentTopology.Spec.GkeSpec.GkeCluster.ClusterName)
 		return framework.NewDeploymentStepOutput(), nil
 	})
 
