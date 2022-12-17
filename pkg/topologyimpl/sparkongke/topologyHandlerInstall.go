@@ -191,8 +191,8 @@ func DeploySparkOperator(commandEnvironment framework.CommandEnvironment, sparkC
 func InstallSparkOperatorHelm(commandEnvironment framework.CommandEnvironment, sparkComponentSpec sparkoneks.SparkComponentSpec, projectId, zone, clusterName string) error {
 	// helm install my-release spark-operator/spark-operator --namespace spark-operator --create-namespace --set sparkJobNamespace=default
 
-	region := "us-west-1" // TODO remove this
-	s3Bucket := "todo"    // TODO remove this
+	region := "gcp:us-central1" // TODO remove this
+	s3Bucket := "todo"          // TODO remove this
 
 	kubeConfig, err := gcplib.CreateKubeConfig(commandEnvironment.Get(framework.CmdEnvKubeConfig), projectId, zone, clusterName)
 	if err != nil {
