@@ -18,12 +18,13 @@ package eks
 
 import (
 	"fmt"
+	"log"
+	"strings"
+
 	"github.com/datapunchorg/punch/pkg/awslib"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/kubelib"
 	"github.com/datapunchorg/punch/pkg/resource"
-	"log"
-	"strings"
 )
 
 type TopologyHandler struct {
@@ -102,7 +103,7 @@ func CreateInstallDeployment(topologySpec EksTopologySpec, commandEnvironment fr
 		})
 
 		deployment.AddStep("minikubeStart", "Start Minikube Cluster", func(c framework.DeploymentContext) (framework.DeployableOutput, error) {
-			_, err := resource.MinikubeExec("start", "--memory", "4096", "--ports", "32443:32443", "--kubernetes-version=v1.23.3") // TODO make memory size configurable
+			_, err := resource.MinikubeExec("start", "--memory", "4096", "--ports", "32443:32443") // TODO make memory size configurable
 			return framework.NewDeploymentStepOutput(), err
 		})
 
