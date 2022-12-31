@@ -17,10 +17,11 @@ limitations under the License.
 package eks
 
 import (
-	"github.com/datapunchorg/punch/pkg/framework"
-	"github.com/stretchr/testify/assert"
 	"log"
 	"testing"
+
+	"github.com/datapunchorg/punch/pkg/framework"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGenerateTopology(t *testing.T) {
@@ -42,7 +43,7 @@ func TestParseTopology(t *testing.T) {
 	currentTopology.Spec.NamePrefix = "foo"
 	yamlContent := framework.TopologyString(topology)
 
-	topology, err = handler.Parse([]byte(yamlContent))
+	topology, err = framework.ParseTopology([]byte(yamlContent), handler)
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "Eks", topology.GetKind())
 	currentTopology = topology.(*EksTopology)
