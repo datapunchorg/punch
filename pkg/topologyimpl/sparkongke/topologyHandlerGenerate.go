@@ -14,37 +14,58 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package argocdongke
+package sparkongke
 
 import (
 	"fmt"
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/topologyimpl/gke"
+	"github.com/datapunchorg/punch/pkg/topologyimpl/sparkoneks"
 )
 
 func (t *TopologyHandler) Generate() (framework.Topology, error) {
 	namePrefix := framework.DefaultNamePrefixTemplate
 
-	topologyName := fmt.Sprintf("%s-argocdongke-01", namePrefix)
+	topologyName := fmt.Sprintf("%s-sparkongke-01", namePrefix)
 	gkeClusterName := topologyName
 
 	gkeTopologyHandler := gke.TopologyHandler{}
 	gkeGeneratedTopology, err := gkeTopologyHandler.Generate()
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate Gke topology for ArgocdOnGke: %w", err)
+		return nil, fmt.Errorf("failed to generate Gke topology for %s: %w", KindSparkOnGkeTopology, err)
 	}
 	gkeTopology := gkeGeneratedTopology.(*gke.Topology)
+
+	sparkOnEksTopologyHandler := sparkoneks.TopologyHandler{}
+	sparkOnEksGeneratedTopology, err := sparkOnEksTopologyHandler.Generate()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate SparkOnEks topology for %s: %w", KindSparkOnGkeTopology, err)
+	}
+	sparkOnEksTopology := sparkOnEksGeneratedTopology.(*sparkoneks.SparkOnEksTopology)
 
 	topology := Topology{
 		TopologyBase: framework.TopologyBase{
 			ApiVersion: framework.DefaultVersion,
-			Kind:       KindArgocdOnGkeTopology,
-			Metadata:   gkeTopology.Metadata,
+			Kind:       KindSparkOnGkeTopology,
+			Metadata: framework.TopologyMetadata{
+				Name:               topologyName,
+				CommandEnvironment: map[string]string{},
+				Notes:              map[string]string{},
+			},
 		},
 		Spec: TopologySpec{
 			GkeSpec:           gkeTopology.Spec,
 			ArgocdInstallYaml: "https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml",
+			Spark:             sparkOnEksTopology.Spec.Spark,
 		},
+	}
+
+	for k, v := range sparkOnEksTopology.Metadata.CommandEnvironment {
+		topology.Metadata.CommandEnvironment[k] = v
+	}
+
+	for k, v := range gkeTopology.Metadata.CommandEnvironment {
+		topology.Metadata.CommandEnvironment[k] = v
 	}
 
 	topology.Spec.GkeSpec.GkeCluster.ClusterName = gkeClusterName

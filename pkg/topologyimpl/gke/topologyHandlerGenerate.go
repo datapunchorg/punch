@@ -50,6 +50,7 @@ func (t *TopologyHandler) Generate() (framework.Topology, error) {
 			GkeCluster: resource.GkeCluster{
 				ClusterName:      gkeClusterName,
 				InitialNodeCount: 2,
+				MachineType:      "e2-standard-4",
 			},
 			NginxIngress: NginxIngress{
 				HelmInstallName: DefaultNginxIngressHelmInstallName,

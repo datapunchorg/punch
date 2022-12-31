@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package argocdongke
+package sparkongke
 
 var NodePortLocalHttp int32 = 32080
 var NodePortLocalHttps int32 = 32443

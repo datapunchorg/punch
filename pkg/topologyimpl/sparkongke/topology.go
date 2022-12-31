@@ -14,11 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package argocdongke
+package sparkongke
 
 import (
 	"github.com/datapunchorg/punch/pkg/framework"
 	"github.com/datapunchorg/punch/pkg/topologyimpl/gke"
+	"github.com/datapunchorg/punch/pkg/topologyimpl/sparkoneks"
 )
 
 const (
@@ -27,7 +28,7 @@ const (
 	DefaultNginxEnableHttp             = true
 	DefaultNginxEnableHttps            = true
 
-	KindArgocdOnGkeTopology = "ArgocdOnGke"
+	KindSparkOnGkeTopology = "SparkOnGke"
 
 	CmdEnvNginxHelmChart             = "nginxHelmChart"
 	CmdEnvClusterAutoscalerHelmChart = "ClusterAutoscalerHelmChart"
@@ -41,8 +42,9 @@ type Topology struct {
 }
 
 type TopologySpec struct {
-	GkeSpec           gke.TopologySpec `json:",inline" yaml:",inline"`
-	ArgocdInstallYaml string           `json:"argocdInstallYaml" yaml:"argocdInstallYaml"`
+	GkeSpec           gke.TopologySpec              `json:",inline" yaml:",inline"`
+	ArgocdInstallYaml string                        `json:"argocdInstallYaml" yaml:"argocdInstallYaml"`
+	Spark             sparkoneks.SparkComponentSpec `json:"spark" yaml:"spark"`
 }
 
 func (t *Topology) GetKind() string {
