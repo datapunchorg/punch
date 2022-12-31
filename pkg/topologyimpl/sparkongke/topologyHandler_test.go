@@ -28,7 +28,7 @@ func TestGenerateTopology(t *testing.T) {
 	handler := &TopologyHandler{}
 	topology, err := handler.Generate()
 	assert.Equal(t, nil, err)
-	assert.Equal(t, "ArgocdOnGke", topology.GetKind())
+	assert.Equal(t, "SparkOnGke", topology.GetKind())
 
 	log.Printf("-----\n%s\n-----\n", framework.TopologyString(topology))
 
@@ -45,5 +45,5 @@ func TestValidateTopology(t *testing.T) {
 	topology.(*Topology).Metadata.CommandEnvironment = env
 	resolvedTopology, err := handler.Validate(topology, framework.PhaseBeforeInstall)
 	assert.Equal(t, nil, err)
-	assert.Equal(t, "ArgocdOnGke", resolvedTopology.GetKind())
+	assert.Equal(t, "SparkOnGke", resolvedTopology.GetKind())
 }
