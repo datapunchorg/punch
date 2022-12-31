@@ -70,6 +70,7 @@ func CreateGkeCluster(projectId string, zone string, gkeCluster GkeCluster) erro
 			NodeConfig: &container.NodeConfig{
 				MachineType: gkeCluster.MachineType,
 			},
+			// Autoscaling: &container.ClusterAutoscaling{},
 		},
 	}
 	projectsZonesClustersCreateCall := containerService.Projects.Zones.Clusters.Create("", "", createClusterRequest)
