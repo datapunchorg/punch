@@ -1,7 +1,6 @@
 package resource
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -30,16 +29,16 @@ import (
 func TestCreateGkeCluster(t *testing.T) {
 	//projectId, err := GetGcpFirstProjectId()
 	//require.Nil(t, err)
-	projectId := "myproject001-367500"
-	zone := "us-central1-c"
-	gkeCluster := GkeCluster{
-		ClusterName: "cluster-1",
-	}
-	err := CreateGkeCluster(projectId, zone, gkeCluster)
-	require.Nil(t, err)
+	// projectId := "myproject001-367500"
+	// zone := "us-central1-c"
+	// gkeCluster := GkeCluster{
+	// 	ClusterName: "cluster-1",
+	// }
+	// err := CreateGkeCluster(projectId, zone, gkeCluster)
+	// require.Nil(t, err)
 }
 
 func TestDeleteGkeCluster(t *testing.T) {
-	err := DeleteGkeCluster("myproject001-367500", "us-central1-c", "cluster-1")
-	require.Nil(t, err)
+	// err := DeleteGkeCluster("myproject001-367500", "us-central1-c", "cluster-1")
+	// require.Nil(t, err)
 }
