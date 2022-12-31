@@ -17,22 +17,23 @@ limitations under the License.
 package argocdongke
 
 import (
-	"github.com/datapunchorg/punch/pkg/framework"
-	"github.com/stretchr/testify/assert"
 	"log"
 	"testing"
+
+	"github.com/datapunchorg/punch/pkg/framework"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGenerateTopology(t *testing.T) {
 	handler := &TopologyHandler{}
 	topology, err := handler.Generate()
 	assert.Equal(t, nil, err)
-	assert.Equal(t, "Gke", topology.GetKind())
+	assert.Equal(t, "ArgocdOnGke", topology.GetKind())
 
 	log.Printf("-----\n%s\n-----\n", framework.TopologyString(topology))
 
 	currentTopology := topology.(*Topology)
-	assert.Equal(t, "{{ or .Values.namePrefix `my` }}", currentTopology.Spec.NamePrefix)
+	assert.Equal(t, "{{ or .Values.namePrefix `my` }}", currentTopology.Spec.GkeSpec.NamePrefix)
 }
 
 func TestValidateTopology(t *testing.T) {
@@ -44,5 +45,5 @@ func TestValidateTopology(t *testing.T) {
 	topology.(*Topology).Metadata.CommandEnvironment = env
 	resolvedTopology, err := handler.Validate(topology, framework.PhaseBeforeInstall)
 	assert.Equal(t, nil, err)
-	assert.Equal(t, "Gke", resolvedTopology.GetKind())
+	assert.Equal(t, "ArgocdOnGke", resolvedTopology.GetKind())
 }

@@ -43,7 +43,7 @@ func TestParseTopology(t *testing.T) {
 	sparkTopology.Spec.Eks.NamePrefix = "foo"
 	yamlContent := framework.TopologyString(topology)
 
-	topology, err = handler.Parse([]byte(yamlContent))
+	topology, err = framework.ParseTopology([]byte(yamlContent), handler)
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "SparkOnEks", topology.GetKind())
 	sparkTopology = topology.(*SparkOnEksTopology)
