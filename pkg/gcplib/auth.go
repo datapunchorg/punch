@@ -34,8 +34,8 @@ type GetOauthTokenResponse struct {
 }
 
 func GetCurrentUserAccessToken() (string, error) {
-	return getCurrentUserAccessTokenUsingADCJsonFile()
-	//return getCurrentUserAccessTokenUsingDefaultTokenSource()
+	// return getCurrentUserAccessTokenUsingADCJsonFile()
+	return getCurrentUserAccessTokenUsingDefaultTokenSource()
 }
 
 // also see https://gist.github.com/salrashid123/9810b45387adbd45a22bb4e17bdbe9d5
