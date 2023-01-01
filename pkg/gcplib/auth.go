@@ -2,9 +2,13 @@ package gcplib
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/datapunchorg/punch/pkg/common"
+	"golang.org/x/oauth2/google"
+	oauthsvc "google.golang.org/api/oauth2/v2"
+	"google.golang.org/grpc/credentials/oauth"
 	"io"
 	"net/http"
 	"os"
@@ -29,9 +33,14 @@ type GetOauthTokenResponse struct {
 	AccessToken string `json:"access_token" yaml:"access_token"`
 }
 
+func GetCurrentUserAccessToken() (string, error) {
+	return getCurrentUserAccessTokenUsingADCJsonFile()
+	//return getCurrentUserAccessTokenUsingDefaultTokenSource()
+}
+
 // also see https://gist.github.com/salrashid123/9810b45387adbd45a22bb4e17bdbe9d5
 
-func GetCurrentUserAccessToken() (string, error) {
+func getCurrentUserAccessTokenUsingADCJsonFile() (string, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return "", fmt.Errorf("failed to get user home dir: %w", err)
@@ -78,6 +87,21 @@ func GetCurrentUserAccessToken() (string, error) {
 		return "", fmt.Errorf("got empty access token from %s", url)
 	}
 	return response.AccessToken, nil
+}
+
+func getCurrentUserAccessTokenUsingDefaultTokenSource() (string, error) {
+	defaultTokenSource, err := google.DefaultTokenSource(context.Background(), oauthsvc.UserinfoEmailScope)
+	if err != nil {
+		return "", fmt.Errorf("failed to get default token source: %w", err)
+	}
+	oauthTokenSource := oauth.TokenSource{
+		TokenSource: defaultTokenSource,
+	}
+	token, err := oauthTokenSource.Token()
+	if err != nil {
+		return "", fmt.Errorf("failed to get token from oauth token source: %w", err)
+	}
+	return token.AccessToken, nil
 }
 
 func FileExists(filePath string) (bool, error) {
