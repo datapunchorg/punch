@@ -42,9 +42,9 @@ type Topology struct {
 }
 
 type TopologySpec struct {
-	GkeSpec           gke.TopologySpec              `json:",inline" yaml:",inline"`
-	ArgocdInstallYaml string                        `json:"argocdInstallYaml" yaml:"argocdInstallYaml"`
-	Spark             sparkoneks.SparkComponentSpec `json:"spark" yaml:"spark"`
+	GkeSpec               gke.TopologySpec              `json:",inline" yaml:",inline"`
+	ArgocdInstallYamlFile string                        `json:"argocdInstallYamlFile" yaml:"argocdInstallYamlFile"`
+	Spark                 sparkoneks.SparkComponentSpec `json:"spark" yaml:"spark"`
 }
 
 func (t *Topology) GetKind() string {

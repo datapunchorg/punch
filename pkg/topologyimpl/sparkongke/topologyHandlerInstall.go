@@ -82,7 +82,7 @@ func DeployArgocd(commandEnvironment framework.CommandEnvironment, topology Topo
 		}
 	}
 	{
-		cmd := fmt.Sprintf("apply -n %s -f %s", namespace, topology.ArgocdInstallYaml)
+		cmd := fmt.Sprintf("apply -n %s -f %s", namespace, topology.ArgocdInstallYamlFile)
 		arguments := strings.Split(cmd, " ")
 		err = kubelib.RunKubectlWithKubeConfig(commandEnvironment.Get(framework.CmdEnvKubectlExecutable), kubeConfig, arguments)
 		if err != nil {

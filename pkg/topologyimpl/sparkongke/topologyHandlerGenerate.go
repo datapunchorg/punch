@@ -54,9 +54,9 @@ func (t *TopologyHandler) Generate() (framework.Topology, error) {
 			},
 		},
 		Spec: TopologySpec{
-			GkeSpec:           gkeTopology.Spec,
-			ArgocdInstallYaml: "https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml",
-			Spark:             sparkOnEksTopology.Spec.Spark,
+			GkeSpec:               gkeTopology.Spec,
+			ArgocdInstallYamlFile: "https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml",
+			Spark:                 sparkOnEksTopology.Spec.Spark,
 		},
 	}
 
